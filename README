@@ -3,3 +3,51 @@ This module is based on the code brewed among several blogs.
 By Saito Atsushi: http://d.hatena.ne.jp/SaitoAtsushi/20100429/1272545442
 By tana-laevatein: http://d.hatena.ne.jp/tana-laevatein/20100505/1273025284
 By sirocco634: http://d.hatena.ne.jp/sirocco634/20100605#1275743091
+
+
+Usage:
+
+[Module] net.twitter
+
+[Class] <twitter-cred>
+
+  An object holding necessary information to access to the user's Twitter
+  account.  It has the following instance slots.
+
+   consumer-key
+   consumer-secret
+   access-token
+   access-token-secret
+
+
+[Function] twitter-authenticate-client consumer-key consumer-secret
+                                       :optional input-callback
+
+  Authenticate the client using twitter's PIN-based OAuth authentication
+  flow.  First it obtains request-token, then ask the user to access
+  a specific URL to grant access by the client.  Once the user grant access,
+  Twitter presents a PIN to the user, which should be fed back
+  to the procedure to obtain access token and secret.
+
+  Once this process completes, the client program can store the access
+  token and access token secret to access the user's Twitter account,
+  until the user explicitly asks to discard those credentials.  So, 
+  in general, this procedure needs to be called once per user per client.
+
+  The INPUT-CALLBACK is a procedure that handles user intervention.
+  It is called by one argument, the Twitter URL the user should access.
+  By default it prints the URL and asks the user to go there and obtain
+  PIN, and prompts the user to enter it.  It should return the entered
+  PIN in string, or #f to indicate the user aborted the process.
+  If the callback returns an empty string, it is called again.
+
+  Twitter-authenticate-client returns an instance of <twitter-cred>.
+
+
+[Function] twitter-post message cred
+
+  Post a MESSAGE.  CRED is an instance of <twitter-cred>.
+
+
+
+  
