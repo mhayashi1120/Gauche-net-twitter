@@ -13,9 +13,11 @@
   (use math.mt-random)
   (use gauche.uvector)
   (use gauche.version)
+  (use gauche.experimental.ref)         ; for '~'.  remove after 0.9.1
   (use text.tree)
   (use util.list)
-  (export twitter-authenticate-client
+  (export <twitter-cred>
+          twitter-authenticate-client
 	  twitter-post))
 (select-module net.twitter)
 
@@ -119,6 +121,14 @@
 ;;; Public API
 ;;;
 
+;; Credential
+
+(define-class <twitter-cred> ()
+  ((consumer-key :init-keyword :consumer-key)
+   (consumer-secret :init-keyword :consumer-secret)
+   (access-token :init-keyword :access-token)
+   (access-token-secret :init-keyword :access-token-secret)))
+
 ;; Authenticate the client using OAuth PIN-based authentication flow.
 (define (twitter-authenticate-client consumer-key consumer-secret
                                      :optional (input-callback
@@ -149,10 +159,11 @@
                              r-secret)]
              [a-token (cgi-get-parameter "oauth_token" a-response)]
              [a-secret (cgi-get-parameter "oauth_token_secret" a-response)])
-        `(:consumer-key ,consumer-key
-          :consumer-secret ,consumer-secret
-          :access-token ,a-token
-          :access-token-secret ,a-secret))
+        (make <twitter-cred>
+          :consumer-key consumer-key
+          :consumer-secret consumer-secret
+          :access-token a-token
+          :access-token-secret a-secret))
       #f)))
 
 (define (default-input-callback url)
@@ -165,19 +176,17 @@
             [(string-null? pin) (loop)]
             [else pin]))))
 
-(define (twitter-post consumer-key consumer-secret
-		      access-token access-token-secret
-		      message)
-  (let* ([auth-params `(("oauth_consumer_key" ,consumer-key)
+(define (twitter-post message cred)
+  (let* ([auth-params `(("oauth_consumer_key" ,(~ cred'consumer-key))
                         ("oauth_nonce" ,(random-string))
                         ("oauth_signature_method" "HMAC-SHA1")
                         ("oauth_timestamp" ,(timestamp))
-                        ("oauth_token" ,access-token))]
+                        ("oauth_token" ,(~ cred'access-token)))]
          [signature (oauth-signature
                      "POST" "http://api.twitter.com/statuses/update.json"
                      `(,@auth-params ("status" ,message))
-                     consumer-secret
-                     access-token-secret)]
+                     (~ cred'consumer-secret)
+                     (~ cred'access-token-secret))]
          [auth-line
           (format "OAuth ~a"
                   (string-join (map (cut string-join <> "=")
