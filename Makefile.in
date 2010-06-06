@@ -26,7 +26,7 @@ LOCAL_PATHS = @LOCAL_PATHS@
 PACKAGE   = Gauche-net-twitter
 
 ARCHFILES = 
-SCMFILES  = $(srcdir)/net/twitter.scm
+SCMFILES  = $(srcdir)/net/twitter.scm $(srcdir)/net/twitauth.scm
 HEADERS   = 
 
 TARGET    = $(ARCHFILES)

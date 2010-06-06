@@ -1,11 +1,74 @@
-This module is based on the code brewed among several blogs.
+This module provides an interface to Twitter API using OAuth authentication.
 
-By Saito Atsushi: http://d.hatena.ne.jp/SaitoAtsushi/20100429/1272545442
-By tana-laevatein: http://d.hatena.ne.jp/tana-laevatein/20100505/1273025284
-By sirocco634: http://d.hatena.ne.jp/sirocco634/20100605#1275743091
+Overview of steps:
+
+1. Install the package.
+
+   From tarball:
+
+     $ gauche-package install [-S root] Gauche-net-twitter-1.0.tgz
+
+   From source:
+
+     $ git clone git://github.com/shirok/Gauche-net-twitter.git
+     $ cd Gauche-net-twitter
+     $ ./DIST gen
+     $ ./configure
+     $ make
+     $ make -s check
+     $ [sudo] make install
+
+   ('-S root' option or 'sudo' may be required if you want to install
+   the package system-wide.
+
+2. Register your application at http://twitter.com/oauth_clients
+   * Check 'Client' in the Application Type question.
+   * No need to check 'Use Twitter for login' box.
+   * Save "Consumer key" and "Consumer secret" shown in the next screen.
+
+3. Let the user to grant access to his/her twitter account via your client.
+   How to handle this depends on your client.  If you (application author)
+   just want to grant your application to access *your* twitter account,
+   there's a simple script net/twitauth that handles the process.  Run
+   it as 'gosh net/twitauth'.   It asks you to type your application's
+   consumer key and consumer secret.
+
+     $ gosh net/twitauth
+     Enter consumer key: XXXXXXXXXXXXXXXXXXX
+     Enter consumer secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+
+   Then it shows an URL you should access by your browser.
+
+     Open the following url and type in the shown PIN.
+     https://api.twitter.com/oauth/authorize?oauth_token=XXXXXXXXXXXXXXXXXXX
+     Input PIN: 
+
+   The page asks you if you grant access to the applicatio or not.
+   If you click "Accept", it shows 7-digit PIN.   Type that PIN
+   into the above 'Input PIN' prompt.
+
+   Then the script shows information necessary to access to your Twitter
+   account.  Save them.
+
+   (
+    (consumer-key        . "XXXXXXXXXXXXXXXXXXXX")
+    (consumer-secret     . "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    (access-token        . "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    (access-token-secret . "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+   )
+
+   NB: If you intend to distribute your application to others and allow
+   them to grant the application's access to their Twitter account, you
+   would want to have better UI.  You can design your interaction with
+   twitter-authenticate-client procedure described below.
 
 
-Usage:
+4. In your program, create a <twitter-cred> instance with the above
+   information, and use it to call Twitter API.
+   
+
+
+Module API:
 
 [Module] net.twitter
 
@@ -50,4 +113,12 @@ Usage:
 
 
 
-  
+Credits:
+
+This module is based on the code brewed among several blogs.
+
+By Saito Atsushi: http://d.hatena.ne.jp/SaitoAtsushi/20100429/1272545442
+By tana-laevatein: http://d.hatena.ne.jp/tana-laevatein/20100505/1273025284
+By sirocco634: http://d.hatena.ne.jp/sirocco634/20100605#1275743091
+
+
