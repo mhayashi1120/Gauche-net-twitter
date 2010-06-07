@@ -199,6 +199,29 @@ a condition <twitter-api-error> is signalled.
 
   Returns info of retweets of the specified tweet-id.
 
+[Function] twitter-retweeded-by/sxml cred tweet-id :key (count #f) (page #f)
+
+[Function] twitter-retweeted-by-ids/sxml cred tweet-id
+                                         :key (count #f) (page #f)
+
+
+[Function] twitter-user-show/sxml cred :key id user-id screen-name
+
+  Show info of the user.  CRED can be #f to access only public info.
+
+[Function] twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '())
+
+  Returns info on the user listed in either user-ids or screen-names.
+
+[Function] twitter-followers/sxml cred :key id user-id screen-name cursor
+
+  Returns list of users following the user specified by either id, user-id,
+  or screen-name.
+
+[Function] twitter-followers cred :key id user-id screen-name cursor
+
+  Returns a list of user ids.
+
 
 
 Credits:

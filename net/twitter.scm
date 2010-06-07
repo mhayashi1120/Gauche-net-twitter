@@ -17,6 +17,7 @@
   (use gauche.version)
   (use gauche.experimental.ref)         ; for '~'.  remove after 0.9.1
   (use text.tree)
+  (use text.tr)
   (use util.list)
   (use util.match)
   (use sxml.ssax)
@@ -158,7 +159,18 @@
                                 ("oauth_signature"
                                  ,(oauth-uri-encode signature))))
                          ", "))))
-  
+
+;;
+;; A convenience macro to construct query parameters, skipping
+;; if #f is given to the variable.
+;;
+
+(define-macro (make-query-params . vars)
+  `(cond-list
+    ,@(map (lambda (v)
+             `(,v `(,',(string-tr (x->string v) "-" "_") ,,v)))
+           vars)))
+
 ;;;
 ;;; Public API
 ;;;
@@ -229,29 +241,17 @@
 (define (twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
                                               (count #f) (page #f))
   (call/oauth->sxml cred 'get "/1/statuses/home_timeline.xml"
-                    (cond-list
-                     [since-id `("since_id" ,since-id)]
-                     [max-id   `("max_id" ,max-id)]
-                     [count    `("count" ,count)]
-                     [page     `("page" ,page)])))
+                    (make-query-params since-id max-id count page)))
 
 (define (twitter-friends-timeline/sxml cred :key (since-id #f) (max-id #f)
                                                  (count #f) (page #f))
   (call/oauth->sxml cred 'get "/1/statuses/friends_timeline.xml"
-                    (cond-list
-                     [since-id `("since_id" ,since-id)]
-                     [max-id   `("max_id" ,max-id)]
-                     [count    `("count" ,count)]
-                     [page     `("page" ,page)])))
+                    (make-query-params since-id max-id count page)))
 
 (define (twitter-mentions/sxml cred :key (since-id #f) (max-id #f)
                                          (count #f) (page #f))
   (call/oauth->sxml cred 'get "/statuses/mentions.xml"
-                    (cond-list
-                     [since-id `("since_id" ,since-id)]
-                     [max-id   `("max_id" ,max-id)]
-                     [count    `("count" ,count)]
-                     [page     `("page" ,page)])))
+                    (make-query-params since-id max-id count page)))
 
 ;; Returns list of (tweet-id text user-screen-name user-id)
 (define (twitter-mentions cred . args)
@@ -280,14 +280,8 @@
                                                (display-coordinates #f))
   (call/oauth->sxml cred 'post "/1/statuses/update.xml"
                     `(("status" ,message)
-                      ,@(cond-list
-                         [in-reply-to-status-id `("in_reply_to_status_id"
-                                                  ,in-reply-to-status-id)]
-                         [lat `("lat" ,lat)]
-                         [long `("long" ,long)]
-                         [place-id `("place_id" ,place-id)]
-                         [display-coordinates `("display_coordinates"
-                                                ,display-coordinates)]))))
+                      ,@(make-query-params in-reply-to-status-id lat long
+                                           place-id display-coordinates))))
 
 ;; Returns tweet id on success
 (define (twitter-update cred message . opts)
@@ -302,17 +296,15 @@
 
 (define (twitter-retweets/sxml cred id :key (count #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweets/,|id|.xml"
-                    (cond-list [count `("count" ,count)])))
+                    (make-query-params count)))
 
 (define (twitter-retweeted-by/sxml cred id :key (count #f) (page #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by.xml"
-                    (cond-list [count `("count" ,count)]
-                               [page  `("page" ,page)])))
+                    (make-query-params count page)))
 
 (define (twitter-retweeted-by-ids/sxml cred id :key (count #f) (page #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by/ids.xml"
-                    (cond-list [count `("count" ,count)]
-                               [page  `("page" ,page)])))
+                    (make-query-params count page)))
 
 ;;
 ;; User methods
@@ -320,9 +312,7 @@
 
 ;; cred can be #f.
 (define (twitter-user-show/sxml cred :key (id #f) (user-id #f) (screen-name #f))
-  (let1 opts (cond-list [id `("id" ,id)]
-                        [user-id `("user_id" ,user-id)]
-                        [screen-name `("screen_name" ,screen-name)])
+  (let1 opts (make-query-params id user-id screen-name)
     (if cred
       (call/oauth->sxml cred 'get #`"/1/users/show.xml" opts)
       (call->sxml 'get #`"/1/users/show.xml" opts))))
@@ -339,11 +329,7 @@
 (define (twitter-followers/sxml cred :key (id #f) (user-id #f)
                                           (screen-name #f) (cursor #f))
   (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
-                    (cond-list
-                     [id `("id" ,id)]
-                     [user-id `("user_id" ,user-id)]
-                     [screen-name `("screen_name" ,screen-name)]
-                     [cursor `("cursor" ,cursor)])))
+                    (make-query-params id user-id screen-name cursor)))
 
 (define (twitter-followers cred . args)
   ((sxpath '(// id *text*))
