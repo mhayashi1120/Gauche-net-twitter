@@ -19,7 +19,7 @@ Step by step:
      $ [sudo] make install
 
    ('-S root' option or 'sudo' may be required if you want to install
-   the package system-wide.
+   the package system-wide.)
 
 2. Register your application at http://twitter.com/oauth_clients
    * Check 'Client' in the Application Type question.
