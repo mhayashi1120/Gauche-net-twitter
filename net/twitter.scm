@@ -72,7 +72,7 @@
   (string-append
    (string-upcase method) "&"
    (oauth-uri-encode (oauth-normalize-request-url request-url)) "&"
-   (oauth-uri-encode (oauth-compose-query params))))
+   (oauth-uri-encode (oauth-compose-query (sort params param-sorter)))))
 
 ;; Oauth requires hex digits in %-encodings to be upper case (Section 5.1)
 ;; The following two routines should be used instead of uri-encode-string
