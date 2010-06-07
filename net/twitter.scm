@@ -40,8 +40,8 @@
           twitter-user-show/sxml
           twitter-user-lookup/sxml
           twitter-user-search/sxml
-          twitter-friends/sxml twitter-friends
-          twitter-followers/sxml twitter-followers))
+          twitter-friends/sxml twitter-friends/ids
+          twitter-followers/sxml twitter-followers/ids))
 (select-module net.twitter)
 
 ;; OAuth related stuff.
