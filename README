@@ -201,9 +201,12 @@ a condition <twitter-api-error> is signalled.
 
 [Function] twitter-retweeded-by/sxml cred tweet-id :key (count #f) (page #f)
 
+  Returns a list of users who retweeted the specified tweet.
+
 [Function] twitter-retweeted-by-ids/sxml cred tweet-id
                                          :key (count #f) (page #f)
 
+  Returns a list of user ids who retweeted the specified tweet.
 
 [Function] twitter-user-show/sxml cred :key id user-id screen-name
 
@@ -213,14 +216,28 @@ a condition <twitter-api-error> is signalled.
 
   Returns info on the user listed in either user-ids or screen-names.
 
+[Function] twitter-user-search/sxml cred q :key per-page page
+
+  Search users matching the query Q.
+
+[Function] twitter-friends/sxml cred :key id user-id screen-name cursor
+
+  Returns list of friends of the user specified by either id, user-id,
+  or screen-name.
+
+[Function] twitter-friends/ids cred :key id user-id screen-name cursor
+
+  Like above, but returns a list of user ids.
+
+
 [Function] twitter-followers/sxml cred :key id user-id screen-name cursor
 
   Returns list of users following the user specified by either id, user-id,
   or screen-name.
 
-[Function] twitter-followers cred :key id user-id screen-name cursor
+[Function] twitter-followers/ids cred :key id user-id screen-name cursor
 
-  Returns a list of user ids.
+  Like above, but returns a list of user ids.
 
 
 

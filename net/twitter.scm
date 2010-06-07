@@ -39,6 +39,8 @@
 
           twitter-user-show/sxml
           twitter-user-lookup/sxml
+          twitter-user-search/sxml
+          twitter-friends/sxml twitter-friends
           twitter-followers/sxml twitter-followers))
 (select-module net.twitter)
 
@@ -236,7 +238,7 @@
 ;; Timeline methods
 ;;
 (define (twitter-public-timeline/sxml)
-  (call->sxml 'get "/1/statuses/public_timeline.xml" '()))
+  (call/oauth->sxml #f 'get "/1/statuses/public_timeline.xml" '()))
 
 (define (twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
                                               (count #f) (page #f))
@@ -271,9 +273,7 @@
 
 ;; cred can be #f to view public tweet.
 (define (twitter-show/sxml cred id)
-  (if cred
-    (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml" '())
-    (call->sxml 'get #`"/1/statuses/show/,|id|.xml" '())))
+  (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml" '()))
 
 (define (twitter-update/sxml cred message :key (in-reply-to-status-id #f)
                                                (lat #f) (long #f) (place-id #f)
@@ -312,10 +312,8 @@
 
 ;; cred can be #f.
 (define (twitter-user-show/sxml cred :key (id #f) (user-id #f) (screen-name #f))
-  (let1 opts (make-query-params id user-id screen-name)
-    (if cred
-      (call/oauth->sxml cred 'get #`"/1/users/show.xml" opts)
-      (call->sxml 'get #`"/1/users/show.xml" opts))))
+  (call/oauth->sxml cred 'get #`"/1/users/show.xml"
+                    (make-query-params id user-id screen-name)))
   
 (define (twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '()))
   (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
@@ -325,13 +323,28 @@
                                 `("screen-name" ,(string-join screen-names ","))]
                                )))
 
+(define (twitter-user-search/sxml cred q :key (per-page #f) (page #f))
+  (call/oauth->sxml cred 'get "/1/users/search.xml"
+                    (make-query-params q per-page page)))
+
+;; CRED can be #f
+(define (twitter-friends/sxml cred :key (id #f) (user-id #f)
+                                        (screen-name #f) (cursor #f))
+  (call/oauth->sxml cred 'get "/1/statuses/friends.xml"
+                    (make-query-params id user-id screen-name cursor)))
+
+;; Returns list of user ids
+(define (twitter-friends/ids cred . args)
+  ((sxpath '(// id *text*))
+   (values-ref (apply twitter-friends/sxml cred args) 0)))
 
 (define (twitter-followers/sxml cred :key (id #f) (user-id #f)
                                           (screen-name #f) (cursor #f))
   (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
                     (make-query-params id user-id screen-name cursor)))
 
-(define (twitter-followers cred . args)
+;; Returns list of user ids
+(define (twitter-followers/ids cred . args)
   ((sxpath '(// id *text*))
    (values-ref (apply twitter-followers/sxml cred args) 0)))
 
@@ -367,32 +380,30 @@
                :body-sxml #f body))))
 
 (define (call/oauth->sxml cred method path params . opts)
-  (let1 auth (oauth-auth-header
-              (if (eq? method 'get) "GET" "POST")
-              #`"http://api.twitter.com,|path|" params
-              (~ cred'consumer-key) (~ cred'consumer-secret)
-              (~ cred'access-token) (~ cred'access-token-secret))
-    (receive (status headers body)
+
+  (define (call)
+    (if cred
+      (let1 auth (oauth-auth-header
+                  (if (eq? method 'get) "GET" "POST")
+                  #`"http://api.twitter.com,|path|" params
+                  (~ cred'consumer-key) (~ cred'consumer-secret)
+                  (~ cred'access-token) (~ cred'access-token-secret))
         (case method
           [(get) (apply http-get "api.twitter.com"
                         #`",|path|?,(oauth-compose-query params)"
                         :Authorization auth opts)]
           [(post) (apply http-post "api.twitter.com" path
                          (oauth-compose-query params)
-                         :Authorization auth opts)])
-      (check-api-error status headers body)
-      (values
-       (call-with-input-string body (cut ssax:xml->sxml <> '()))
-       headers))))
-
-(define (call->sxml method path params . opts)
-  (receive (status headers body)
+                         :Authorization auth opts)]))
       (case method
-        [(get) (apply http-get "api.twitter.com"
-                      #`",|path|?,(oauth-compose-query params)" opts)]
-        [(post) (apply http-post "api.twitter.com" path
-                       (oauth-compose-query params) opts)])
+          [(get) (apply http-get "api.twitter.com"
+                        #`",|path|?,(oauth-compose-query params)" opts)]
+          [(post) (apply http-post "api.twitter.com" path
+                         (oauth-compose-query params) opts)])))
+
+  (define (retrieve status headers body)
     (check-api-error status headers body)
-    (values
-     (call-with-input-string body (cut ssax:xml->sxml <> '()))
-     headers)))
+    (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
+            headers))
+
+  (call-with-values call retrieve))
