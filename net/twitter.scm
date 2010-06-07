@@ -8,6 +8,8 @@
   (use rfc.hmac)
   (use rfc.base64)
   (use rfc.uri)
+  (use rfc.822)
+  (use rfc.mime)
   (use srfi-13)
   (use www.cgi)
   (use math.mt-random)
@@ -16,9 +18,27 @@
   (use gauche.experimental.ref)         ; for '~'.  remove after 0.9.1
   (use text.tree)
   (use util.list)
-  (export <twitter-cred>
+  (use util.match)
+  (use sxml.ssax)
+  (use sxml.sxpath)
+  (export <twitter-cred> <twitter-api-error>
           twitter-authenticate-client
-	  twitter-post))
+          
+          twitter-public-timeline/sxml
+          twitter-home-timeline/sxml
+          twitter-mentions/sxml twitter-mentions
+
+          twitter-show/sxml
+	  twitter-update/sxml twitter-update
+          twitter-destroy/sxml
+          twitter-retweet/sxml
+          twitter-retweets/sxml
+          twitter-retweeted-by/sxml
+          twitter-retweeted-by-ids/sxml
+
+          twitter-user-show/sxml
+          twitter-user-lookup/sxml
+          twitter-followers/sxml twitter-followers))
 (select-module net.twitter)
 
 ;; OAuth related stuff.
@@ -110,33 +130,67 @@
 
 (define (timestamp) (number->string (sys-time)))
 
-(define (random-string)
+(define (oauth-nonce)
   (let ([random-source (make <mersenne-twister>
                          :seed (* (sys-time) (sys-getpid)))]
         [v (make-u32vector 10)])
     (mt-random-fill-u32vector! random-source v)
     (digest-hexify (sha1-digest-string (x->string v)))))
 
+;; Returns a header field suitable to pass as :authorization header
+;; for http-post/http-get.
+(define (oauth-auth-header method request-url params
+                           consumer-key consumer-secret
+                           access-token access-token-secret)
+  (let* ([auth-params `(("oauth_consumer_key" ,consumer-key)
+                        ("oauth_nonce" ,(oauth-nonce))
+                        ("oauth_signature_method" "HMAC-SHA1")
+                        ("oauth_timestamp" ,(timestamp))
+                        ("oauth_token" ,access-token))]
+         [signature (oauth-signature
+                     method request-url
+                     `(,@auth-params ,@params)
+                     consumer-secret
+                     access-token-secret)])
+    (format "OAuth ~a"
+            (string-join (map (cut string-join <> "=")
+                              `(,@auth-params
+                                ("oauth_signature"
+                                 ,(oauth-uri-encode signature))))
+                         ", "))))
+  
 ;;;
 ;;; Public API
 ;;;
 
+;;
 ;; Credential
-
+;;
 (define-class <twitter-cred> ()
   ((consumer-key :init-keyword :consumer-key)
    (consumer-secret :init-keyword :consumer-secret)
    (access-token :init-keyword :access-token)
    (access-token-secret :init-keyword :access-token-secret)))
 
+;;
+;; Condition for error response
+;;
+(define-condition-type <twitter-api-error> <error> #f
+  (status #f)
+  (headers #f)
+  (body #f)
+  (body-sxml #f))
+
+;;
 ;; Authenticate the client using OAuth PIN-based authentication flow.
+;;
 (define (twitter-authenticate-client consumer-key consumer-secret
                                      :optional (input-callback
                                                 default-input-callback))
   (let* ([r-response
           (oauth-request "GET" "http://api.twitter.com/oauth/request_token"
                          `(("oauth_consumer_key" ,consumer-key)
-                           ("oauth_nonce" ,(random-string))
+                           ("oauth_nonce" ,(oauth-nonce))
                            ("oauth_signature_method" "HMAC-SHA1")
                            ("oauth_timestamp" ,(timestamp))
                            ("oauth_version" "1.0"))
@@ -151,7 +205,7 @@
       (let* ([a-response
               (oauth-request "POST" "http://api.twitter.com/oauth/access_token"
                              `(("oauth_consumer_key" ,consumer-key)
-                               ("oauth_nonce" ,(random-string))
+                               ("oauth_nonce" ,(oauth-nonce))
                                ("oauth_signature_method" "HMAC-SHA1")
                                ("oauth_timestamp" ,(timestamp))
                                ("oauth_token" ,r-token)
@@ -166,6 +220,139 @@
           :access-token-secret a-secret))
       #f)))
 
+;;
+;; Timeline methods
+;;
+(define (twitter-public-timeline/sxml)
+  (call->sxml 'get "/1/statuses/public_timeline.xml" '()))
+
+(define (twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
+                                              (count #f) (page #f))
+  (call/oauth->sxml cred 'get "/1/statuses/home_timeline.xml"
+                    (cond-list
+                     [since-id `("since_id" ,since-id)]
+                     [max-id   `("max_id" ,max-id)]
+                     [count    `("count" ,count)]
+                     [page     `("page" ,page)])))
+
+(define (twitter-friends-timeline/sxml cred :key (since-id #f) (max-id #f)
+                                                 (count #f) (page #f))
+  (call/oauth->sxml cred 'get "/1/statuses/friends_timeline.xml"
+                    (cond-list
+                     [since-id `("since_id" ,since-id)]
+                     [max-id   `("max_id" ,max-id)]
+                     [count    `("count" ,count)]
+                     [page     `("page" ,page)])))
+
+(define (twitter-mentions/sxml cred :key (since-id #f) (max-id #f)
+                                         (count #f) (page #f))
+  (call/oauth->sxml cred 'get "/statuses/mentions.xml"
+                    (cond-list
+                     [since-id `("since_id" ,since-id)]
+                     [max-id   `("max_id" ,max-id)]
+                     [count    `("count" ,count)]
+                     [page     `("page" ,page)])))
+
+;; Returns list of (tweet-id text user-screen-name user-id)
+(define (twitter-mentions cred . args)
+  (let ([r (values-ref (apply twitter-mentions/sxml cred args) 0)]
+        [accessors `(,(if-car-sxpath '(id *text*))
+                     ,(if-car-sxpath '(text *text*))
+                     ,(if-car-sxpath '(user screen_name *text*))
+                     ,(if-car-sxpath '(user id *text*)))])
+    (sort-by (map (lambda (s) (map (cut <> s) accessors))
+                  ((sxpath '(// status)) r))
+             (.$ x->integer car)
+             >)))
+
+;;
+;; Status method
+;;
+
+;; cred can be #f to view public tweet.
+(define (twitter-show/sxml cred id)
+  (if cred
+    (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml" '())
+    (call->sxml 'get #`"/1/statuses/show/,|id|.xml" '())))
+
+(define (twitter-update/sxml cred message :key (in-reply-to-status-id #f)
+                                               (lat #f) (long #f) (place-id #f)
+                                               (display-coordinates #f))
+  (call/oauth->sxml cred 'post "/1/statuses/update.xml"
+                    `(("status" ,message)
+                      ,@(cond-list
+                         [in-reply-to-status-id `("in_reply_to_status_id"
+                                                  ,in-reply-to-status-id)]
+                         [lat `("lat" ,lat)]
+                         [long `("long" ,long)]
+                         [place-id `("place_id" ,place-id)]
+                         [display-coordinates `("display_coordinates"
+                                                ,display-coordinates)]))))
+
+;; Returns tweet id on success
+(define (twitter-update cred message . opts)
+  ((if-car-sxpath '(// status id *text*))
+   (values-ref (apply twitter-update/sxml cred message opts) 0)))
+
+(define (twitter-destroy/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" '()))
+
+(define (twitter-retweet/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/statuses/retweet/,|id|.xml" '()))
+
+(define (twitter-retweets/sxml cred id :key (count #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweets/,|id|.xml"
+                    (cond-list [count `("count" ,count)])))
+
+(define (twitter-retweeted-by/sxml cred id :key (count #f) (page #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by.xml"
+                    (cond-list [count `("count" ,count)]
+                               [page  `("page" ,page)])))
+
+(define (twitter-retweeted-by-ids/sxml cred id :key (count #f) (page #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by/ids.xml"
+                    (cond-list [count `("count" ,count)]
+                               [page  `("page" ,page)])))
+
+;;
+;; User methods
+;;
+
+;; cred can be #f.
+(define (twitter-user-show/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (let1 opts (cond-list [id `("id" ,id)]
+                        [user-id `("user_id" ,user-id)]
+                        [screen-name `("screen_name" ,screen-name)])
+    (if cred
+      (call/oauth->sxml cred 'get #`"/1/users/show.xml" opts)
+      (call->sxml 'get #`"/1/users/show.xml" opts))))
+  
+(define (twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '()))
+  (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
+                    (cond-list [(not (null? user-ids))
+                                `("user-id" ,(string-join user-ids ","))]
+                               [(not (null? screen-names))
+                                `("screen-name" ,(string-join screen-names ","))]
+                               )))
+
+
+(define (twitter-followers/sxml cred :key (id #f) (user-id #f)
+                                          (screen-name #f) (cursor #f))
+  (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
+                    (cond-list
+                     [id `("id" ,id)]
+                     [user-id `("user_id" ,user-id)]
+                     [screen-name `("screen_name" ,screen-name)]
+                     [cursor `("cursor" ,cursor)])))
+
+(define (twitter-followers cred . args)
+  ((sxpath '(// id *text*))
+   (values-ref (apply twitter-followers/sxml cred args) 0)))
+
+;;;
+;;; Internal utilities
+;;;
+
 (define (default-input-callback url)
   (print "Open the following url and type in the shown PIN.")
   (print url)
@@ -176,25 +363,50 @@
             [(string-null? pin) (loop)]
             [else pin]))))
 
-(define (twitter-post message cred)
-  (let* ([auth-params `(("oauth_consumer_key" ,(~ cred'consumer-key))
-                        ("oauth_nonce" ,(random-string))
-                        ("oauth_signature_method" "HMAC-SHA1")
-                        ("oauth_timestamp" ,(timestamp))
-                        ("oauth_token" ,(~ cred'access-token)))]
-         [signature (oauth-signature
-                     "POST" "http://api.twitter.com/statuses/update.json"
-                     `(,@auth-params ("status" ,message))
-                     (~ cred'consumer-secret)
-                     (~ cred'access-token-secret))]
-         [auth-line
-          (format "OAuth ~a"
-                  (string-join (map (cut string-join <> "=")
-                                    `(,@auth-params
-                                      ("oauth_signature"
-                                       ,(oauth-uri-encode signature))))
-                               ", "))])
-    (http-post "api.twitter.com"
-               "/statuses/update.json"
-               (oauth-compose-query `(("status" ,message)))
-               :Authorization auth-line)))
+(define (check-api-error status headers body)
+  (unless (equal? status "200")
+    (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
+          (match (mime-parse-content-type ct)
+            [(_ "xml" . _)
+             (let1 body-sxml
+                 (call-with-input-string body (cut ssax:xml->sxml <> '()))
+               (error <twitter-api-error>
+                      :status status :headers headers :body body
+                      :body-sxml body-sxml
+                      (or ((if-car-sxpath '(// error *text*)) body-sxml)
+                          body)))]
+            [_ #f]))
+        (error <twitter-api-error>
+               :status status :headers headers :body body
+               :body-sxml #f body))))
+
+(define (call/oauth->sxml cred method path params . opts)
+  (let1 auth (oauth-auth-header
+              (if (eq? method 'get) "GET" "POST")
+              #`"http://api.twitter.com,|path|" params
+              (~ cred'consumer-key) (~ cred'consumer-secret)
+              (~ cred'access-token) (~ cred'access-token-secret))
+    (receive (status headers body)
+        (case method
+          [(get) (apply http-get "api.twitter.com"
+                        #`",|path|?,(oauth-compose-query params)"
+                        :Authorization auth opts)]
+          [(post) (apply http-post "api.twitter.com" path
+                         (oauth-compose-query params)
+                         :Authorization auth opts)])
+      (check-api-error status headers body)
+      (values
+       (call-with-input-string body (cut ssax:xml->sxml <> '()))
+       headers))))
+
+(define (call->sxml method path params . opts)
+  (receive (status headers body)
+      (case method
+        [(get) (apply http-get "api.twitter.com"
+                      #`",|path|?,(oauth-compose-query params)" opts)]
+        [(post) (apply http-post "api.twitter.com" path
+                       (oauth-compose-query params) opts)])
+    (check-api-error status headers body)
+    (values
+     (call-with-input-string body (cut ssax:xml->sxml <> '()))
+     headers)))

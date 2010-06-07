@@ -70,6 +70,39 @@ Overview of steps:
 
 Module API:
 
+Some twitter API interface come with two flavors.  Procedures suffixed
+by /sxml return SXML representation of the server response, along the
+list of message headers.  They are for applications that needs full
+access to the server response.  Procedures without suffix return more
+convenient values, so that the caller doesn't need to scan SXML.
+
+For instance, twitter-followers/sxml returns two values such as
+the following (each result is truncated for conciseness):
+
+  gosh> (twitter-followers/sxml cred :screen-name "chaton_gauche")
+  (*TOP*
+   (*PI* xml "version=\"1.0\" encoding=\"UTF-8\"")
+   (ids (id "75017042") (id "5327762") (id "69605132") (id "151305186")
+    (id "68190981") (id "18044198") (id "149962169") (id "114554818")
+    (id "10967962") (id "14988077") (id "19059915") (id "37883768")
+    (id "15674085") ....))
+  (("date" "Mon, 07 Jun 2010 02:03:04 GMT")
+   ("server" "hi")
+   ("status" "200 OK")
+   ("x-transaction" "1275876184-68906-26775")
+   ("x-ratelimit-limit" "150")
+   ("etag" "\"83b847f06bfe0338b8c62c85f39a8294\"")
+   ....)
+
+While twitter-followers just returns a list of user ids:
+
+  gosh> (twitter-followers cred :screen-name "chaton_gauche")
+  ("75017042" "5327762" "69605132" "151305186" "68190981" ...)
+
+In both versions, if the server returns response other than 200,
+a condition <twitter-api-error> is signalled.
+
+
 [Module] net.twitter
 
 [Class] <twitter-cred>
@@ -82,6 +115,16 @@ Module API:
    access-token
    access-token-secret
 
+[Condition type] <twitter-api-error>
+
+  A condition thrown when twitter server returns a response other
+  than 200.  The condition has the following slots.
+
+   status        (string) response status code, e.g. "403"
+   headers       (list of (string string)) list of response headers.
+   body          (string) response body, as is.
+   body-sxml     (maybe SXML) if response body is XML, it is parsed and
+                 SXML is set to this slots.  Otherwise it is #f.
 
 [Function] twitter-authenticate-client consumer-key consumer-secret
                                        :optional input-callback
@@ -106,10 +149,55 @@ Module API:
 
   Twitter-authenticate-client returns an instance of <twitter-cred>.
 
+[Function] twitter-public-timeline/sxml
 
-[Function] twitter-post message cred
+  Access public timeline.  This API doesn't require authentication.
 
-  Post a MESSAGE.  CRED is an instance of <twitter-cred>.
+[Function] twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
+                                                (count #f) (page #f))
+
+  Access authenticated user's timeline.
+
+[Function] twitter-mentions/sxml cred :key (since-id #f) (max-id #f)
+                                           (count #f) (page #f))
+
+  Returns tweets that mentiones to the authenticated user.
+
+[Function] twitter-mentions cred :key (since-id #f) (max-id #f)
+                                      (count #f) (page #f))
+
+  The convenience version of twitter-mentions/sxml.   Returns a list
+  of those four elements, sorted in the reverse chronological order:
+    (tweet-id text user-screen-name user-id)
+
+[Function] twitter-show/sxml cred tweet-id
+
+  Returns a tweet specified by TWEET-ID.  CRED can be #f if accessing
+  to a public tweet.
+
+[Function] twitter-update/sxml cred message :key (in-reply-to-status-id #f)
+                                              (lat #f) (long #f) (place-id #f)
+                                              (display-coordinates #f))
+
+  Post MESSAGE to the authenticated user.
+
+[Function] twitter-update cred message :key (in-reply-to-status-id #f)
+                                            (lat #f) (long #f) (place-id #f)
+                                            (display-coordinates #f))
+
+  Post MESSAGE to the authenticated user, and returns the tweet id.
+
+[Function] twitter-destroy/sxml cred tweet-id
+
+  Delete a tweet specified by TWEET-ID.
+
+[Function] twitter-retweet/sxml cred tweet-id
+
+  Retweet a tweet specified by TWEET-ID.
+
+[Function] twitter-retweets/sxml cred tweet-id :key (count #f)
+
+  Returns info of retweets of the specified tweet-id.
 
 
 
