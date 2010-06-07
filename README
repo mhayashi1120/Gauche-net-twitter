@@ -1,6 +1,6 @@
 This module provides an interface to Twitter API using OAuth authentication.
 
-Overview of steps:
+Step by step:
 
 1. Install the package.
 
@@ -29,9 +29,10 @@ Overview of steps:
 3. Let the user to grant access to his/her twitter account via your client.
    How to handle this depends on your client.  If you (application author)
    just want to grant your application to access *your* twitter account,
-   there's a simple script net/twitauth that handles the process.  Run
-   it as 'gosh net/twitauth'.   It asks you to type your application's
-   consumer key and consumer secret.
+   there's a simple script net/twitauth.scm that handles the process.  Run
+   it as 'gosh net/twitauth'.   (If you haven't installed the module,
+   cd to Gauche-net-twitter and run 'gosh -I. net/twitauth').
+   It asks you to type your application's consumer key and consumer secret.
 
      $ gosh net/twitauth
      Enter consumer key: XXXXXXXXXXXXXXXXXXX
@@ -65,16 +66,25 @@ Overview of steps:
 
 4. In your program, create a <twitter-cred> instance with the above
    information, and use it to call Twitter API.
+
+    (define *cred* (make <twitter-cred>
+                     :consumer-key "XXX.....XXX"
+                     :consumer-secret "XXX.....XXX"
+                     :access-token "XXX......XXX"
+                     :access-token-secret "XXX.....XXX"))
+
+    (twitter-update *cred* "Post from my application!")
    
 
 
 Module API:
 
-Some twitter API interface come with two flavors.  Procedures suffixed
-by /sxml return SXML representation of the server response, along the
-list of message headers.  They are for applications that needs full
-access to the server response.  Procedures without suffix return more
-convenient values, so that the caller doesn't need to scan SXML.
+Some twitter API interface come with several flavors.  Procedures
+suffixed by /sxml return SXML representation of the server response,
+along the list of message headers.  They are for applications that
+needs full access to the server response.  Procedures without suffix,
+or different suffix, return more convenient values, so that the
+caller won't need to scan SXML.
 
 For instance, twitter-followers/sxml returns two values such as
 the following (each result is truncated for conciseness):
@@ -94,9 +104,9 @@ the following (each result is truncated for conciseness):
    ("etag" "\"83b847f06bfe0338b8c62c85f39a8294\"")
    ....)
 
-While twitter-followers just returns a list of user ids:
+While twitter-followers/ids just returns a list of user ids:
 
-  gosh> (twitter-followers cred :screen-name "chaton_gauche")
+  gosh> (twitter-followers/ids cred :screen-name "chaton_gauche")
   ("75017042" "5327762" "69605132" "151305186" "68190981" ...)
 
 In both versions, if the server returns response other than 200,
