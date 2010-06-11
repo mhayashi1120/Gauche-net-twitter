@@ -1,0 +1,3 @@
+* 2010-06-10  Release 1.1
+
+Fixed oauth-nonce that could return the same nonce.
