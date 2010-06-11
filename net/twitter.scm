@@ -133,12 +133,13 @@
 
 (define (timestamp) (number->string (sys-time)))
 
-(define (oauth-nonce)
+(define oauth-nonce
   (let ([random-source (make <mersenne-twister>
                          :seed (* (sys-time) (sys-getpid)))]
         [v (make-u32vector 10)])
-    (mt-random-fill-u32vector! random-source v)
-    (digest-hexify (sha1-digest-string (x->string v)))))
+    (lambda ()
+      (mt-random-fill-u32vector! random-source v)
+      (digest-hexify (sha1-digest-string (x->string v))))))
 
 ;; Returns a header field suitable to pass as :authorization header
 ;; for http-post/http-get.
