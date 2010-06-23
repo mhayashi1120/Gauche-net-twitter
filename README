@@ -243,11 +243,13 @@ a condition <twitter-api-error> is signalled.
 [Function] twitter-followers/sxml cred :key id user-id screen-name cursor
 
   Returns list of users following the user specified by either id, user-id,
-  or screen-name.
+  or screen-name.  This uses statuses/followers API.
 
-[Function] twitter-followers/ids cred :key id user-id screen-name cursor
+[Function] twitter-followers/ids cred :key id user-id screen-name
 
-  Like above, but returns a list of user ids.
+  Like above, but returns a list of user ids.  This uses followers/ids API,
+  and handles pagenation automatically to retrieve entire list of
+  followers.
 
 
 

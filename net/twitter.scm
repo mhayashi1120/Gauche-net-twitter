@@ -10,6 +10,7 @@
   (use rfc.uri)
   (use rfc.822)
   (use rfc.mime)
+  (use srfi-1)
   (use srfi-13)
   (use www.cgi)
   (use math.mt-random)
@@ -41,7 +42,8 @@
           twitter-user-lookup/sxml
           twitter-user-search/sxml
           twitter-friends/sxml twitter-friends/ids
-          twitter-followers/sxml twitter-followers/ids))
+          twitter-followers/sxml
+          twitter-followers/ids/sxml twitter-followers/ids))
 (select-module net.twitter)
 
 ;; OAuth related stuff.
@@ -344,10 +346,24 @@
   (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
                     (make-query-params id user-id screen-name cursor)))
 
-;; Returns list of user ids
-(define (twitter-followers/ids cred . args)
-  ((sxpath '(// id *text*))
-   (values-ref (apply twitter-followers/sxml cred args) 0)))
+(define (twitter-followers/ids/sxml cred :key (id #f) (user-id #f)
+                                              (screen-name #f)
+                                              (cursor #f))
+  (call/oauth->sxml cred 'get "/1/followers/ids.xml"
+                    (make-query-params id user-id screen-name cursor)))
+
+;; Returns ids of *all* followers; paging is handled automatically.
+(define (twitter-followers/ids cred :key (id #f) (user-id #f)
+                                         (screen-name #f))
+  (let loop ((cursor "-1") (ids '()))
+    (let* ([r (twitter-followers/ids/sxml cred :id id :user-id user-id
+                                          :screen-name screen-name
+                                          :cursor cursor)]
+           [next ((if-car-sxpath '(// next_cursor *text*)) r)]
+           [ids (cons ((sxpath '(// id *text*)) r) ids)])
+      (if (equal? next "0")
+        (concatenate (reverse ids))
+        (loop next ids)))))
 
 ;;;
 ;;; Internal utilities
