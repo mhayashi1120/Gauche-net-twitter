@@ -1,3 +1,10 @@
+* 2010-06-23  Release 1.2
+
+Made twitter-followers/ids use the follower/ids.xml REST API instead
+of statues/follower.xml, and handle pagenations automatically; that is,
+twitter-followers/ids always returns complete list of followers.
+
+
 * 2010-06-10  Release 1.1
 
 Fixed oauth-nonce that could return the same nonce.
