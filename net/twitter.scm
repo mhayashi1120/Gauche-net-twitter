@@ -28,10 +28,12 @@
           
           twitter-public-timeline/sxml
           twitter-home-timeline/sxml
+          twitter-friends-timeline/sxml
+          twitter-user-timeline/sxml
           twitter-mentions/sxml twitter-mentions
 
           twitter-show/sxml
-	  twitter-update/sxml twitter-update
+          twitter-update/sxml twitter-update
           twitter-destroy/sxml
           twitter-retweet/sxml
           twitter-retweets/sxml
@@ -43,7 +45,13 @@
           twitter-user-search/sxml
           twitter-friends/sxml twitter-friends/ids
           twitter-followers/sxml
-          twitter-followers/ids/sxml twitter-followers/ids))
+          twitter-followers/ids/sxml twitter-followers/ids
+          twitter-followers-all/sxml twitter-friends-all/sxml
+          twitter-followers-all/ids twitter-friends-all/ids
+
+          twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
+          twitter-follow twitter-unfollow
+          ))
 (select-module net.twitter)
 
 ;; OAuth related stuff.
@@ -173,8 +181,13 @@
 (define-macro (make-query-params . vars)
   `(cond-list
     ,@(map (lambda (v)
-             `(,v `(,',(string-tr (x->string v) "-" "_") ,,v)))
+             `(,v `(,',(string-tr (x->string v) "-" "_") ,(param->string ,v))))
            vars)))
+
+(define (param->string v)
+  (cond
+   [(eq? v #t) "t"]
+   [else (x->string v)]))
 
 ;;;
 ;;; Public API
@@ -240,23 +253,38 @@
 ;;
 ;; Timeline methods
 ;;
-(define (twitter-public-timeline/sxml)
-  (call/oauth->sxml #f 'get "/1/statuses/public_timeline.xml" '()))
+(define (twitter-public-timeline/sxml :key (trim-user #f) (include-entities #f))
+  (call/oauth->sxml #f 'get "/1/statuses/public_timeline.xml"
+                    (make-query-params trim-user include-entities)))
 
 (define (twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
-                                              (count #f) (page #f))
+                                              (count #f) (page #f)
+                                              (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/1/statuses/home_timeline.xml"
-                    (make-query-params since-id max-id count page)))
+                    (make-query-params since-id max-id count page
+                                       trim-user include-entities)))
 
 (define (twitter-friends-timeline/sxml cred :key (since-id #f) (max-id #f)
-                                                 (count #f) (page #f))
+                                                 (count #f) (page #f)
+                                                 (trim-user #f) (include-rts #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/1/statuses/friends_timeline.xml"
-                    (make-query-params since-id max-id count page)))
+                    (make-query-params since-id max-id count page
+                                       trim-user include-rts include-entities)))
+
+(define (twitter-user-timeline/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                              (since-id #f) (max-id #f)
+                                              (count #f) (page #f)
+                                              (trim-user #f) (include-rts #f) (include-entities #f))
+  (call/oauth->sxml cred 'get "/1/statuses/user_timeline.xml"
+                    (make-query-params id user-id screen-name since-id max-id count page
+                                       trim-user include-rts include-entities)))
 
 (define (twitter-mentions/sxml cred :key (since-id #f) (max-id #f)
-                                         (count #f) (page #f))
+                                         (count #f) (page #f)
+                                         (trim-user #f) (include-rts #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/statuses/mentions.xml"
-                    (make-query-params since-id max-id count page)))
+                    (make-query-params since-id max-id count page
+                                       trim-user include-rts include-entities)))
 
 ;; Returns list of (tweet-id text user-screen-name user-id)
 (define (twitter-mentions cred . args)
@@ -291,6 +319,12 @@
   ((if-car-sxpath '(// status id *text*))
    (values-ref (apply twitter-update/sxml cred message opts) 0)))
 
+(define (twitter-follow cred id)
+  (call/oauth->sxml cred 'post #`"/1/friendships/create/,|id|.xml" '()))
+
+(define (twitter-unfollow cred id)
+  (call/oauth->sxml cred 'post #`"/1/friendships/destroy/,|id|.xml" '()))
+
 (define (twitter-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" '()))
 
@@ -308,6 +342,21 @@
 (define (twitter-retweeted-by-ids/sxml cred id :key (count #f) (page #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by/ids.xml"
                     (make-query-params count page)))
+
+(define (twitter-retweeted-to-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+                                      (trim-user #f) (include-entities #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_to_me.xml"
+                    (make-query-params count page max_id since_id trim-user include-entities)))
+
+(define (twitter-retweeted-by-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+                                      (trim-user #f) (include-entities #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_by_me.xml"
+                    (make-query-params count page max_id since_id trim-user include-entities)))
+
+(define (twitter-retweets-of-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+                                     (trim-user #f) (include-entities #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweets_of_me.xml"
+                    (make-query-params count page max_id since_id trim-user include-entities)))
 
 ;;
 ;; User methods
@@ -364,6 +413,21 @@
       (if (equal? next "0")
         (concatenate (reverse ids))
         (loop next ids)))))
+
+(define (twitter-followers-all/sxml cred id)
+  (call/oauth->sxml cred 'get #`"/1/followers/ids/,|id|.xml" '()))
+  
+(define (twitter-followers-all/ids cred id)
+  ((sxpath '(// id *text*))
+   (values-ref (twitter-followers-all/sxml cred id) 0)))
+
+(define (twitter-friends-all/sxml cred id)
+  (call/oauth->sxml cred 'get #`"/1/friends/ids/,|id|.xml" '()))
+
+(define (twitter-friends-all/ids cred id)
+  ((sxpath '(// id *text*))
+   (values-ref (twitter-friends-all/sxml cred id) 0)))
+
 
 ;;;
 ;;; Internal utilities
