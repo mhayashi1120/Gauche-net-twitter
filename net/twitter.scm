@@ -43,7 +43,8 @@
           twitter-user-show/sxml
           twitter-user-lookup/sxml
           twitter-user-search/sxml
-          twitter-friends/sxml twitter-friends/ids
+          twitter-friends/sxml
+          twitter-friends/ids twitter-friends/ids/sxml
           twitter-followers/sxml
           twitter-followers/ids/sxml twitter-followers/ids
           twitter-followers-all/sxml twitter-friends-all/sxml
@@ -385,33 +386,44 @@
   (call/oauth->sxml cred 'get "/1/statuses/friends.xml"
                     (make-query-params id user-id screen-name cursor)))
 
+(define (twitter-friends/ids/sxml cred :key (id #f) (user-id #f)
+                                  (screen-name #f)
+                                  (cursor #f))
+  (call/oauth->sxml cred 'get "/1/friends/ids.xml"
+                    (make-query-params id user-id screen-name cursor)))
+
 ;; Returns list of user ids
-(define (twitter-friends/ids cred . args)
-  ((sxpath '(// id *text*))
-   (values-ref (apply twitter-friends/sxml cred args) 0)))
+(define (twitter-friends/ids cred :key (id #f) (user-id #f)
+                             (screen-name #f))
+  (retrieve-followers/friends twitter-friends/ids/sxml
+                              cred :id id :user-id user-id
+                              :screen-name screen-name))
 
 (define (twitter-followers/sxml cred :key (id #f) (user-id #f)
-                                          (screen-name #f) (cursor #f))
+                                (screen-name #f) (cursor #f))
   (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
                     (make-query-params id user-id screen-name cursor)))
 
 (define (twitter-followers/ids/sxml cred :key (id #f) (user-id #f)
-                                              (screen-name #f)
-                                              (cursor #f))
+                                    (screen-name #f)
+                                    (cursor #f))
   (call/oauth->sxml cred 'get "/1/followers/ids.xml"
                     (make-query-params id user-id screen-name cursor)))
 
 ;; Returns ids of *all* followers; paging is handled automatically.
 (define (twitter-followers/ids cred :key (id #f) (user-id #f)
-                                         (screen-name #f))
+                               (screen-name #f))
+  (retrieve-followers/friends twitter-followers/ids/sxml
+                              cred :id id :user-id user-id
+                              :screen-name screen-name))
+
+(define (retrieve-followers/friends f . args)
   (let loop ((cursor "-1") (ids '()))
-    (let* ([r (twitter-followers/ids/sxml cred :id id :user-id user-id
-                                          :screen-name screen-name
-                                          :cursor cursor)]
+    (let* ([r (apply f (append args (list :cursor cursor)))]
            [next ((if-car-sxpath '(// next_cursor *text*)) r)]
            [ids (cons ((sxpath '(// id *text*)) r) ids)])
       (if (equal? next "0")
-        (concatenate (reverse ids))
+          (concatenate (reverse ids))
         (loop next ids)))))
 
 (define (twitter-followers-all/sxml cred id)
