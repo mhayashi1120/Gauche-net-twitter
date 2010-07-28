@@ -47,8 +47,6 @@
           twitter-friends/ids twitter-friends/ids/sxml
           twitter-followers/sxml
           twitter-followers/ids/sxml twitter-followers/ids
-          twitter-followers-all/sxml twitter-friends-all/sxml
-          twitter-followers-all/ids twitter-friends-all/ids
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
           twitter-follow twitter-unfollow
@@ -425,21 +423,6 @@
       (if (equal? next "0")
           (concatenate (reverse ids))
         (loop next ids)))))
-
-(define (twitter-followers-all/sxml cred id)
-  (call/oauth->sxml cred 'get #`"/1/followers/ids/,|id|.xml" '()))
-  
-(define (twitter-followers-all/ids cred id)
-  ((sxpath '(// id *text*))
-   (values-ref (twitter-followers-all/sxml cred id) 0)))
-
-(define (twitter-friends-all/sxml cred id)
-  (call/oauth->sxml cred 'get #`"/1/friends/ids/,|id|.xml" '()))
-
-(define (twitter-friends-all/ids cred id)
-  ((sxpath '(// id *text*))
-   (values-ref (twitter-friends-all/sxml cred id) 0)))
-
 
 ;;;
 ;;; Internal utilities
