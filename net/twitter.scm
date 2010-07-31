@@ -50,6 +50,10 @@
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
           twitter-follow twitter-unfollow
+          twitter-lists/sxml twitter-list-show/sxml
+          twitter-list-statuses/sxml twitter-list-memberships/sxml twitter-list-subscriptions/sxml
+          twitter-list-create/sxml twitter-list-destroy/sxml twitter-list-update/sxml
+          twitter-list-create
           ))
 (select-module net.twitter)
 
@@ -358,6 +362,53 @@
                     (make-query-params count page max_id since_id trim-user include-entities)))
 
 ;;
+;; List methods
+;;
+
+;; user is user-id or screen-name
+(define (twitter-lists/sxml cred user :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/lists.xml"
+                    (make-query-params cursor)))
+
+;; list is list-id or list-name
+(define (twitter-list-show/sxml cred user list :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|.xml"
+                    (make-query-params cursor)))
+
+(define (twitter-list-statuses/sxml cred user list :key (since-id #f) (max-id #f)
+                                        (per-page #f) (page #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|/statuses.xml"
+                    (make-query-params since-id max-id per-page page)))
+
+(define (twitter-list-memberships/sxml cred user :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/memberships.xml"
+                    (make-query-params cursor)))
+
+(define (twitter-list-subscriptions/sxml cred user :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/subscriptions.xml"
+                    (make-query-params cursor)))
+
+;; mode is private or public
+(define (twitter-list-create/sxml cred user name :key (mode #f) (description #f))
+  (call/oauth->sxml cred 'post #`"/1/,|user|/lists.xml"
+                    (make-query-params name mode description)))
+
+;; Returns list id on success
+(define (twitter-list-create cred user name . opts)
+  ((if-car-sxpath '(list id *text*))
+   (values-ref (apply twitter-list-create/sxml cred user name opts) 0)))
+
+;; mode is private or public
+(define (twitter-list-update/sxml cred user name :key (mode #f) (description #f))
+  (call/oauth->sxml cred 'post #`"/1/,|user|/lists/,|name|.xml"
+                    (make-query-params mode description)))
+
+(define (twitter-list-destroy/sxml cred user name)
+  (let1 -method "DELETE"
+    (call/oauth->sxml cred 'post #`"/1/,|user|/lists/,|name|.xml"
+                      (make-query-params -method))))
+
+;;
 ;; User methods
 ;;
 
@@ -415,6 +466,10 @@
                               cred :id id :user-id user-id
                               :screen-name screen-name))
 
+;;;
+;;; Internal utilities
+;;;
+
 (define (retrieve-followers/friends f . args)
   (let loop ((cursor "-1") (ids '()))
     (let* ([r (apply f (append args (list :cursor cursor)))]
@@ -423,10 +478,6 @@
       (if (equal? next "0")
           (concatenate (reverse ids))
         (loop next ids)))))
-
-;;;
-;;; Internal utilities
-;;;
 
 (define (default-input-callback url)
   (print "Open the following url and type in the shown PIN.")
