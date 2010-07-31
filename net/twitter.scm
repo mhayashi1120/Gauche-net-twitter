@@ -54,6 +54,10 @@
           twitter-list-statuses/sxml twitter-list-memberships/sxml twitter-list-subscriptions/sxml
           twitter-list-create/sxml twitter-list-destroy/sxml twitter-list-update/sxml
           twitter-list-create
+          twitter-list-members/sxml twitter-list-members-show/sxml
+          twitter-list-members-add/sxml twitter-list-members-delete/sxml
+          twitter-list-subscribers/sxml twitter-list-subscribers-show/sxml
+          twitter-list-subscribers-add/sxml twitter-list-subscribers-delete/sxml
           ))
 (select-module net.twitter)
 
@@ -407,6 +411,38 @@
   (let1 -method "DELETE"
     (call/oauth->sxml cred 'post #`"/1/,|user|/lists/,|name|.xml"
                       (make-query-params -method))))
+
+(define (twitter-list-members/sxml cred user list-name :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/members.xml"
+                    (make-query-params cursor)))
+
+(define (twitter-list-members-show/sxml cred user list-name id)
+  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/members/,|id|.xml" '()))
+
+(define (twitter-list-members-add/sxml cred user list-name id)
+  (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
+                    (make-query-params id)))
+
+(define (twitter-list-members-delete/sxml cred user list-name id)
+  (let1 -method "DELETE"
+    (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
+                      (make-query-params -method id))))
+
+(define (twitter-list-subscribers/sxml cred user list-name :key (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers.xml"
+                    (make-query-params cursor)))
+
+(define (twitter-list-subscribers-show/sxml cred user list-name id)
+  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers/,|id|.xml" '()))
+
+(define (twitter-list-subscribers-add/sxml cred user list-name id)
+  (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
+                    (make-query-params id)))
+
+(define (twitter-list-subscribers-delete/sxml cred user list-name id)
+  (let1 -method "DELETE"
+    (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
+                      (make-query-params -method id))))
 
 ;;
 ;; User methods
