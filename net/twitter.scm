@@ -49,15 +49,26 @@
           twitter-followers/ids/sxml twitter-followers/ids
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
-          twitter-follow twitter-unfollow
+
+          twitter-friendship-show/sxml
+          twitter-friendship-exists/sxml twitter-friendship-exists?
+          twitter-friendship-create/sxml twitter-friendship-destroy/sxml
+          twitter-friendship-incoming/sxml twitter-friendship-outgoing/sxml
+          
           twitter-lists/sxml twitter-list-show/sxml
           twitter-list-statuses/sxml twitter-list-memberships/sxml twitter-list-subscriptions/sxml
           twitter-list-create/sxml twitter-list-destroy/sxml twitter-list-update/sxml
           twitter-list-create
+
           twitter-list-members/sxml twitter-list-members-show/sxml
           twitter-list-members-add/sxml twitter-list-members-delete/sxml
+
           twitter-list-subscribers/sxml twitter-list-subscribers-show/sxml
           twitter-list-subscribers-add/sxml twitter-list-subscribers-delete/sxml
+
+          twitter-favorites/sxml
+          twitter-favorite-create/sxml
+          twitter-favorite-destroy/sxml
           ))
 (select-module net.twitter)
 
@@ -326,12 +337,6 @@
   ((if-car-sxpath '(// status id *text*))
    (values-ref (apply twitter-update/sxml cred message opts) 0)))
 
-(define (twitter-follow cred id)
-  (call/oauth->sxml cred 'post #`"/1/friendships/create/,|id|.xml" '()))
-
-(define (twitter-unfollow cred id)
-  (call/oauth->sxml cred 'post #`"/1/friendships/destroy/,|id|.xml" '()))
-
 (define (twitter-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" '()))
 
@@ -364,6 +369,40 @@
                                      (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweets_of_me.xml"
                     (make-query-params count page max_id since_id trim-user include-entities)))
+
+;;
+;; Friendship methods
+;;
+
+(define (twitter-friendship-show/sxml cred :key (source-id #f) (source-screen-name #f)
+                                      (target-id #f) (target-screen-name #f))
+  (call/oauth->sxml cred 'get #`"/1/friendships/show.xml"
+                    (make-query-params source-id source-screen-name
+                                       target-id target-screen-name)))
+
+(define (twitter-friendship-exists/sxml cred user-a user-b)
+  (call/oauth->sxml cred 'get #`"/1/friendships/exists.xml"
+                    (make-query-params user-a user-b)))
+
+(define (twitter-friendship-exists? cred user-a user-b)
+  (string=?
+   ((if-car-sxpath '(friends *text*))
+    (values-ref (twitter-friendship-exists/sxml cred user-a user-b) 0))
+   "true"))
+
+(define (twitter-friendship-create/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/friendships/create/,|id|.xml" '()))
+
+(define (twitter-friendship-destroy/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/friendships/destroy/,|id|.xml" '()))
+
+(define (twitter-friendship-incoming/sxml cred cursor)
+  (call/oauth->sxml cred 'get #`"/1/friendships/incoming.xml"
+                    (make-query-params cursor)))
+
+(define (twitter-friendship-outgoing/sxml cred cursor)
+  (call/oauth->sxml cred 'get #`"/1/friendships/outgoing.xml"
+                    (make-query-params cursor)))
 
 ;;
 ;; List methods
@@ -443,6 +482,20 @@
   (let1 -method "DELETE"
     (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
                       (make-query-params -method id))))
+
+;;
+;; Favorites methods
+;;
+
+(define (twitter-favorites/sxml cred id :key (page #f))
+  (call/oauth->sxml cred 'get #`"/1/favorites.xml"
+                    (make-query-params id page)))
+
+(define (twitter-favorite-create/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/favorites/create/,|id|.xml" '()))
+
+(define (twitter-favorite-destroy/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/favorites/destroy/,|id|.xml" '()))
 
 ;;
 ;; User methods
