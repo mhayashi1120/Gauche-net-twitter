@@ -69,6 +69,17 @@
           twitter-favorites/sxml
           twitter-favorite-create/sxml
           twitter-favorite-destroy/sxml
+
+          twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
+          twitter-account-rate-limit-status/sxml
+          twitter-account-end-session/sxml
+          twitter-account-update-delivery-device/sxml
+          twitter-account-update-profile-image/sxml
+          twitter-account-update-profile-background-image/sxml
+          twitter-account-update-profile-colors/sxml
+          twitter-account-update-profile/sxml
+          
+          twitter-help-test/sxml
           ))
 (select-module net.twitter)
 
@@ -97,10 +108,11 @@
     (or (string<? (car a) (car b))
         (and (string=? (car a) (car b))
              (string<? (cadr a) (cadr b)))))
-  (string-append
-   (string-upcase method) "&"
-   (oauth-uri-encode (oauth-normalize-request-url request-url)) "&"
-   (oauth-uri-encode (oauth-compose-query (sort params param-sorter)))))
+  (let1 normalize-params (sort (remove param-need-form-data? params) param-sorter)
+    (string-append
+     (string-upcase method) "&"
+     (oauth-uri-encode (oauth-normalize-request-url request-url)) "&"
+     (oauth-uri-encode (oauth-compose-query normalize-params)))))
 
 ;; Oauth requires hex digits in %-encodings to be upper case (Section 5.1)
 ;; The following two routines should be used instead of uri-encode-string
@@ -109,7 +121,17 @@
   (%-fix (uri-encode-string str :encoding 'utf-8)))
 
 (define (oauth-compose-query params)
-  (%-fix (http-compose-query #f params 'utf-8)))
+  (define (all-compose-query? list)
+    (or (null? list)
+        (and (not (param-need-form-data? (car list)))
+             (all-compose-query? (cdr list)))))
+  (if (all-compose-query? params)
+      (%-fix (http-compose-query #f params 'utf-8))
+    (http-compose-form-data params #f 'utf-8)))
+
+;; see `http-compose-form-data' comments
+(define (param-need-form-data? param)
+  (odd? (length param)))
 
 (define (%-fix str)
   (regexp-replace-all* str #/%[\da-fA-F][\da-fA-F]/
@@ -498,6 +520,60 @@
   (call/oauth->sxml cred 'post #`"/1/favorites/destroy/,|id|.xml" '()))
 
 ;;
+;; Account methods
+;;
+
+(define (twitter-account-verify-credentials/sxml cred)
+  (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" '()))
+
+(define (twitter-account-verify-credentials? cred)
+  (guard (e ((<twitter-api-error> e) #f))
+    (twitter-account-verify-credentials/sxml cred)
+    #t))
+
+(define (twitter-account-rate-limit-status/sxml cred)
+  (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
+
+;;TODO not works? return (error Logged out.)
+(define (twitter-account-end-session/sxml cred)
+  (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
+
+(define (twitter-account-update-delivery-device/sxml cred device)
+  (call/oauth->sxml cred 'post #`"/1/account/update_delivery_device.xml"
+                    (make-query-params device)))
+
+(define (twitter-account-update-profile-image/sxml cred file)
+  (call/oauth-post-file->sxml cred #`"/1/account/update_profile_image.xml"
+                              `((image :file ,file))))
+
+;;TODO not works
+(define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
+  (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
+                              `((image :file ,file)
+                                ,@(cond-list
+                                   [tile
+                                    `("tile" ,(param->string tile))]
+                                   ))))
+
+;; ex: "000000", "000", "fff", "ffffff"
+(define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
+                                          (profile-text-color #f)
+                                          (profile-link-color #f)
+                                          (profile-sidebar-fill-color #f)
+                                          (profile-sidebar-border-color #f))
+  (call/oauth->sxml cred 'post #`"/1/account/update_profile_colors.xml"
+                    (make-query-params profile-background-color profile-text-color
+                                       profile-link-color
+                                       profile-sidebar-fill-color
+                                       profile-sidebar-border-color)))
+
+(define (twitter-account-update-profile/sxml cred :key (name #f)
+                                             (url #f) (location #f)
+                                             (description #f))
+  (call/oauth->sxml cred 'post #`"/1/account/update_profile.xml"
+                    (make-query-params name url location description)))
+
+;;
 ;; User methods
 ;;
 
@@ -554,6 +630,13 @@
   (retrieve-followers/friends twitter-followers/ids/sxml
                               cred :id id :user-id user-id
                               :screen-name screen-name))
+
+;;
+;; Help methods
+;;
+
+(define (twitter-help-test/sxml cred)
+  (call/oauth->sxml cred 'get "/1/help/test.xml" '()))
 
 ;;;
 ;;; Internal utilities
@@ -616,6 +699,25 @@
                         #`",|path|?,(oauth-compose-query params)" opts)]
           [(post) (apply http-post "api.twitter.com" path
                          (oauth-compose-query params) opts)])))
+
+  (define (retrieve status headers body)
+    (check-api-error status headers body)
+    (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
+            headers))
+
+  (call-with-values call retrieve))
+
+(define (call/oauth-post-file->sxml cred path params . opts)
+
+  (define (call)
+    (let1 auth (oauth-auth-header
+                "POST"
+                #`"http://api.twitter.com,|path|" '()
+                (~ cred'consumer-key) (~ cred'consumer-secret)
+                (~ cred'access-token) (~ cred'access-token-secret))
+      (apply http-post "api.twitter.com" path
+             params
+             :Authorization auth opts)))
 
   (define (retrieve status headers body)
     (check-api-error status headers body)
