@@ -72,10 +72,10 @@
 
           twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
           twitter-account-rate-limit-status/sxml
-          twitter-account-end-session/sxml
+          ;; twitter-account-end-session/sxml
           twitter-account-update-delivery-device/sxml
           twitter-account-update-profile-image/sxml
-          twitter-account-update-profile-background-image/sxml
+          ;; twitter-account-update-profile-background-image/sxml
           twitter-account-update-profile-colors/sxml
           twitter-account-update-profile/sxml
           
@@ -535,8 +535,8 @@
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
 ;;TODO not works? return (error Logged out.)
-(define (twitter-account-end-session/sxml cred)
-  (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
+;; (define (twitter-account-end-session/sxml cred)
+;;   (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
 
 (define (twitter-account-update-delivery-device/sxml cred device)
   (call/oauth->sxml cred 'post #`"/1/account/update_delivery_device.xml"
@@ -547,13 +547,13 @@
                               `((image :file ,file))))
 
 ;;TODO not works
-(define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
-  (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
-                              `((image :file ,file)
-                                ,@(cond-list
-                                   [tile
-                                    `("tile" ,(param->string tile))]
-                                   ))))
+;; (define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
+;;   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
+;;                               `((image :file ,file)
+;;                                 ,@(cond-list
+;;                                    [tile
+;;                                     `("tile" ,(param->string tile))]
+;;                                    ))))
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
