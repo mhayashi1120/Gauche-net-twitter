@@ -675,11 +675,11 @@
 (define (retrieve-ids/sxml f . args)
   (apply retrieve-stream (sxpath '(// id *text*)) f args))
 
-(define (retrieve-stream path f . args)
+(define (retrieve-stream getter f . args)
   (let loop ((cursor "-1") (ids '()))
     (let* ([r (apply f (append args (list :cursor cursor)))]
            [next ((if-car-sxpath '(// next_cursor *text*)) r)]
-           [ids (cons (path r) ids)])
+           [ids (cons (getter r) ids)])
       (if (equal? next "0")
         (concatenate (reverse ids))
         (loop next ids)))))
