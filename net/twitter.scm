@@ -56,15 +56,20 @@
           twitter-friendship-incoming/sxml twitter-friendship-outgoing/sxml
           
           twitter-lists/sxml twitter-list-show/sxml
-          twitter-list-statuses/sxml twitter-list-memberships/sxml twitter-list-subscriptions/sxml
+          twitter-list-statuses/sxml
+          twitter-list-memberships/sxml twitter-list-subscriptions/sxml
+          twitter-list-memberships/ids twitter-list-subscriptions/ids
           twitter-list-create/sxml twitter-list-destroy/sxml twitter-list-update/sxml
           twitter-list-create
+          twitter-lists/ids twitter-lists/names
 
           twitter-list-members/sxml twitter-list-members-show/sxml
           twitter-list-members-add/sxml twitter-list-members-delete/sxml
+          twitter-list-members/ids
 
           twitter-list-subscribers/sxml twitter-list-subscribers-show/sxml
           twitter-list-subscribers-add/sxml twitter-list-subscribers-delete/sxml
+          twitter-list-subscribers/ids
 
           twitter-favorites/sxml
           twitter-favorite-create/sxml
@@ -126,8 +131,11 @@
         (and (not (param-need-form-data? (car list)))
              (all-compose-query? (cdr list)))))
   (if (all-compose-query? params)
-      (%-fix (http-compose-query #f params 'utf-8))
+      (compose-query params)
     (http-compose-form-data params #f 'utf-8)))
+
+(define (compose-query params)
+  (%-fix (http-compose-query #f params 'utf-8)))
 
 ;; see `http-compose-form-data' comments
 (define (param-need-form-data? param)
@@ -435,6 +443,14 @@
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists.xml"
                     (make-query-params cursor)))
 
+(define (twitter-lists/ids cred user :key (cursor #f))
+  (retrieve-stream (sxpath '(// list id *text*))
+                   twitter-lists/sxml cred user))
+
+(define (twitter-lists/names cred user :key (cursor #f))
+  (retrieve-stream (sxpath '(// list name *text*))
+                   twitter-lists/sxml cred user))
+
 ;; list is list-id or list-name
 (define (twitter-list-show/sxml cred user list :key (cursor #f))
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|.xml"
@@ -449,9 +465,15 @@
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists/memberships.xml"
                     (make-query-params cursor)))
 
+(define (twitter-list-memberships/ids cred user)
+  (retrieve-stream (sxpath '(// list id *text*)) twitter-list-memberships/sxml cred user))
+
 (define (twitter-list-subscriptions/sxml cred user :key (cursor #f))
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists/subscriptions.xml"
                     (make-query-params cursor)))
+
+(define (twitter-list-subscriptions/ids cred user)
+  (retrieve-stream (sxpath '(// list id *text*)) twitter-list-subscriptions/sxml cred user))
 
 ;; mode is private or public
 (define (twitter-list-create/sxml cred user name :key (mode #f) (description #f))
@@ -489,6 +511,10 @@
     (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
                       (make-query-params -method id))))
 
+(define (twitter-list-members/ids cred user list-name)
+  (retrieve-stream (sxpath '(// user id *text*))
+                   twitter-list-members/sxml cred user list-name))
+
 (define (twitter-list-subscribers/sxml cred user list-name :key (cursor #f))
   (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers.xml"
                     (make-query-params cursor)))
@@ -504,6 +530,10 @@
   (let1 -method "DELETE"
     (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
                       (make-query-params -method id))))
+
+(define (twitter-list-subscribers/ids cred user list-name)
+  (retrieve-stream (sxpath '(// user id *text*))
+                   twitter-list-subscribers/sxml cred user list-name))
 
 ;;
 ;; Favorites methods
@@ -609,9 +639,9 @@
 ;; Returns list of user ids
 (define (twitter-friends/ids cred :key (id #f) (user-id #f)
                              (screen-name #f))
-  (retrieve-followers/friends twitter-friends/ids/sxml
-                              cred :id id :user-id user-id
-                              :screen-name screen-name))
+  (retrieve-ids/sxml twitter-friends/ids/sxml
+                     cred :id id :user-id user-id
+                     :screen-name screen-name))
 
 (define (twitter-followers/sxml cred :key (id #f) (user-id #f)
                                 (screen-name #f) (cursor #f))
@@ -627,9 +657,9 @@
 ;; Returns ids of *all* followers; paging is handled automatically.
 (define (twitter-followers/ids cred :key (id #f) (user-id #f)
                                (screen-name #f))
-  (retrieve-followers/friends twitter-followers/ids/sxml
-                              cred :id id :user-id user-id
-                              :screen-name screen-name))
+  (retrieve-ids/sxml twitter-followers/ids/sxml
+                     cred :id id :user-id user-id
+                     :screen-name screen-name))
 
 ;;
 ;; Help methods
@@ -642,13 +672,16 @@
 ;;; Internal utilities
 ;;;
 
-(define (retrieve-followers/friends f . args)
+(define (retrieve-ids/sxml f . args)
+  (apply retrieve-stream (sxpath '(// id *text*)) f args))
+
+(define (retrieve-stream path f . args)
   (let loop ((cursor "-1") (ids '()))
     (let* ([r (apply f (append args (list :cursor cursor)))]
            [next ((if-car-sxpath '(// next_cursor *text*)) r)]
-           [ids (cons ((sxpath '(// id *text*)) r) ids)])
+           [ids (cons (path r) ids)])
       (if (equal? next "0")
-          (concatenate (reverse ids))
+        (concatenate (reverse ids))
         (loop next ids)))))
 
 (define (default-input-callback url)
