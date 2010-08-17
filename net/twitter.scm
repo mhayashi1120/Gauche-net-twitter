@@ -82,7 +82,7 @@
 
           twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
           twitter-account-rate-limit-status/sxml
-          ;; twitter-account-end-session/sxml
+          twitter-account-end-session/sxml
           twitter-account-update-delivery-device/sxml
           twitter-account-update-profile-image/sxml
           ;; twitter-account-update-profile-background-image/sxml
@@ -599,9 +599,8 @@
 (define (twitter-account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
-;;TODO not works? return (error Logged out.)
-;; (define (twitter-account-end-session/sxml cred)
-;;   (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
+(define (twitter-account-end-session/sxml cred)
+  (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
 
 (define (twitter-account-update-delivery-device/sxml cred device)
   (call/oauth->sxml cred 'post #`"/1/account/update_delivery_device.xml"
@@ -705,8 +704,7 @@
                     (make-query-params page)))
 
 (define (twitter-blocks/ids/sxml cred)
-  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml"
-                    ()))
+  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml" '()))
 
 (define (twitter-block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f))
   (call/oauth->sxml cred 'post #`"/1/blocks/create.xml"
