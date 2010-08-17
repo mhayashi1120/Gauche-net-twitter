@@ -50,6 +50,11 @@
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
 
+          twitter-direct-mesages/sxml
+          twitter-direct-mesages-sent/sxml
+          twitter-direct-mesages-new/sxml
+          twitter-direct-mesages-destroy/sxml
+
           twitter-friendship-show/sxml
           twitter-friendship-exists/sxml twitter-friendship-exists?
           twitter-friendship-create/sxml twitter-friendship-destroy/sxml
@@ -394,20 +399,41 @@
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by/ids.xml"
                     (make-query-params count page)))
 
-(define (twitter-retweeted-to-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+(define (twitter-retweeted-to-me/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f)
                                       (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_to_me.xml"
-                    (make-query-params count page max_id since_id trim-user include-entities)))
+                    (make-query-params count page max-id since-id trim-user include-entities)))
 
-(define (twitter-retweeted-by-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+(define (twitter-retweeted-by-me/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f)
                                       (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_by_me.xml"
-                    (make-query-params count page max_id since_id trim-user include-entities)))
+                    (make-query-params count page max-id since-id trim-user include-entities)))
 
-(define (twitter-retweets-of-me/sxml cred :key (count #f) (page #f) (max_id #f) (since_id #f)
+(define (twitter-retweets-of-me/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f)
                                      (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweets_of_me.xml"
-                    (make-query-params count page max_id since_id trim-user include-entities)))
+                    (make-query-params count page max-id since-id trim-user include-entities)))
+
+;;
+;; Directmessage methods
+;;
+
+(define (twitter-direct-mesages/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
+  (call/oauth->sxml cred 'get #`"/1/direct_messages.xml"
+                    (make-query-params count page max_id since-id)))
+
+(define (twitter-direct-mesages-sent/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
+  (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
+                    (make-query-params count page max_id since-id)))
+
+(define (twitter-direct-mesages-new/sxml cred user text)
+  (call/oauth->sxml cred 'post #`"/1/direct_messages/new.xml"
+                    (make-query-params user text)))
+
+(define (twitter-direct-mesages-destroy/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/direct_messages/destroy.xml"
+                    (make-query-params id)))
+
 
 ;;
 ;; Friendship methods
