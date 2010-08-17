@@ -83,7 +83,16 @@
           ;; twitter-account-update-profile-background-image/sxml
           twitter-account-update-profile-colors/sxml
           twitter-account-update-profile/sxml
-          
+
+          twitter-blocks/sxml
+          twitter-blocks/ids/sxml
+          twitter-block-create/sxml
+          twitter-block-destroy/sxml
+          twitter-block-exists/sxml
+          twitter-block-exists?
+
+          twitter-report-spam/sxml
+
           twitter-help-test/sxml
           ))
 (select-module net.twitter)
@@ -660,6 +669,48 @@
   (retrieve-ids/sxml twitter-followers/ids/sxml
                      cred :id id :user-id user-id
                      :screen-name screen-name))
+
+;;
+;; Block methods
+;;
+
+(define (twitter-blocks/sxml cred :key (page #f))
+  (call/oauth->sxml cred 'get #`"/1/blocks/blocking.xml"
+                    (make-query-params page)))
+
+(define (twitter-blocks/ids/sxml cred)
+  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml"
+                    ()))
+
+(define (twitter-block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post #`"/1/blocks/create.xml"
+                    (make-query-params id user-id screen-name)))
+
+(define (twitter-block-destroy/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post #`"/1/blocks/destroy.xml"
+                    (make-query-params id user-id screen-name)))
+
+(define (twitter-block-exists/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'get #`"/1/blocks/exists.xml"
+                    (make-query-params id user-id screen-name)))
+
+(define (twitter-block-exists? . args)
+  (guard (e
+          ((<twitter-api-error> e)
+           ;;FIXME this message is not published API
+           (if (string=? (ref e 'message) "You are not blocking this user.")
+             #f
+             (raise e))))
+    (apply twitter-block-exists/sxml args)
+    #t))
+
+;;
+;; Report spam methods
+;;
+
+(define (twitter-report-spam/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post #`"/1/report_spam.xml"
+                    (make-query-params id user-id screen-name)))
 
 ;;
 ;; Help methods
