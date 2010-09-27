@@ -478,11 +478,11 @@
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists.xml"
                     (make-query-params cursor)))
 
-(define (twitter-lists/ids cred user :key (cursor #f))
+(define (twitter-lists/ids cred user)
   (retrieve-stream (sxpath '(// list id *text*))
                    twitter-lists/sxml cred user))
 
-(define (twitter-lists/names cred user :key (cursor #f))
+(define (twitter-lists/names cred user)
   (retrieve-stream (sxpath '(// list name *text*))
                    twitter-lists/sxml cred user))
 
