@@ -209,7 +209,7 @@ a condition <twitter-api-error> is signalled.
 
   Returns info of retweets of the specified tweet-id.
 
-[Function] twitter-retweeded-by/sxml cred tweet-id :key (count #f) (page #f)
+[Function] twitter-retweeted-by/sxml cred tweet-id :key (count #f) (page #f)
 
   Returns a list of users who retweeted the specified tweet.
 

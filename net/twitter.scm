@@ -43,6 +43,9 @@
           twitter-user-show/sxml
           twitter-user-lookup/sxml
           twitter-user-search/sxml
+          twitter-user-suggestions/sxml
+          twitter-user-suggestions/category/sxml
+
           twitter-friends/sxml
           twitter-friends/ids twitter-friends/ids/sxml
           twitter-followers/sxml
@@ -52,8 +55,8 @@
 
           twitter-direct-mesages/sxml
           twitter-direct-mesages-sent/sxml
-          twitter-direct-mesages-new/sxml
-          twitter-direct-mesages-destroy/sxml
+          twitter-direct-mesage-new/sxml
+          twitter-direct-mesage-destroy/sxml
 
           twitter-friendship-show/sxml
           twitter-friendship-exists/sxml twitter-friendship-exists?
@@ -69,11 +72,11 @@
           twitter-lists/ids twitter-lists/names
 
           twitter-list-members/sxml twitter-list-members-show/sxml
-          twitter-list-members-add/sxml twitter-list-members-delete/sxml
+          twitter-list-member-add/sxml twitter-list-member-delete/sxml
           twitter-list-members/ids
 
           twitter-list-subscribers/sxml twitter-list-subscribers-show/sxml
-          twitter-list-subscribers-add/sxml twitter-list-subscribers-delete/sxml
+          twitter-list-subscriber-add/sxml twitter-list-subscriber-delete/sxml
           twitter-list-subscribers/ids
 
           twitter-favorites/sxml
@@ -89,6 +92,9 @@
           twitter-account-update-profile-colors/sxml
           twitter-account-update-profile/sxml
 
+          twitter-notifications-follow/sxml
+          twitter-notifications-leave/sxml
+
           twitter-blocks/sxml
           twitter-blocks/ids/sxml
           twitter-block-create/sxml
@@ -97,6 +103,13 @@
           twitter-block-exists?
 
           twitter-report-spam/sxml
+
+          twitter-saved-searches/sxml
+          twitter-saved-searche-show/sxml
+          twitter-saved-searche-create/sxml
+          twitter-saved-searche-destroy/sxml
+
+          twitter-trends-available/sxml twitter-trends-location/sxml
 
           twitter-help-test/sxml
           ))
@@ -127,7 +140,7 @@
     (or (string<? (car a) (car b))
         (and (string=? (car a) (car b))
              (string<? (cadr a) (cadr b)))))
-  (let1 normalize-params (sort (remove param-need-form-data? params) param-sorter)
+  (let1 normalize-params (sort (remove param-form-data? params) param-sorter)
     (string-append
      (string-upcase method) "&"
      (oauth-uri-encode (oauth-normalize-request-url request-url)) "&"
@@ -140,11 +153,11 @@
   (%-fix (uri-encode-string str :encoding 'utf-8)))
 
 (define (oauth-compose-query params)
-  (define (all-compose-query? list)
+  (define (only-query-string? list)
     (or (null? list)
-        (and (not (param-need-form-data? (car list)))
-             (all-compose-query? (cdr list)))))
-  (if (all-compose-query? params)
+        (and (not (param-form-data? (car list)))
+             (only-query-string? (cdr list)))))
+  (if (only-query-string? params)
       (compose-query params)
     (http-compose-form-data params #f 'utf-8)))
 
@@ -152,7 +165,7 @@
   (%-fix (http-compose-query #f params 'utf-8)))
 
 ;; see `http-compose-form-data' comments
-(define (param-need-form-data? param)
+(define (param-form-data? param)
   (odd? (length param)))
 
 (define (%-fix str)
@@ -365,8 +378,9 @@
 ;;
 
 ;; cred can be #f to view public tweet.
-(define (twitter-show/sxml cred id)
-  (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml" '()))
+(define (twitter-show/sxml cred id :key (include-entities #f) (trim-user #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml" 
+					(make-query-params include-entities trim-user)))
 
 (define (twitter-update/sxml cred message :key (in-reply-to-status-id #f)
                                                (lat #f) (long #f) (place-id #f)
@@ -426,11 +440,11 @@
   (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
                     (make-query-params count page max_id since-id)))
 
-(define (twitter-direct-mesages-new/sxml cred user text)
+(define (twitter-direct-mesage-new/sxml cred user text)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/new.xml"
                     (make-query-params user text)))
 
-(define (twitter-direct-mesages-destroy/sxml cred id)
+(define (twitter-direct-mesage-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/destroy.xml"
                     (make-query-params id)))
 
@@ -537,11 +551,11 @@
 (define (twitter-list-members-show/sxml cred user list-name id)
   (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/members/,|id|.xml" '()))
 
-(define (twitter-list-members-add/sxml cred user list-name id)
+(define (twitter-list-member-add/sxml cred user list-name id)
   (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
                     (make-query-params id)))
 
-(define (twitter-list-members-delete/sxml cred user list-name id)
+(define (twitter-list-member-delete/sxml cred user list-name id)
   (let1 -method "DELETE"
     (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
                       (make-query-params -method id))))
@@ -557,11 +571,11 @@
 (define (twitter-list-subscribers-show/sxml cred user list-name id)
   (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers/,|id|.xml" '()))
 
-(define (twitter-list-subscribers-add/sxml cred user list-name id)
+(define (twitter-list-subscriber-add/sxml cred user list-name id)
   (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
                     (make-query-params id)))
 
-(define (twitter-list-subscribers-delete/sxml cred user list-name id)
+(define (twitter-list-subscriber-delete/sxml cred user list-name id)
   (let1 -method "DELETE"
     (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
                       (make-query-params -method id))))
@@ -611,13 +625,13 @@
                               `((image :file ,file))))
 
 ;;TODO not works
-;; (define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
-;;   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
-;;                               `((image :file ,file)
-;;                                 ,@(cond-list
-;;                                    [tile
-;;                                     `("tile" ,(param->string tile))]
-;;                                    ))))
+(define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
+  (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
+                              `((image :file ,file)
+                                ,@(cond-list
+                                   [tile
+                                    `("tile" ,(param->string tile))]
+                                   ))))
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
@@ -659,6 +673,14 @@
                     (make-query-params q per-page page)))
 
 ;; CRED can be #f
+(define (twitter-user-suggestions/sxml cred)
+  (call/oauth->sxml cred 'get "/1/users/suggestions.xml" '()))
+
+;; CRED can be #f
+(define (twitter-user-suggestions/category/sxml cred slug)
+  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml" '()))
+
+;; CRED can be #f
 (define (twitter-friends/sxml cred :key (id #f) (user-id #f)
                                         (screen-name #f) (cursor #f))
   (call/oauth->sxml cred 'get "/1/statuses/friends.xml"
@@ -694,6 +716,18 @@
   (retrieve-ids/sxml twitter-followers/ids/sxml
                      cred :id id :user-id user-id
                      :screen-name screen-name))
+
+;;
+;; Notification methods
+;;
+
+(define (twitter-notifications-follow/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post #`"/1/notifications/follow.xml"
+                    (make-query-params id user-id screen-name)))
+
+(define (twitter-notifications-leave/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post #`"/1/notifications/leave.xml"
+                    (make-query-params id user-id screen-name)))
 
 ;;
 ;; Block methods
@@ -737,6 +771,36 @@
                     (make-query-params id user-id screen-name)))
 
 ;;
+;; Saved search methods
+;;
+
+(define (twitter-saved-searches/sxml cred)
+  (call/oauth->sxml cred 'get #`"/1/saved_searches.xml" '()))
+
+(define (twitter-saved-searche-show/sxml cred id)
+  (call/oauth->sxml cred 'get #`"/1/saved_searches/show/,|id|.xml" '()))
+
+(define (twitter-saved-searche-create/sxml cred query)
+  (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml" 
+					(make-query-params query)))
+
+(define (twitter-saved-searche-destroy/sxml cred id)
+  (call/oauth->sxml cred 'post #`"/1/saved_searches/destroy/,|id|.xml" '()))
+
+;;
+;; Trend methods
+;;
+
+;; CRED can be #f
+(define (twitter-trends-available/sxml cred :key (lat #f) (long #f))
+  (call/oauth->sxml cred 'get #`"/1/trends/available.xml"
+                    (make-query-params lat long)))
+
+;; CRED can be #f
+(define (twitter-trends-location/sxml cred woeid)
+  (call/oauth->sxml cred 'get #`"/1/trends/,|woeid|.xml" '()))
+
+;;
 ;; Help methods
 ;;
 
@@ -769,18 +833,35 @@
             [(string-null? pin) (loop)]
             [else pin]))))
 
+;; select body elements text
+(define (parse-html-message body)
+  (let loop ((lines (string-split body "\n"))
+			 (ret '()))
+	(cond
+	 (((string->regexp "<h[0-9]>(.*)</h[0-9]>") (car lines)) =>
+	  (lambda (m) (set! ret (cons (m 1) ret)))))
+	(if (pair? (cdr lines))
+	  (loop (cdr lines) ret)
+	  (string-join (reverse ret) " "))))
+
 (define (check-api-error status headers body)
   (unless (equal? status "200")
     (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
           (match (mime-parse-content-type ct)
             [(_ "xml" . _)
              (let1 body-sxml
-                 (call-with-input-string body (cut ssax:xml->sxml <> '()))
+				 (guard (e (else #f))
+				   (call-with-input-string body (cut ssax:xml->sxml <> '())))
                (error <twitter-api-error>
                       :status status :headers headers :body body
                       :body-sxml body-sxml
-                      (or ((if-car-sxpath '(// error *text*)) body-sxml)
+                      (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
                           body)))]
+            [(_ "html" . _)
+			 (error <twitter-api-error>
+					:status status :headers headers :body body
+					:body-sxml #f
+					(parse-html-message body))]
             [_ #f]))
         (error <twitter-api-error>
                :status status :headers headers :body body
