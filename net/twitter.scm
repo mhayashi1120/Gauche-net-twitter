@@ -23,6 +23,7 @@
   (use util.match)
   (use sxml.ssax)
   (use sxml.sxpath)
+  (use rfc.json)
   (export <twitter-cred> <twitter-api-error>
           twitter-authenticate-client
           
@@ -47,7 +48,7 @@
           twitter-user-suggestions/category/sxml
 
           twitter-friends/sxml
-          twitter-friends/ids twitter-friends/ids/sxml
+          twitter-friends/ids/sxml twitter-friends/ids
           twitter-followers/sxml
           twitter-followers/ids/sxml twitter-followers/ids
 
@@ -62,7 +63,8 @@
           twitter-friendship-exists/sxml twitter-friendship-exists?
           twitter-friendship-create/sxml twitter-friendship-destroy/sxml
           twitter-friendship-incoming/sxml twitter-friendship-outgoing/sxml
-          
+          twitter-friendship-update/sxml
+
           twitter-lists/sxml twitter-list-show/sxml
           twitter-list-statuses/sxml
           twitter-list-memberships/sxml twitter-list-subscriptions/sxml
@@ -101,6 +103,7 @@
           twitter-block-destroy/sxml
           twitter-block-exists/sxml
           twitter-block-exists?
+          twitter-blocks/ids
 
           twitter-report-spam/sxml
 
@@ -284,7 +287,8 @@
   (status #f)
   (headers #f)
   (body #f)
-  (body-sxml #f))
+  (body-sxml #f)
+  (body-json #f))
 
 ;;
 ;; Authenticate the client using OAuth PIN-based authentication flow.
@@ -482,6 +486,11 @@
 (define (twitter-friendship-outgoing/sxml cred cursor)
   (call/oauth->sxml cred 'get #`"/1/friendships/outgoing.xml"
                     (make-query-params cursor)))
+
+(define (twitter-friendship-update/sxml cred screen-name :key (device #f)
+                                        (retweets #f))
+  (call/oauth->sxml cred 'post #`"/1/friendships/update.xml" 
+                    (make-query-params screen-name device retweets)))
 
 ;;
 ;; List methods
@@ -762,6 +771,9 @@
     (apply twitter-block-exists/sxml args)
     #t))
 
+(define (twitter-blocks/ids cred)
+  ((sxpath '(// id *text*)) (twitter-blocks/ids/sxml cred)))
+
 ;;
 ;; Report spam methods
 ;;
@@ -838,7 +850,7 @@
   (let loop ((lines (string-split body "\n"))
 			 (ret '()))
 	(cond
-	 (((string->regexp "<h[0-9]>(.*)</h[0-9]>") (car lines)) =>
+	 ((#/<h[0-9]>(.*)<\/h[0-9]>/ (car lines)) =>
 	  (lambda (m) (set! ret (cons (m 1) ret)))))
 	(if (pair? (cdr lines))
 	  (loop (cdr lines) ret)
@@ -848,27 +860,42 @@
   (unless (equal? status "200")
     (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
           (match (mime-parse-content-type ct)
-            [(_ "xml" . _)
-             (let1 body-sxml
+			[(_ "xml" . _)
+			 (let1 body-sxml
 				 (guard (e (else #f))
 				   (call-with-input-string body (cut ssax:xml->sxml <> '())))
-               (error <twitter-api-error>
-                      :status status :headers headers :body body
-                      :body-sxml body-sxml
-                      (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
-                          body)))]
-            [(_ "html" . _)
+			   (error <twitter-api-error>
+					  :status status :headers headers :body body
+					  :body-sxml body-sxml
+					  (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
+						  body)))]
+			[(_ "json" . _)
+			 (let1 body-json
+				 (guard (e (else #f))
+				   (parse-json-string body))
+			   (let ((aref assoc-ref)
+					 (vref vector-ref))
+				 (error <twitter-api-error>
+						:status status :headers headers :body body
+						:body-json body-json
+						(or (and body-json 
+								 (guard (e (else #f))
+								   (aref (vref (aref body-json "errors") 0) "message")))
+							body))))]
+			[(_ "html" . _)
 			 (error <twitter-api-error>
 					:status status :headers headers :body body
-					:body-sxml #f
 					(parse-html-message body))]
-            [_ #f]))
+			[_ #f]))
         (error <twitter-api-error>
                :status status :headers headers :body body
-               :body-sxml #f body))))
+               body))))
 
 (define (call/oauth->sxml cred method path params . opts)
+  (apply call/oauth (lambda (body) (call-with-input-string body (cut ssax:xml->sxml <> '())))
+		 cred method path params opts))
 
+(define (call/oauth parser cred method path params . opts)
   (define (call)
     (if cred
       (let1 auth (oauth-auth-header
@@ -891,8 +918,7 @@
 
   (define (retrieve status headers body)
     (check-api-error status headers body)
-    (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
-            headers))
+    (values (parser body) headers))
 
   (call-with-values call retrieve))
 
