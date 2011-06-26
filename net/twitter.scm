@@ -117,6 +117,7 @@
           twitter-legal-tos/sxml twitter-legal-privacy/sxml
 
           twitter-help-test/sxml
+          twitter-help-languages/sxml twitter-help-configuration/sxml
           ))
 (select-module net.twitter)
 
@@ -830,6 +831,12 @@
 
 (define (twitter-help-test/sxml cred)
   (call/oauth->sxml cred 'get "/1/help/test.xml" '()))
+
+(define (twitter-help-configuration/sxml cred)
+  (call/oauth->sxml cred 'get "/1/help/configuration.xml" '()))
+
+(define (twitter-help-languages/sxml cred)
+  (call/oauth->sxml cred 'get "/1/help/languages.xml" '()))
 
 ;;;
 ;;; Internal utilities
