@@ -114,6 +114,8 @@
 
           twitter-trends-available/sxml twitter-trends-location/sxml
 
+          twitter-legal-tos/sxml twitter-legal-privacy/sxml
+
           twitter-help-test/sxml
           ))
 (select-module net.twitter)
@@ -811,6 +813,16 @@
 ;; CRED can be #f
 (define (twitter-trends-location/sxml cred woeid)
   (call/oauth->sxml cred 'get #`"/1/trends/,|woeid|.xml" '()))
+
+;;
+;; Legal methods
+;;
+
+(define (twitter-legal-tos/sxml cred :key (lang #f))
+  (call/oauth->sxml cred 'get "/1/legal/tos.xml" '()))
+
+(define (twitter-legal-privacy/sxml cred :key (lang #f))
+  (call/oauth->sxml cred 'get "/1/legal/privacy.xml" '()))
 
 ;;
 ;; Help methods
