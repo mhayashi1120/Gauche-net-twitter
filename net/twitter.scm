@@ -161,7 +161,7 @@
         (and (not (param-form-data? (car list)))
              (only-query-string? (cdr list)))))
   (if (only-query-string? params)
-      (compose-query params)
+    (compose-query params)
     (http-compose-form-data params #f 'utf-8)))
 
 (define (compose-query params)
@@ -304,8 +304,8 @@
                            ("oauth_timestamp" ,(timestamp))
                            ("oauth_version" "1.0"))
                          consumer-secret)]
-	 [r-token  (cgi-get-parameter "oauth_token" r-response)]
-	 [r-secret (cgi-get-parameter "oauth_token_secret" r-response)])
+         [r-token  (cgi-get-parameter "oauth_token" r-response)]
+         [r-secret (cgi-get-parameter "oauth_token_secret" r-response)])
     (unless (and r-token r-secret)
       (error "failed to obtain request token"))
     (if-let1 oauth-verifier
@@ -337,30 +337,30 @@
                     (make-query-params trim-user include-entities)))
 
 (define (twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
-                                              (count #f) (page #f)
-                                              (trim-user #f) (include-entities #f))
+                                    (count #f) (page #f)
+                                    (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/1/statuses/home_timeline.xml"
                     (make-query-params since-id max-id count page
                                        trim-user include-entities)))
 
 (define (twitter-friends-timeline/sxml cred :key (since-id #f) (max-id #f)
-                                                 (count #f) (page #f)
-                                                 (trim-user #f) (include-rts #f) (include-entities #f))
+                                       (count #f) (page #f)
+                                       (trim-user #f) (include-rts #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/1/statuses/friends_timeline.xml"
                     (make-query-params since-id max-id count page
                                        trim-user include-rts include-entities)))
 
 (define (twitter-user-timeline/sxml cred :key (id #f) (user-id #f) (screen-name #f)
-                                              (since-id #f) (max-id #f)
-                                              (count #f) (page #f)
-                                              (trim-user #f) (include-rts #f) (include-entities #f))
+                                    (since-id #f) (max-id #f)
+                                    (count #f) (page #f)
+                                    (trim-user #f) (include-rts #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/1/statuses/user_timeline.xml"
                     (make-query-params id user-id screen-name since-id max-id count page
                                        trim-user include-rts include-entities)))
 
 (define (twitter-mentions/sxml cred :key (since-id #f) (max-id #f)
-                                         (count #f) (page #f)
-                                         (trim-user #f) (include-rts #f) (include-entities #f))
+                               (count #f) (page #f)
+                               (trim-user #f) (include-rts #f) (include-entities #f))
   (call/oauth->sxml cred 'get "/statuses/mentions.xml"
                     (make-query-params since-id max-id count page
                                        trim-user include-rts include-entities)))
@@ -387,8 +387,8 @@
 					(make-query-params include-entities trim-user)))
 
 (define (twitter-update/sxml cred message :key (in-reply-to-status-id #f)
-                                               (lat #f) (long #f) (place-id #f)
-                                               (display-coordinates #f))
+                             (lat #f) (long #f) (place-id #f)
+                             (display-coordinates #f))
   (call/oauth->sxml cred 'post "/1/statuses/update.xml"
                     `(("status" ,message)
                       ,@(make-query-params in-reply-to-status-id lat long
@@ -515,7 +515,7 @@
                     (make-query-params cursor)))
 
 (define (twitter-list-statuses/sxml cred user list :key (since-id #f) (max-id #f)
-                                        (per-page #f) (page #f))
+                                    (per-page #f) (page #f))
   (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|/statuses.xml"
                     (make-query-params since-id max-id per-page page)))
 
@@ -644,10 +644,10 @@
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
-                                          (profile-text-color #f)
-                                          (profile-link-color #f)
-                                          (profile-sidebar-fill-color #f)
-                                          (profile-sidebar-border-color #f))
+                                                    (profile-text-color #f)
+                                                    (profile-link-color #f)
+                                                    (profile-sidebar-fill-color #f)
+                                                    (profile-sidebar-border-color #f))
   (call/oauth->sxml cred 'post #`"/1/account/update_profile_colors.xml"
                     (make-query-params profile-background-color profile-text-color
                                        profile-link-color
@@ -668,7 +668,7 @@
 (define (twitter-user-show/sxml cred :key (id #f) (user-id #f) (screen-name #f))
   (call/oauth->sxml cred 'get #`"/1/users/show.xml"
                     (make-query-params id user-id screen-name)))
-  
+
 (define (twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '()))
   (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
                     (cond-list [(not (null? user-ids))
@@ -691,7 +691,7 @@
 
 ;; CRED can be #f
 (define (twitter-friends/sxml cred :key (id #f) (user-id #f)
-                                        (screen-name #f) (cursor #f))
+                              (screen-name #f) (cursor #f))
   (call/oauth->sxml cred 'get "/1/statuses/friends.xml"
                     (make-query-params id user-id screen-name cursor)))
 
@@ -860,33 +860,33 @@
   (unless (equal? status "200")
     (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
           (match (mime-parse-content-type ct)
-			[(_ "xml" . _)
-			 (let1 body-sxml
-				 (guard (e (else #f))
-				   (call-with-input-string body (cut ssax:xml->sxml <> '())))
-			   (error <twitter-api-error>
-					  :status status :headers headers :body body
-					  :body-sxml body-sxml
-					  (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
-						  body)))]
-			[(_ "json" . _)
-			 (let1 body-json
-				 (guard (e (else #f))
-				   (parse-json-string body))
-			   (let ((aref assoc-ref)
-					 (vref vector-ref))
-				 (error <twitter-api-error>
-						:status status :headers headers :body body
-						:body-json body-json
-						(or (and body-json 
-								 (guard (e (else #f))
-								   (aref (vref (aref body-json "errors") 0) "message")))
-							body))))]
-			[(_ "html" . _)
-			 (error <twitter-api-error>
-					:status status :headers headers :body body
-					(parse-html-message body))]
-			[_ #f]))
+                 [(_ "xml" . _)
+                  (let1 body-sxml
+                      (guard (e (else #f))
+                        (call-with-input-string body (cut ssax:xml->sxml <> '())))
+                    (error <twitter-api-error>
+                           :status status :headers headers :body body
+                           :body-sxml body-sxml
+                           (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
+                               body)))]
+                 [(_ "json" . _)
+                  (let1 body-json
+                      (guard (e (else #f))
+                        (parse-json-string body))
+                    (let ((aref assoc-ref)
+                          (vref vector-ref))
+                      (error <twitter-api-error>
+                             :status status :headers headers :body body
+                             :body-json body-json
+                             (or (and body-json 
+                                      (guard (e (else #f))
+                                        (aref (vref (aref body-json "errors") 0) "message")))
+                                 body))))]
+                 [(_ "html" . _)
+                  (error <twitter-api-error>
+                         :status status :headers headers :body body
+                         (parse-html-message body))]
+                 [_ #f]))
         (error <twitter-api-error>
                :status status :headers headers :body body
                body))))
@@ -911,10 +911,10 @@
                          (oauth-compose-query params)
                          :Authorization auth opts)]))
       (case method
-          [(get) (apply http-get "api.twitter.com"
-                        #`",|path|?,(oauth-compose-query params)" opts)]
-          [(post) (apply http-post "api.twitter.com" path
-                         (oauth-compose-query params) opts)])))
+        [(get) (apply http-get "api.twitter.com"
+                      #`",|path|?,(oauth-compose-query params)" opts)]
+        [(post) (apply http-post "api.twitter.com" path
+                       (oauth-compose-query params) opts)])))
 
   (define (retrieve status headers body)
     (check-api-error status headers body)
