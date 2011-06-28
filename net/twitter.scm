@@ -33,6 +33,8 @@
           twitter-user-timeline/sxml
           twitter-mentions/sxml twitter-mentions
 
+          twitter-search/sxml
+
           twitter-show/sxml
           twitter-update/sxml twitter-update
           twitter-destroy/sxml
@@ -379,6 +381,28 @@
                   ((sxpath '(// status)) r))
              (.$ x->integer car)
              >)))
+
+;;
+;; Search API method
+;;
+
+(define (twitter-search/sxml :key (q #f) (lang #f) (locale #f) (geocode #f)
+                             (max-id #f) (since-id #f) (rpp #f)
+                             (since #f) (until #f) (page #f)
+                             (show-user #f) (result-type #f))
+  (let1 params (make-query-params q lang locale geocode
+                                  max-id since-id rpp
+                                  since until page
+                                  show-user result-type)
+    (define (call)
+      (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
+  
+    (define (retrieve status headers body)
+      (check-api-error status headers body)
+      (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
+              headers))
+
+    (call-with-values call retrieve)))
 
 ;;
 ;; Status method
