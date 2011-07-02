@@ -56,10 +56,10 @@
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
 
-          twitter-direct-mesages/sxml
-          twitter-direct-mesages-sent/sxml
-          twitter-direct-mesage-new/sxml
-          twitter-direct-mesage-destroy/sxml
+          twitter-direct-messages/sxml
+          twitter-direct-messages-sent/sxml
+          twitter-direct-message-new/sxml
+          twitter-direct-message-destroy/sxml
 
           twitter-friendship-show/sxml
           twitter-friendship-exists/sxml twitter-friendship-exists?
@@ -386,13 +386,14 @@
 ;; Search API method
 ;;
 
-(define (twitter-search/sxml :key (q #f) (lang #f) (locale #f) (geocode #f)
-                             (max-id #f) (since-id #f) (rpp #f)
-                             (since #f) (until #f) (page #f)
-                             (show-user #f) (result-type #f))
-  (let1 params (make-query-params q lang locale geocode
-                                  max-id since-id rpp
-                                  since until page
+(define (twitter-search/sxml q :key (lang #f) (locale #f) 
+                             (rpp #f) (page #f)
+                             (since-id #f) (until #f) (geocode #f)
+                             (show-user #f) (result-type #f)
+                             (max-id #f) (since #f) ; deprecated
+                             )
+  (let1 params (make-query-params q lang locale rpp
+                                  page since-id until geocode
                                   show-user result-type)
     (define (call)
       (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
@@ -463,19 +464,19 @@
 ;; Directmessage methods
 ;;
 
-(define (twitter-direct-mesages/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
+(define (twitter-direct-messages/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
   (call/oauth->sxml cred 'get #`"/1/direct_messages.xml"
                     (make-query-params count page max_id since-id)))
 
-(define (twitter-direct-mesages-sent/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
+(define (twitter-direct-messages-sent/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
   (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
                     (make-query-params count page max_id since-id)))
 
-(define (twitter-direct-mesage-new/sxml cred user text)
+(define (twitter-direct-message-new/sxml cred user text)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/new.xml"
                     (make-query-params user text)))
 
-(define (twitter-direct-mesage-destroy/sxml cred id)
+(define (twitter-direct-message-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/destroy.xml"
                     (make-query-params id)))
 
