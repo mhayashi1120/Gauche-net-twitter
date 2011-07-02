@@ -29,7 +29,6 @@
           
           twitter-public-timeline/sxml
           twitter-home-timeline/sxml
-          twitter-friends-timeline/sxml
           twitter-user-timeline/sxml
           twitter-mentions/sxml twitter-mentions
 
@@ -65,21 +64,27 @@
           twitter-friendship-incoming/sxml twitter-friendship-outgoing/sxml
           twitter-friendship-update/sxml
 
-          twitter-lists/sxml twitter-list-show/sxml
+          twitter-lists/sxml
+          twitter-lists/ids twitter-lists/slugs
+          twitter-list-show/sxml
           twitter-list-statuses/sxml
-          twitter-list-memberships/sxml twitter-list-subscriptions/sxml
-          twitter-list-memberships/ids twitter-list-subscriptions/ids
-          twitter-list-create/sxml twitter-list-destroy/sxml twitter-list-update/sxml
+          twitter-list-create/sxml
           twitter-list-create
-          twitter-lists/ids twitter-lists/names
-
-          twitter-list-members/sxml twitter-list-members-show/sxml
-          twitter-list-member-add/sxml twitter-list-member-delete/sxml
+          twitter-list-update/sxml
+          twitter-list-destroy/sxml
+          twitter-list-members/sxml
+          twitter-list-member-show/sxml
+          twitter-list-member-create/sxml
+          twitter-list-members-create-all/sxml
+          twitter-list-member-destroy/sxml
           twitter-list-members/ids
-
-          twitter-list-subscribers/sxml twitter-list-subscribers-show/sxml
-          twitter-list-subscriber-add/sxml twitter-list-subscriber-delete/sxml
+          twitter-list-subscribers/sxml
+          twitter-list-subscriber-show/sxml
+          twitter-list-subscriber-create/sxml
+          twitter-list-subscriber-destroy/sxml
           twitter-list-subscribers/ids
+          twitter-list-subscriptions/sxml twitter-list-subscriptions/ids
+          twitter-list-memberships/sxml twitter-list-memberships/ids
 
           twitter-favorites/sxml
           twitter-favorite-create/sxml
@@ -344,13 +349,6 @@
                     (make-query-params since-id max-id count page
                                        trim-user include-entities)))
 
-(define (twitter-friends-timeline/sxml cred :key (since-id #f) (max-id #f)
-                                       (count #f) (page #f)
-                                       (trim-user #f) (include-rts #f) (include-entities #f))
-  (call/oauth->sxml cred 'get "/1/statuses/friends_timeline.xml"
-                    (make-query-params since-id max-id count page
-                                       trim-user include-rts include-entities)))
-
 (define (twitter-user-timeline/sxml cred :key (id #f) (user-id #f) (screen-name #f)
                                     (since-id #f) (max-id #f)
                                     (count #f) (page #f)
@@ -520,102 +518,157 @@
 ;; List methods
 ;;
 
-;; user is user-id or screen-name
-(define (twitter-lists/sxml cred user :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/lists.xml"
-                    (make-query-params cursor)))
+;; require user-id or screen-name
+(define (twitter-lists/sxml cred :key (user-id #f) (screen-name #f)
+                            (cursor #f))
+  (call/oauth->sxml cred 'get "/1/lists.xml"
+                    (make-query-params user-id screen-name cursor)))
 
-(define (twitter-lists/ids cred user)
-  (retrieve-stream (sxpath '(// list id *text*))
-                   twitter-lists/sxml cred user))
+;; args are passed to twitter-lists/sxml
+(define (twitter-lists/ids cred . args)
+  (apply retrieve-stream (sxpath '(// list id *text*))
+         twitter-lists/sxml cred args))
 
-(define (twitter-lists/names cred user)
-  (retrieve-stream (sxpath '(// list name *text*))
-                   twitter-lists/sxml cred user))
+;; args are passed to twitter-lists/sxml
+(define (twitter-lists/slugs cred . args)
+  (apply retrieve-stream (sxpath '(// list name *text*))
+         twitter-lists/sxml cred args))
 
-;; list is list-id or list-name
-(define (twitter-list-show/sxml cred user list :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|.xml"
-                    (make-query-params cursor)))
+(define (twitter-list-show/sxml cred :key (list-id #f) 
+                                (slug #f) (owner-id #f) (owner-screen-name #f))
+  (call/oauth->sxml cred 'get "/1/lists/show.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name)))
 
-(define (twitter-list-statuses/sxml cred user list :key (since-id #f) (max-id #f)
-                                    (per-page #f) (page #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/,|list|/statuses.xml"
-                    (make-query-params since-id max-id per-page page)))
-
-(define (twitter-list-memberships/sxml cred user :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/memberships.xml"
-                    (make-query-params cursor)))
-
-(define (twitter-list-memberships/ids cred user)
-  (retrieve-stream (sxpath '(// list id *text*)) twitter-list-memberships/sxml cred user))
-
-(define (twitter-list-subscriptions/sxml cred user :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/lists/subscriptions.xml"
-                    (make-query-params cursor)))
-
-(define (twitter-list-subscriptions/ids cred user)
-  (retrieve-stream (sxpath '(// list id *text*)) twitter-list-subscriptions/sxml cred user))
+(define (twitter-list-statuses/sxml cred :key (list-id #f)
+                                    (slug #f) (owner-id #f) (owner-screen-name #f)
+                                    (since-id #f) (max-id #f)
+                                    (per-page #f) (page #f)
+                                    (include-entities #f) (include-rts #f))
+  (call/oauth->sxml cred 'get "/1/lists/statuses.xml"
+                    (make-query-params list-id 
+                                       slug owner-id owner-screen-name
+                                       since-id max-id per-page page
+                                       include-entities include-rts)))
 
 ;; mode is private or public
-(define (twitter-list-create/sxml cred user name :key (mode #f) (description #f))
-  (call/oauth->sxml cred 'post #`"/1/,|user|/lists.xml"
+(define (twitter-list-create/sxml cred name :key (mode #f) (description #f))
+  (call/oauth->sxml cred 'post "/1/lists/create.xml"
                     (make-query-params name mode description)))
 
-;; Returns list id on success
-(define (twitter-list-create cred user name . opts)
+;; Returns list id when success
+(define (twitter-list-create cred name . opts)
   ((if-car-sxpath '(list id *text*))
-   (values-ref (apply twitter-list-create/sxml cred user name opts) 0)))
+   (values-ref (apply twitter-list-create/sxml cred name opts) 0)))
 
 ;; mode is private or public
-(define (twitter-list-update/sxml cred user name :key (mode #f) (description #f))
-  (call/oauth->sxml cred 'post #`"/1/,|user|/lists/,|name|.xml"
-                    (make-query-params mode description)))
+(define (twitter-list-update/sxml cred :key (list-id #f)
+                                  (slug #f) (owner-id #f) (owner-screen-name #f)
+                                  (name #f) (mode #f) (description #f))
+  (call/oauth->sxml cred 'post "/1/lists/update.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name
+                                       name mode description)))
 
-(define (twitter-list-destroy/sxml cred user name)
-  (let1 -method "DELETE"
-    (call/oauth->sxml cred 'post #`"/1/,|user|/lists/,|name|.xml"
-                      (make-query-params -method))))
+(define (twitter-list-destroy/sxml cred :key (list-id #f) 
+                                   (slug #f) (owner-id #f) (owner-screen-name #f))
+  (call/oauth->sxml cred 'post "/1/lists/destroy.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name)))
 
-(define (twitter-list-members/sxml cred user list-name :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/members.xml"
-                    (make-query-params cursor)))
+(define (twitter-list-members/sxml cred :key (list-id #f) 
+                                   (slug #f) (owner-id #f) (owner-screen-name #f)
+                                   (cursor #f) (include-entities #f) (skip-status #f))
+  (call/oauth->sxml cred 'get "/1/lists/members.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       cursor include-entities skip-status)))
 
-(define (twitter-list-members-show/sxml cred user list-name id)
-  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/members/,|id|.xml" '()))
+(define (twitter-list-member-show/sxml cred :key (list-id #f)
+                                       (slug #f) (owner-id #f) (owner-screen-name #f)
+                                       (user-id #f) (screen-name #f)
+                                       (include-entities #f) (skip-status #f))
+  (call/oauth->sxml cred 'get "/1/lists/members/show.xml" 
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       user-id screen-name
+                                       include-entities skip-status)))
 
-(define (twitter-list-member-add/sxml cred user list-name id)
-  (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
-                    (make-query-params id)))
+(define (twitter-list-member-create/sxml cred :key (list-id #f)
+                                         (slug #f) (owner-id #f) (owner-screen-name #f)
+                                         (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post "/1/lists/members/create.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       user-id screen-name)))
 
-(define (twitter-list-member-delete/sxml cred user list-name id)
-  (let1 -method "DELETE"
-    (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/members.xml"
-                      (make-query-params -method id))))
+(define (twitter-list-members-create-all/sxml cred :key (list-id #f) 
+                                              (slug #f) (owner-id #f) (owner-screen-name #f)
+                                              (user-ids #f) (screen-names #f))
+  (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
+        (screen-name (and (pair? screen-names) (string-join screen-names ","))))
+    (call/oauth->sxml cred 'post "/1/lists/members/create_all.xml"
+                      (make-query-params list-id slug owner-id owner-screen-name 
+                                         user-id screen-name))))
 
-(define (twitter-list-members/ids cred user list-name)
-  (retrieve-stream (sxpath '(// user id *text*))
-                   twitter-list-members/sxml cred user list-name))
+(define (twitter-list-member-destroy/sxml cred :key (list-id #f)
+                                          (slug #f) (owner-id #f) (owner-screen-name #f)
+                                          (user-id #f) (screen-name #f))
+  (call/oauth->sxml cred 'post "/1/lists/members/destroy.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       user-id screen-name)))
 
-(define (twitter-list-subscribers/sxml cred user list-name :key (cursor #f))
-  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers.xml"
-                    (make-query-params cursor)))
+;; args are passed to twitter-list-members/sxml
+(define (twitter-list-members/ids . args)
+  (apply retrieve-stream (sxpath '(// user id *text*))
+         twitter-list-members/sxml args))
 
-(define (twitter-list-subscribers-show/sxml cred user list-name id)
-  (call/oauth->sxml cred 'get #`"/1/,|user|/,|list-name|/subscribers/,|id|.xml" '()))
+(define (twitter-list-subscribers/sxml cred  :key (list-id #f) 
+                                       (slug #f) (owner-id #f) (owner-screen-name #f)
+                                       (cursor #f) (include-entities #f) (skip-status #f))
+  (call/oauth->sxml cred 'get "/1/lists/subscribers.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       cursor include-entities skip-status)))
 
-(define (twitter-list-subscriber-add/sxml cred user list-name id)
-  (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
-                    (make-query-params id)))
+(define (twitter-list-subscriber-show/sxml cred :key (list-id #f) 
+                                           (slug #f) (owner-id #f) (owner-screen-name #f)
+                                           (user-id #f) (screen-name #f)
+                                           (include-entities #f) (skip-status #f))
+  (call/oauth->sxml cred 'get "/1/subscribers/show.xml" 
+                    (make-query-params list-id slug owner-id owner-screen-name 
+                                       user-id screen-name)))
 
-(define (twitter-list-subscriber-delete/sxml cred user list-name id)
-  (let1 -method "DELETE"
-    (call/oauth->sxml cred 'post #`"/1/,|user|/,|list-name|/subscribers.xml"
-                      (make-query-params -method id))))
+(define (twitter-list-subscriber-create/sxml cred :key (list-id #f) 
+                                             (slug #f) (owner-id #f) (owner-screen-name #f))
+  (call/oauth->sxml cred 'post "/1/lists/subscribers/create.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name)))
 
-(define (twitter-list-subscribers/ids cred user list-name)
-  (retrieve-stream (sxpath '(// user id *text*))
-                   twitter-list-subscribers/sxml cred user list-name))
+(define (twitter-list-subscriber-destroy/sxml cred :key (list-id #f) 
+                                              (slug #f) (owner-id #f) (owner-screen-name #f))
+  (call/oauth->sxml cred 'post "/1/lists/subscribers/destroy.xml"
+                    (make-query-params list-id slug owner-id owner-screen-name)))
+
+;; args are passed to twitter-list-subscribers/sxml
+(define (twitter-list-subscribers/ids . args)
+  (apply retrieve-stream (sxpath '(// user id *text*))
+         twitter-list-subscribers/sxml args))
+
+(define (twitter-list-memberships/sxml cred :key (user-id #f) (screen-name #f) 
+                                       (cursor #f) (filter-to-owned-lists #f))
+  (call/oauth->sxml cred 'get #`"/1/lists/memberships.xml"
+                    (make-query-params user-id screen-name
+                                       filter-to-owned-lists cursor)))
+
+;; args are passed to twitter-list-memberships/sxml 
+(define (twitter-list-memberships/ids cred . args)
+  (apply retrieve-stream (sxpath '(// list id *text*)) 
+         twitter-list-memberships/sxml 
+         cred args))
+
+(define (twitter-list-subscriptions/sxml cred :key (user-id #f) (screen-name #f)
+                                         (cursor #f))
+  (call/oauth->sxml cred 'get #`"/1/lists/subscriptions.xml"
+                    (make-query-params user-id screen-name cursor)))
+
+;; args are passed to twitter-list-subscriptions/sxml
+(define (twitter-list-subscriptions/ids cred . args)
+  (apply retrieve-stream (sxpath '(// list id *text*)) 
+         twitter-list-subscriptions/sxml
+         cred args))
 
 ;;
 ;; Favorites methods
