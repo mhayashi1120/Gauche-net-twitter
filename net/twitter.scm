@@ -650,13 +650,6 @@
 (define (twitter-account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
-(define (twitter-account-end-session/sxml cred)
-  (call/oauth->sxml cred 'post #`"/1/account/end_session.xml" '()))
-
-(define (twitter-account-update-delivery-device/sxml cred device)
-  (call/oauth->sxml cred 'post #`"/1/account/update_delivery_device.xml"
-                    (make-query-params device)))
-
 (define (twitter-account-update-profile-image/sxml cred file)
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_image.xml"
                               `((image :file ,file))))
@@ -717,12 +710,6 @@
 (define (twitter-user-suggestions/category/sxml cred slug)
   (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml" '()))
 
-;; CRED can be #f
-(define (twitter-friends/sxml cred :key (id #f) (user-id #f)
-                              (screen-name #f) (cursor #f))
-  (call/oauth->sxml cred 'get "/1/statuses/friends.xml"
-                    (make-query-params id user-id screen-name cursor)))
-
 (define (twitter-friends/ids/sxml cred :key (id #f) (user-id #f)
                                   (screen-name #f)
                                   (cursor #f))
@@ -735,11 +722,6 @@
   (retrieve-ids/sxml twitter-friends/ids/sxml
                      cred :id id :user-id user-id
                      :screen-name screen-name))
-
-(define (twitter-followers/sxml cred :key (id #f) (user-id #f)
-                                (screen-name #f) (cursor #f))
-  (call/oauth->sxml cred 'get "/1/statuses/followers.xml"
-                    (make-query-params id user-id screen-name cursor)))
 
 (define (twitter-followers/ids/sxml cred :key (id #f) (user-id #f)
                                     (screen-name #f)
