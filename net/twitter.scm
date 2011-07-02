@@ -91,6 +91,9 @@
           twitter-favorite-destroy/sxml
 
           twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
+          twitter-account-totals/sxml
+          twitter-account-settings/sxml
+          twitter-account-settings-update/sxml
           twitter-account-rate-limit-status/sxml
           twitter-account-update-profile-image/sxml
           ;; twitter-account-update-profile-background-image/sxml
@@ -534,6 +537,7 @@
   (apply retrieve-stream (sxpath '(// list name *text*))
          twitter-lists/sxml cred args))
 
+;; (or list-id (and slug (or owner-id owner-screen-name)))
 (define (twitter-list-show/sxml cred :key (list-id #f) 
                                 (slug #f) (owner-id #f) (owner-screen-name #f))
   (call/oauth->sxml cred 'get "/1/lists/show.xml"
@@ -695,6 +699,20 @@
   (guard (e ((<twitter-api-error> e) #f))
     (twitter-account-verify-credentials/sxml cred)
     #t))
+
+(define (twitter-account-totals/sxml cred)
+  (call/oauth->sxml cred 'post "/1/account/totals.xml" '()))
+
+(define (twitter-account-settings/sxml cred)
+  (call/oauth->sxml cred 'get "/1/account/settings.xml" '()))
+
+(define (twitter-account-settings-update/sxml cred 
+                                              :key (trend-location-woeid #f) (sleep-time-enabled #f)
+                                              (start-sleep-time #f) (end-sleep-time #f)
+                                              (time-zone #f) (lang #f))
+  (call/oauth->sxml cred 'post "/1/account/settings.xml" 
+                    (make-query-params trend-location-woeid sleep-time-enabled
+                                       start-sleep-time end-sleep-time time-zone lang)))
 
 (define (twitter-account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
