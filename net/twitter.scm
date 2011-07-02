@@ -49,9 +49,7 @@
           twitter-user-suggestions/sxml
           twitter-user-suggestions/category/sxml
 
-          twitter-friends/sxml
           twitter-friends/ids/sxml twitter-friends/ids
-          twitter-followers/sxml
           twitter-followers/ids/sxml twitter-followers/ids
 
           twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
@@ -89,8 +87,6 @@
 
           twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
           twitter-account-rate-limit-status/sxml
-          twitter-account-end-session/sxml
-          twitter-account-update-delivery-device/sxml
           twitter-account-update-profile-image/sxml
           ;; twitter-account-update-profile-background-image/sxml
           twitter-account-update-profile-colors/sxml
