@@ -945,9 +945,11 @@
 	(cond
      ((null? lines)
       (string-join (reverse ret) " "))
-	 ((#/<h[0-9]>(.*)<\/h[0-9]>/ (car lines)) =>
+	 ((#/<h[0-9]>([^<]+)<\/h[0-9]>/ (car lines)) =>
 	  (lambda (m) 
-        (loop (cdr lines) (cons (m 1) ret)))))))
+        (loop (cdr lines) (cons (m 1) ret))))
+     (else
+      (loop (cdr lines) ret)))))
 
 (define (check-api-error status headers body)
   (unless (equal? status "200")
