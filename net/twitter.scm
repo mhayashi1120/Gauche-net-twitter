@@ -114,9 +114,9 @@
           twitter-report-spam/sxml
 
           twitter-saved-searches/sxml
-          twitter-saved-searche-show/sxml
-          twitter-saved-searche-create/sxml
-          twitter-saved-searche-destroy/sxml
+          twitter-saved-search-show/sxml
+          twitter-saved-search-create/sxml
+          twitter-saved-search-destroy/sxml
 
           twitter-trends-available/sxml twitter-trends-location/sxml
 
@@ -866,14 +866,14 @@
 (define (twitter-saved-searches/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/saved_searches.xml" '()))
 
-(define (twitter-saved-searche-show/sxml cred id)
+(define (twitter-saved-search-show/sxml cred id)
   (call/oauth->sxml cred 'get #`"/1/saved_searches/show/,|id|.xml" '()))
 
-(define (twitter-saved-searche-create/sxml cred query)
+(define (twitter-saved-search-create/sxml cred query)
   (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml" 
 					(make-query-params query)))
 
-(define (twitter-saved-searche-destroy/sxml cred id)
+(define (twitter-saved-search-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/saved_searches/destroy/,|id|.xml" '()))
 
 ;;
@@ -943,11 +943,11 @@
   (let loop ((lines (string-split body "\n"))
 			 (ret '()))
 	(cond
+     ((null? lines)
+      (string-join (reverse ret) " "))
 	 ((#/<h[0-9]>(.*)<\/h[0-9]>/ (car lines)) =>
-	  (lambda (m) (set! ret (cons (m 1) ret)))))
-	(if (pair? (cdr lines))
-	  (loop (cdr lines) ret)
-	  (string-join (reverse ret) " "))))
+	  (lambda (m) 
+        (loop (cdr lines) (cons (m 1) ret)))))))
 
 (define (check-api-error status headers body)
   (unless (equal? status "200")

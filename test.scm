@@ -197,14 +197,32 @@
          #t
          (and (twitter-favorite-destroy/sxml *cred2* status-id) #t))
 
-  (test* "friends ids"
+  (test* "friend ids"
          #t
          (and (twitter-friends/ids/sxml *cred*) #t))
 
-  (test* "followerss ids"
+  (test* "follower ids"
          #t
          (and (twitter-followers/ids/sxml *cred*) #t))
 
+  (let ((id #f))
+    (test* "create saved search"
+           #t
+           (let1 sxml (twitter-saved-search-create/sxml *cred*)
+             (set! id ((if-car-sxpath '(// id *text*)) sxml))
+             #t))
+
+    (test* "showing saved search"
+           #t
+           (and (twitter-saved-search-show/sxml *cred* id) #t))
+
+    (test* "list saved searches"
+           #t
+           (and (twitter-saved-searches/sxml *cred*) #t))
+
+    (test* "destroying saved search"
+           #t
+           (twitter-saved-search-destroy/sxml *cred* id)))
 
   (test* "destroying friendships"
          #t
@@ -216,7 +234,6 @@
   (test* "deleting status"
          #t
          (and (twitter-destroy/sxml *cred* status-id) #t))
-
   )
 
 (test-start "net.favotter")
