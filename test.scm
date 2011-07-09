@@ -38,7 +38,7 @@
     ;; Delete after rfc.http auth-user implemented
     (define (from-token key)
       (assq-ref (assq-ref *settings* 'oauth-token) key))
-    
+
     (make <twitter-cred>
       :consumer-key         (from-token 'consumer-key)
       :consumer-secret      (from-token 'consumer-secret)
@@ -51,7 +51,7 @@
     ;; Delete after rfc.http auth-user implemented
     (define (from-token key)
       (assq-ref (assq-ref *settings* 'oauth-token2) key))
-    
+
     (make <twitter-cred>
       :consumer-key         (from-token 'consumer-key)
       :consumer-secret      (from-token 'consumer-secret)
@@ -89,12 +89,13 @@
 
 (let ((msg (string-append "マルチバイト文字と日付 " (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
       (user-id #f)
+      (user-id2 #f)
       (status-id #f))
 
   (test* "update status"
          #t
          (and (set! status-id (twitter-update *cred* msg)) #t))
-  
+
   (test* "show status"
          msg
          ((if-car-sxpath '(status text *text*)) (twitter-show/sxml *cred* status-id)))
@@ -104,6 +105,9 @@
          (and 
           (set! user-id 
                 (let1 sxml (twitter-user-show/sxml *cred* :id (assoc-ref *settings* 'user))
+                  ((if-car-sxpath '(user id *text*)) sxml)))
+          (set! user-id2
+                (let1 sxml (twitter-user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
                   ((if-car-sxpath '(user id *text*)) sxml)))
           #t))
 
@@ -126,7 +130,7 @@
   (test* "fetching mentions"
          #t
          (and (twitter-mentions/sxml *cred*) #t))
-  
+
   (test* "searching"
          #t
          (and (twitter-search/sxml (assoc-ref *settings* 'user)) #t))
@@ -157,6 +161,51 @@
            #t
            (and (twitter-direct-message-destroy/sxml *cred* dm-id) #t)))
 
+  (test* "retweeting status"
+         #t
+         (and (twitter-retweet/sxml *cred2* status-id) #t))
+
+  (test* "retweets of status"
+         #t
+         (begin
+           (twitter-retweets/sxml *cred* status-id)
+           (twitter-retweeted-by/sxml *cred* status-id)
+           (twitter-retweeted-by-ids/sxml *cred* status-id)
+           #t))
+
+  (test* "retweets of me"
+         #t
+         (begin
+           (twitter-retweets-of-me/sxml *cred*)
+           #t))
+
+  (test* "retweeted by him"
+         #t
+         (begin
+           (twitter-retweeted-by-me/sxml *cred2*)
+           #t))
+
+  (test* "favorite status"
+         #t
+         (and (twitter-favorite-create/sxml *cred2* status-id) #t))
+
+  (test* "favorites"
+         #t
+         (and (twitter-favorites/sxml *cred* user-id2) #t))
+
+  (test* "unfavorite status"
+         #t
+         (and (twitter-favorite-destroy/sxml *cred2* status-id) #t))
+
+  (test* "friends ids"
+         #t
+         (and (twitter-friends/ids/sxml *cred*) #t))
+
+  (test* "followerss ids"
+         #t
+         (and (twitter-followers/ids/sxml *cred*) #t))
+
+
   (test* "destroying friendships"
          #t
          (begin
@@ -166,8 +215,8 @@
 
   (test* "deleting status"
          #t
-         (and (twitter-destroy/sxml *cred* id) #t))
-   
+         (and (twitter-destroy/sxml *cred* status-id) #t))
+
   )
 
 (test-start "net.favotter")
