@@ -197,10 +197,29 @@
 
   (test-and* "deleting status"
     (twitter-destroy/sxml *cred* status-id))
+
+  (test-and* "block"
+    (twitter-block-create/sxml *cred* :id (assoc-ref *settings* 'user2))
+    (twitter-block-exists? *cred* :id (assoc-ref *settings* 'user2))
+    (member user-id2 (twitter-blocks/ids *cred*))
+    (twitter-block-destroy/sxml *cred* :id (assoc-ref *settings* 'user2)))
+
   )
 
 (test-and* "rate limit user1"
   (twitter-account-rate-limit-status/sxml *cred*))
+
+(test-and* "account credentials"
+  (twitter-account-verify-credentials? *cred*))
+
+(test-and* ""
+  (twitter-account-update-profile-colors/sxml 
+   *cred*
+   :profile-background-color "ffffff"
+   :profile-text-color "ffffff"
+   :profile-link-color "ffffff"
+   :profile-sidebar-fill-color "ffffff"
+   :profile-sidebar-border-color "ffffff"))
 
 (test-start "net.favotter")
 (use net.favotter)
