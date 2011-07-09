@@ -72,6 +72,14 @@
        #t
        (and (twitter-help-languages/sxml *cred*) #t))
 
+(test* "legal tos"
+       #t
+       (and (twitter-legal-tos/sxml *cred*) #t))
+
+(test* "legal privacy"
+       #t
+       (and (twitter-legal-privacy/sxml *cred*) #t))
+
 (use srfi-19)
 (use sxml.sxpath)
 
@@ -81,15 +89,15 @@
 
 (let ((msg (string-append "マルチバイト文字と日付 " (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
       (user-id #f)
-      (id #f))
+      (status-id #f))
 
   (test* "update status"
          #t
-         (and (set! id (twitter-update *cred* msg)) #t))
+         (and (set! status-id (twitter-update *cred* msg)) #t))
   
   (test* "show status"
          msg
-         ((if-car-sxpath '(status text *text*)) (twitter-show/sxml *cred* id)))
+         ((if-car-sxpath '(status text *text*)) (twitter-show/sxml *cred* status-id)))
 
   (test* "fetching user info"
          #t
@@ -131,9 +139,9 @@
            #t))
 
   (let ((msg (string-append "direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
-        (id #f))
+        (dm-id #f))
 
-    (set! id 
+    (set! dm-id 
           ((if-car-sxpath '(// id *text*)) 
            (twitter-direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg)))
 
@@ -147,7 +155,7 @@
 
     (test* "destroying direct message"
            #t
-           (and (twitter-direct-message-destroy/sxml *cred* id) #t)))
+           (and (twitter-direct-message-destroy/sxml *cred* dm-id) #t)))
 
   (test* "destroying friendships"
          #t
