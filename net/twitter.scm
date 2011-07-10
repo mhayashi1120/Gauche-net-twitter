@@ -1018,26 +1018,25 @@
   (call-with-values call retrieve))
 
 (with-module rfc.mime
-  (define (twitter-mime-compose
-           parts
-           :key (boundary (mime-make-boundary)))
-    (values 
-     (string-append (string-copy 
-                     (call-with-output-string
-                       (cut mime-compose-message parts <> :boundary boundary))
-                     2) "\r\n")
-     boundary)))
+  (define (twitter-mime-compose parts
+                                :optional (port (current-output-port))
+                                :key (boundary (mime-make-boundary)))
+    (for-each (cut display <> port) `("--" ,boundary "\r\n"))
+    (dolist [p parts]
+      (mime-generate-one-part (canonical-part p) port)
+      (for-each (cut display <> port) `("\r\n--" ,boundary "--\r\n")))
+    boundary))
 
 (define-macro (hack-mime-composing . expr)
   (let ((original (gensym)))
     `(let ((,original #f))
        (with-module rfc.mime
-         (set! ,original mime-compose-message-string)
-         (set! mime-compose-message-string twitter-mime-compose))
+         (set! ,original mime-compose-message)
+         (set! mime-compose-message twitter-mime-compose))
        (unwind-protect
         (begin ,@expr)
         (with-module rfc.mime
-          (set! mime-compose-message-string ,original))))))
+          (set! mime-compose-message ,original))))))
 
 (define (call/oauth-post-file->sxml cred path params . opts)
 
