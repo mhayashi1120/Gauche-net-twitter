@@ -96,7 +96,7 @@
           twitter-account-settings-update/sxml
           twitter-account-rate-limit-status/sxml
           twitter-account-update-profile-image/sxml
-          ;; twitter-account-update-profile-background-image/sxml
+          twitter-account-update-profile-background-image/sxml
           twitter-account-update-profile-colors/sxml
           twitter-account-update-profile/sxml
 
@@ -559,7 +559,7 @@
   (call/oauth->sxml cred 'post "/1/lists/create.xml"
                     (make-query-params name mode description)))
 
-;; Returns list id when success
+;; Returns list id when succeeded
 (define (twitter-list-create cred name . opts)
   ((if-car-sxpath '(list id *text*))
    (values-ref (apply twitter-list-create/sxml cred name opts) 0)))
@@ -717,18 +717,18 @@
 (define (twitter-account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
-(define (twitter-account-update-profile-image/sxml cred file)
+(define (twitter-account-update-profile-image/sxml cred file 
+                                                   :key (include-entities #f) (skip-status #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_image.xml"
-                              `((image :file ,file))))
+                              `((image :file ,file)
+                                ,@(make-query-params include-entities skip-status))))
 
-;;TODO not works
-(define (twitter-account-update-profile-background-image/sxml cred file :key (tile #f))
+(define (twitter-account-update-profile-background-image/sxml cred file 
+                                                              :key (tile #f)
+                                                              (include-entities #f) (skip-status #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
                               `((image :file ,file)
-                                ,@(cond-list
-                                   [tile
-                                    `("tile" ,(param->string tile))]
-                                   ))))
+                                ,@(make-query-params tile include-entities skip-status))))
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
@@ -1017,6 +1017,28 @@
 
   (call-with-values call retrieve))
 
+(with-module rfc.mime
+  (define (twitter-mime-compose
+           parts
+           :key (boundary (mime-make-boundary)))
+    (values 
+     (string-append (string-copy 
+                     (call-with-output-string
+                       (cut mime-compose-message parts <> :boundary boundary))
+                     2) "\r\n")
+     boundary)))
+
+(define-macro (hack-mime-composing . expr)
+  (let ((original (gensym)))
+    `(let ((,original #f))
+       (with-module rfc.mime
+         (set! ,original mime-compose-message-string)
+         (set! mime-compose-message-string twitter-mime-compose))
+       (unwind-protect
+        (begin ,@expr)
+        (with-module rfc.mime
+          (set! mime-compose-message-string ,original))))))
+
 (define (call/oauth-post-file->sxml cred path params . opts)
 
   (define (call)
@@ -1025,9 +1047,10 @@
                 #`"http://api.twitter.com,|path|" '()
                 (~ cred'consumer-key) (~ cred'consumer-secret)
                 (~ cred'access-token) (~ cred'access-token-secret))
-      (apply http-post "api.twitter.com" path
-             params
-             :Authorization auth opts)))
+      (hack-mime-composing 
+       (apply http-post "api.twitter.com" path
+              params
+              :Authorization auth opts))))
 
   (define (retrieve status headers body)
     (check-api-error status headers body)

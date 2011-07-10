@@ -12,6 +12,7 @@
 (use file.util)
 (use rfc.uri)
 (use rfc.http)
+(use srfi-1)
 
 (define *settings*
   (with-input-from-file ".test-settings.scm"
@@ -58,7 +59,7 @@
       :access-token         (from-token 'access-token)
       :access-token-secret  (from-token 'access-token-secret))))
 
-
+;; check only non error have occur.
 (define-macro (test-and* name . expr)
   `(test* ,name 
           #t 
@@ -212,14 +213,34 @@
 (test-and* "account credentials"
   (twitter-account-verify-credentials? *cred*))
 
-(test-and* ""
+(use srfi-13)
+(use srfi-27)
+(define (random-color)
+  (string-pad (number->string (random-integer #x1000000) 16) 6 #\0))
+
+(test-and* "update profile color"
   (twitter-account-update-profile-colors/sxml 
    *cred*
-   :profile-background-color "ffffff"
-   :profile-text-color "ffffff"
-   :profile-link-color "ffffff"
-   :profile-sidebar-fill-color "ffffff"
-   :profile-sidebar-border-color "ffffff"))
+   :profile-background-color (random-color)
+   :profile-text-color (random-color)
+   :profile-link-color (random-color)
+   :profile-sidebar-fill-color (random-color)
+   :profile-sidebar-border-color (random-color)))
+
+(define (random-picture lis)
+  (build-path "./testdata" (list-ref lis (random-integer (length lis)))))
+
+(define (random-mini-picture)
+  (random-picture (filter (^x (#/-mini\.png$/ x)) (sys-readdir "./testdata"))))
+
+(define (random-big-picture)
+  (random-picture (filter (^x (#/^[^-]+\.png$/ x)) (sys-readdir "./testdata"))))
+
+(test-and* "update profile image"
+  (twitter-account-update-profile-image/sxml *cred* (random-mini-picture)))
+
+(test-and* "update profile background image"
+  (twitter-account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
 
 (test-start "net.favotter")
 (use net.favotter)
