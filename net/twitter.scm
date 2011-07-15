@@ -678,15 +678,22 @@
 ;; Favorites methods
 ;;
 
-(define (twitter-favorites/sxml cred id :key (page #f))
+(define (twitter-favorites/sxml cred id :key (page #f)
+                                (since-id #f) (include-entities #f)
+                                (skip-status #f))
   (call/oauth->sxml cred 'get #`"/1/favorites.xml"
-                    (make-query-params id page)))
+                    (make-query-params id page since-id
+                                       include-entities skip-status)))
 
-(define (twitter-favorite-create/sxml cred id)
-  (call/oauth->sxml cred 'post #`"/1/favorites/create/,|id|.xml" '()))
+(define (twitter-favorite-create/sxml cred id :key (include-entities #f)
+                                      (skip-status #f))
+  (call/oauth->sxml cred 'post #`"/1/favorites/create/,|id|.xml" 
+                    (make-query-params include-entities skip-status)))
 
-(define (twitter-favorite-destroy/sxml cred id)
-  (call/oauth->sxml cred 'post #`"/1/favorites/destroy/,|id|.xml" '()))
+(define (twitter-favorite-destroy/sxml cred id :key (include-entities #f)
+                                       (skip-status #f))
+  (call/oauth->sxml cred 'post #`"/1/favorites/destroy/,|id|.xml"
+                    (make-query-params include-entities skip-status)))
 
 ;;
 ;; Account methods
@@ -757,25 +764,29 @@
   (call/oauth->sxml cred 'get #`"/1/users/show.xml"
                     (make-query-params id user-id screen-name)))
 
-(define (twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '()))
-  (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
-                    (cond-list [(not (null? user-ids))
-                                `("user-id" ,(string-join user-ids ","))]
-                               [(not (null? screen-names))
-                                `("screen-name" ,(string-join screen-names ","))]
-                               )))
+(define (twitter-user-lookup/sxml cred :key (user-ids '()) (screen-names '())
+                                  (include-entities #f) (skip-status #f))
+  (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
+        (screen-name (and (pair? screen-names) (string-join screen-names ","))))
+    (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
+                      (make-query-params user-id screen-name
+                                         include-entities skip-status))))
 
-(define (twitter-user-search/sxml cred q :key (per-page #f) (page #f))
+(define (twitter-user-search/sxml cred q :key (per-page #f) (page #f)
+                                  (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'get "/1/users/search.xml"
-                    (make-query-params q per-page page)))
+                    (make-query-params q per-page page 
+                                       include-entities skip-status)))
 
 ;; CRED can be #f
-(define (twitter-user-suggestions/sxml cred)
-  (call/oauth->sxml cred 'get "/1/users/suggestions.xml" '()))
+(define (twitter-user-suggestions/sxml cred :key (lang #f))
+  (call/oauth->sxml cred 'get "/1/users/suggestions.xml" 
+                    (make-query-params lang)))
 
 ;; CRED can be #f
-(define (twitter-user-suggestions/category/sxml cred slug)
-  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml" '()))
+(define (twitter-user-suggestions/category/sxml cred slug :key (lang #f))
+  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml" 
+                    (make-query-params lang)))
 
 (define (twitter-friends/ids/sxml cred :key (id #f) (user-id #f)
                                   (screen-name #f)
@@ -807,13 +818,17 @@
 ;; Notification methods
 ;;
 
-(define (twitter-notifications-follow/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (twitter-notifications-follow/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                           (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/notifications/follow.xml"
-                    (make-query-params id user-id screen-name)))
+                    (make-query-params id user-id screen-name
+                                       include-entities skip-status)))
 
-(define (twitter-notifications-leave/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (twitter-notifications-leave/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                          (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/notifications/leave.xml"
-                    (make-query-params id user-id screen-name)))
+                    (make-query-params id user-id screen-name
+                                       include-entities skip-status)))
 
 ;;
 ;; Block methods
@@ -855,9 +870,11 @@
 ;; Report spam methods
 ;;
 
-(define (twitter-report-spam/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (twitter-report-spam/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                  (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/report_spam.xml"
-                    (make-query-params id user-id screen-name)))
+                    (make-query-params id user-id screen-name
+                                       include-entities skip-status)))
 
 ;;
 ;; Saved search methods
