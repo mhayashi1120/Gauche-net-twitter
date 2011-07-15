@@ -127,6 +127,8 @@
 
           twitter-help-test/sxml
           twitter-help-languages/sxml twitter-help-configuration/sxml
+
+          twitter-open-stream
           ))
 (select-module net.twitter)
 
@@ -947,6 +949,57 @@
 
 (define (twitter-help-languages/sxml cred)
   (call/oauth->sxml cred 'get "/1/help/languages.xml" '()))
+
+;;;
+;;; Stream API
+;;;
+
+;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
+;; proc accept one arg
+(define (twitter-open-stream cred proc url params :key (raise-error? #f))
+
+  (define (safe-parse-json string)
+    ;;TODO
+    ;; (let1 trimmed (string-trim string)
+    ;;   (and (> (string-length trimmed) 0)
+    ;; (parse-json-string trimmed)
+    (parse-json-string string))
+
+  (define (auth-header)
+    (oauth-auth-header 
+     "GET" url '()
+     (~ cred'consumer-key) (~ cred'consumer-secret)
+     (~ cred'access-token) (~ cred'access-token-secret)))
+
+  (define (stream-looper code headers total retrieve)
+    (check-stream-error code headers)
+    (let loop ()
+      (guard (e (else 
+                 (when raise-error? (raise e))))
+        (receive (port size) (retrieve)
+          (and-let* ((s (read-string size port))
+                     (json (safe-parse-json s)))
+            (proc json))))
+      (loop)))
+
+  (define (parse-uri uri)
+    (receive (scheme spec) (uri-scheme&specific uri)
+      (receive (host path . rest) (uri-decompose-hierarchical spec)
+        (values scheme host path))))
+
+  (let1 auth (auth-header)
+    (receive (scheme host path)
+        (parse-uri url)
+      (http-get host path
+                :secure (string=? "https" scheme)
+                :receiver stream-looper
+                :Authorization auth))))
+
+(define (check-stream-error status headers)
+  (unless (equal? status "200")
+    (error <twitter-api-error>
+           :status status :headers headers
+           "Failed opening stream")))
 
 ;;;
 ;;; Internal utilities
