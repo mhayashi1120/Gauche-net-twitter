@@ -737,7 +737,8 @@
                                                    (skip-status #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_image.xml"
                               `((image :file ,file)
-                                ,@(make-query-params include-entities skip-status))))
+                                ,@(make-query-params
+                                   include-entities skip-status))))
 
 (define (twitter-account-update-profile-background-image/sxml cred file :key
                                                               (tile #f)
