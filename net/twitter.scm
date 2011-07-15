@@ -250,14 +250,15 @@
                         ("oauth_nonce" ,(oauth-nonce))
                         ("oauth_signature_method" "HMAC-SHA1")
                         ("oauth_timestamp" ,(timestamp))
-                        ("oauth_token" ,access-token))]
+                        ("oauth_token" ,access-token)
+                        ("oauth_version" "1.0"))]
          [signature (oauth-signature
                      method request-url
                      `(,@auth-params ,@params)
                      consumer-secret
                      access-token-secret)])
     (format "OAuth ~a"
-            (string-join (map (cut string-join <> "=")
+            (string-join (map (^p (format "~a=\"~a\"" (car p) (cadr p)))
                               `(,@auth-params
                                 ("oauth_signature"
                                  ,(oauth-uri-encode signature))))
@@ -330,7 +331,8 @@
                                ("oauth_signature_method" "HMAC-SHA1")
                                ("oauth_timestamp" ,(timestamp))
                                ("oauth_token" ,r-token)
-                               ("oauth_verifier" ,oauth-verifier))
+                               ("oauth_verifier" ,oauth-verifier)
+                               ("oauth_version" "1.0"))
                              r-secret)]
              [a-token (cgi-get-parameter "oauth_token" a-response)]
              [a-secret (cgi-get-parameter "oauth_token_secret" a-response)])
