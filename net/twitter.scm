@@ -763,9 +763,11 @@
 
 (define (twitter-account-update-profile/sxml cred :key (name #f)
                                              (url #f) (location #f)
-                                             (description #f))
+                                             (description #f)
+                                             (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/account/update_profile.xml"
-                    (make-query-params name url location description)))
+                    (make-query-params name url location description
+                                       include-entities skip-status)))
 
 ;;
 ;; User methods
