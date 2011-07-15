@@ -51,7 +51,9 @@
           twitter-friends/ids/sxml twitter-friends/ids
           twitter-followers/ids/sxml twitter-followers/ids
 
-          twitter-retweeted-to-me/sxml twitter-retweeted-by-me/sxml twitter-retweets-of-me/sxml
+          twitter-retweeted-to-me/sxml
+          twitter-retweeted-by-me/sxml
+          twitter-retweets-of-me/sxml
 
           twitter-direct-messages/sxml
           twitter-direct-messages-sent/sxml
@@ -90,7 +92,7 @@
           twitter-favorite-create/sxml
           twitter-favorite-destroy/sxml
 
-          twitter-account-verify-credentials/sxml twitter-account-verify-credentials?
+          twitter-account-verify-credentials/sxml
           twitter-account-totals/sxml
           twitter-account-settings/sxml
           twitter-account-settings-update/sxml
@@ -99,6 +101,7 @@
           twitter-account-update-profile-background-image/sxml
           twitter-account-update-profile-colors/sxml
           twitter-account-update-profile/sxml
+          twitter-account-verify-credentials?
 
           twitter-notifications-follow/sxml
           twitter-notifications-leave/sxml
@@ -465,7 +468,9 @@
   (call/oauth->sxml cred 'get #`"/1/direct_messages.xml"
                     (make-query-params count page max_id since-id)))
 
-(define (twitter-direct-messages-sent/sxml cred :key (count #f) (page #f) (max_id #f) (since-id #f))
+(define (twitter-direct-messages-sent/sxml cred :key
+                                           (count #f) (page #f) 
+                                           (max_id #f) (since-id #f))
   (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
                     (make-query-params count page max_id since-id)))
 
@@ -601,7 +606,8 @@
                                        user-id screen-name)))
 
 (define (twitter-list-members-create-all/sxml cred :key (list-id #f) 
-                                              (slug #f) (owner-id #f) (owner-screen-name #f)
+                                              (slug #f) (owner-id #f)
+                                              (owner-screen-name #f)
                                               (user-ids #f) (screen-names #f))
   (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
         (screen-name (and (pair? screen-names) (string-join screen-names ","))))
@@ -637,12 +643,14 @@
                                        user-id screen-name)))
 
 (define (twitter-list-subscriber-create/sxml cred :key (list-id #f) 
-                                             (slug #f) (owner-id #f) (owner-screen-name #f))
+                                             (slug #f) (owner-id #f)
+                                             (owner-screen-name #f))
   (call/oauth->sxml cred 'post "/1/lists/subscribers/create.xml"
                     (make-query-params list-id slug owner-id owner-screen-name)))
 
 (define (twitter-list-subscriber-destroy/sxml cred :key (list-id #f) 
-                                              (slug #f) (owner-id #f) (owner-screen-name #f))
+                                              (slug #f) (owner-id #f)
+                                              (owner-screen-name #f))
   (call/oauth->sxml cred 'post "/1/lists/subscribers/destroy.xml"
                     (make-query-params list-id slug owner-id owner-screen-name)))
 
@@ -713,8 +721,8 @@
 (define (twitter-account-settings/sxml cred)
   (call/oauth->sxml cred 'get "/1/account/settings.xml" '()))
 
-(define (twitter-account-settings-update/sxml cred 
-                                              :key (trend-location-woeid #f) (sleep-time-enabled #f)
+(define (twitter-account-settings-update/sxml cred :key (trend-location-woeid #f)
+                                              (sleep-time-enabled #f)
                                               (start-sleep-time #f) (end-sleep-time #f)
                                               (time-zone #f) (lang #f))
   (call/oauth->sxml cred 'post "/1/account/settings.xml" 
@@ -724,21 +732,25 @@
 (define (twitter-account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
-(define (twitter-account-update-profile-image/sxml cred file 
-                                                   :key (include-entities #f) (skip-status #f))
+(define (twitter-account-update-profile-image/sxml cred file :key
+                                                   (include-entities #f)
+                                                   (skip-status #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_image.xml"
                               `((image :file ,file)
                                 ,@(make-query-params include-entities skip-status))))
 
-(define (twitter-account-update-profile-background-image/sxml cred file 
-                                                              :key (tile #f)
-                                                              (include-entities #f) (skip-status #f))
+(define (twitter-account-update-profile-background-image/sxml cred file :key
+                                                              (tile #f)
+                                                              (include-entities #f)
+                                                              (skip-status #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
                               `((image :file ,file)
-                                ,@(make-query-params tile include-entities skip-status))))
+                                ,@(make-query-params 
+                                   tile include-entities skip-status))))
 
 ;; ex: "000000", "000", "fff", "ffffff"
-(define (twitter-account-update-profile-colors/sxml cred :key (profile-background-color #f)
+(define (twitter-account-update-profile-colors/sxml cred :key 
+                                                    (profile-background-color #f)
                                                     (profile-text-color #f)
                                                     (profile-link-color #f)
                                                     (profile-sidebar-fill-color #f)
@@ -818,13 +830,15 @@
 ;; Notification methods
 ;;
 
-(define (twitter-notifications-follow/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+(define (twitter-notifications-follow/sxml cred :key 
+                                           (id #f) (user-id #f) (screen-name #f)
                                            (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/notifications/follow.xml"
                     (make-query-params id user-id screen-name
                                        include-entities skip-status)))
 
-(define (twitter-notifications-leave/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+(define (twitter-notifications-leave/sxml cred :key
+                                          (id #f) (user-id #f) (screen-name #f)
                                           (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/notifications/leave.xml"
                     (make-query-params id user-id screen-name
@@ -1004,7 +1018,8 @@
                body))))
 
 (define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth (lambda (body) (call-with-input-string body (cut ssax:xml->sxml <> '())))
+  (apply call/oauth (lambda (body) 
+                      (call-with-input-string body (cut ssax:xml->sxml <> '())))
 		 cred method path params opts))
 
 (define (call/oauth parser cred method path params . opts)
