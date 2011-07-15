@@ -207,6 +207,9 @@
 
   )
 
+;; TODO list api
+;; TODO streaming api
+
 (test-and* "rate limit user1"
   (twitter-account-rate-limit-status/sxml *cred*))
 
