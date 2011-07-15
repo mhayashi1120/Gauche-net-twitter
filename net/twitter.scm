@@ -959,11 +959,10 @@
 (define (twitter-open-stream cred proc url params :key (raise-error? #f))
 
   (define (safe-parse-json string)
-    ;;TODO
-    ;; (let1 trimmed (string-trim string)
-    ;;   (and (> (string-length trimmed) 0)
-    ;; (parse-json-string trimmed)
-    (parse-json-string string))
+    ;; heading white space cause rfc.json parse error.
+    (let1 trimmed (string-trim string)
+      (and (> (string-length trimmed) 0)
+           (parse-json-string trimmed))))
 
   (define (auth-header)
     (oauth-auth-header 
