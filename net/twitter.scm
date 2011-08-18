@@ -55,6 +55,9 @@
           twitter-retweeted-by-me/sxml
           twitter-retweets-of-me/sxml
 
+          twitter-retweeted-to-user/sxml
+          twitter-retweeted-by-user/sxml
+
           twitter-direct-messages/sxml
           twitter-direct-messages-sent/sxml
           twitter-direct-message-new/sxml
@@ -463,6 +466,20 @@
                                      (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/statuses/retweets_of_me.xml"
                     (make-query-params count page max-id since-id trim-user include-entities)))
+
+(define (twitter-retweeted-to-user/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                        (count #f) (page #f) (max-id #f) (since-id #f)
+                                        (trim-user #f) (include-entities #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_to_user.xml"
+                    (make-query-params id user-id screen-name 
+                                       count page max-id since-id trim-user include-entities)))
+
+(define (twitter-retweeted-by-user/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                        (count #f) (page #f) (max-id #f) (since-id #f)
+                                        (trim-user #f) (include-entities #f))
+  (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_by_user.xml"
+                    (make-query-params id user-id screen-name 
+                                       count page max-id since-id trim-user include-entities)))
 
 ;;
 ;; Directmessage methods
