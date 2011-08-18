@@ -178,18 +178,19 @@
   (body-json #f))
 
 ;;
-;; Authenticate the client using OAuth PIN-based authentication flow.
+;; OAuth authorization flow
 ;;
-
-(define twitter-authorize-url 
-  (oauth-authenticate-url "https://api.twitter.com/oauth/authorize"))
 
 (define twitter-authenticate-request 
   (oauth-authenticate-sender "http://api.twitter.com/oauth/request_token"))
 
-(define (twitter-authorize c-key verifier r-token r-secret)
+(define twitter-authorize-url 
+  (oauth-authenticate-url "https://api.twitter.com/oauth/authorize"))
+
+(define twitter-authorize
   (oauth-authorizer "http://api.twitter.com/oauth/access_token"))
 
+;; Authenticate the client using OAuth PIN-based authentication flow.
 (define twitter-authenticate-client
   (oauth-client-authenticator 
    twitter-authenticate-request twitter-authorize-url  twitter-authorize))
