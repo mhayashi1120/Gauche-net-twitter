@@ -26,7 +26,10 @@
   (use rfc.json)
   (export <twitter-cred> <twitter-api-error>
           twitter-authenticate-client
-          
+          twitter-authenticate-request
+          twitter-authorize
+          twitter-authorize-url
+
           twitter-public-timeline/sxml
           twitter-home-timeline/sxml
           twitter-user-timeline/sxml
@@ -314,6 +317,43 @@
 (define (twitter-authenticate-client consumer-key consumer-secret
                                      :optional (input-callback
                                                 default-input-callback))
+  (receive (r-token r-secret)
+      (twitter-authenticate-request consumer-key consumer-secret)
+    (if-let1 oauth-verifier
+        (input-callback (twitter-authorize-url r-token))
+      (receive (a-token a-secret)
+          (twitter-authorize 
+           consumer-key consumer-secret oauth-verifier
+           r-token r-secret)
+        (make <twitter-cred>
+          :consumer-key consumer-key
+          :consumer-secret consumer-secret
+          :access-token a-token
+          :access-token-secret a-secret))
+      #f)))
+
+(define (twitter-authorize-url oauth-token
+                       :key (oauth-callback #f)
+                       :allow-other-keys params)
+  (when (odd? (length params))
+    (error "Keywords are not even."))
+  (let1 query (compose-query 
+               `(
+                 ("oauth_token" ,oauth-token)
+                 ,@(if oauth-callback `(("oauth_callback" ,oauth-callback)) '())
+                 ,@(let loop ((params params)
+                              (res '()))
+                     (if (null? params)
+                       (reverse res)
+                       (let ((k (car params))
+                             (v (cadr params)))
+                         (loop (cddr params) 
+                               (cons 
+                                `(,(x->string k) ,(x->string v))
+                                res)))))))
+    #`"https://api.twitter.com/oauth/authorize?,|query|"))
+
+(define (twitter-authenticate-request consumer-key consumer-secret)
   (let* ([r-response
           (oauth-request "GET" "http://api.twitter.com/oauth/request_token"
                          `(("oauth_consumer_key" ,consumer-key)
@@ -326,27 +366,24 @@
          [r-secret (cgi-get-parameter "oauth_token_secret" r-response)])
     (unless (and r-token r-secret)
       (error "failed to obtain request token"))
-    (if-let1 oauth-verifier
-        (input-callback
-         #`"https://api.twitter.com/oauth/authorize?oauth_token=,r-token")
-      (let* ([a-response
-              (oauth-request "POST" "http://api.twitter.com/oauth/access_token"
-                             `(("oauth_consumer_key" ,consumer-key)
-                               ("oauth_nonce" ,(oauth-nonce))
-                               ("oauth_signature_method" "HMAC-SHA1")
-                               ("oauth_timestamp" ,(timestamp))
-                               ("oauth_token" ,r-token)
-                               ("oauth_verifier" ,oauth-verifier)
-                               ("oauth_version" "1.0"))
-                             r-secret)]
-             [a-token (cgi-get-parameter "oauth_token" a-response)]
-             [a-secret (cgi-get-parameter "oauth_token_secret" a-response)])
-        (make <twitter-cred>
-          :consumer-key consumer-key
-          :consumer-secret consumer-secret
-          :access-token a-token
-          :access-token-secret a-secret))
-      #f)))
+    (values r-token r-secret)))
+
+(define (twitter-authorize c-key verifier r-token r-secret)
+  (let* ([a-response
+          (oauth-request "POST" "http://api.twitter.com/oauth/access_token"
+                         `(("oauth_consumer_key" ,c-key)
+                           ("oauth_nonce" ,(oauth-nonce))
+                           ("oauth_signature_method" "HMAC-SHA1")
+                           ("oauth_timestamp" ,(timestamp))
+                           ("oauth_token" ,r-token)
+                           ("oauth_verifier" ,verifier)
+                           ("oauth_version" "1.0"))
+                         r-secret)]
+         [a-token (cgi-get-parameter "oauth_token" a-response)]
+         [a-secret (cgi-get-parameter "oauth_token_secret" a-response)])
+    (unless (and a-token a-secret)
+      (error "failed to obtain access token"))
+    (values a-token a-secret)))
 
 ;;
 ;; Timeline methods
