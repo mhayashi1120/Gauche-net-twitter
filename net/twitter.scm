@@ -181,6 +181,17 @@
 ;; OAuth authorization flow
 ;;
 
+(define (default-authenticate-callback r-token)
+  (let1 url (twitter-authorize-url r-token)
+    (print "Open the following url and type in the shown PIN.")
+    (print url)
+    (let loop ()
+      (display "Input PIN: ") (flush)
+      (let1 pin (read-line)
+        (cond [(eof-object? pin) #f]
+              [(string-null? pin) (loop)]
+              [else pin])))))
+
 (define twitter-authenticate-request 
   (oauth-temporary-credential "http://api.twitter.com/oauth/request_token"))
 
@@ -191,9 +202,10 @@
   (oauth-access-token "http://api.twitter.com/oauth/access_token"))
 
 ;; Authenticate the client using OAuth PIN-based authentication flow.
-(define twitter-authenticate-client
-  (oauth-client-authenticator 
-   twitter-authenticate-request twitter-authorize-url  twitter-authorize))
+(define (twitter-authenticate-client key secret)
+  (let1 method (oauth-client-authenticator 
+                twitter-authenticate-request twitter-authorize)
+    (method key secret default-authenticate-callback)))
 
 ;;
 ;; Timeline methods
@@ -879,16 +891,6 @@
       (if (equal? next "0")
         (concatenate (reverse ids))
         (loop next ids)))))
-
-(define (default-input-callback url)
-  (print "Open the following url and type in the shown PIN.")
-  (print url)
-  (let loop ()
-    (display "Input PIN: ") (flush)
-    (let1 pin (read-line)
-      (cond [(eof-object? pin) #f]
-            [(string-null? pin) (loop)]
-            [else pin]))))
 
 ;; select body elements text
 (define (parse-html-message body)
