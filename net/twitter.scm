@@ -548,10 +548,10 @@
 ;;
 
 ;; require user-id or screen-name
-(define (twitter-lists/sxml cred :key (user-id #f) (screen-name #f)
+(define (twitter-lists/sxml cred :key (id #f) (user-id #f) (screen-name #f)
                             (cursor #f))
   (call/oauth->sxml cred 'get "/1/lists.xml"
-                    (make-query-params user-id screen-name cursor)))
+                    (make-query-params id user-id screen-name cursor)))
 
 ;; args are passed to twitter-lists/sxml
 (define (twitter-lists/ids cred . args)
