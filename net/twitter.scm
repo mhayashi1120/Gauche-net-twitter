@@ -877,7 +877,6 @@
 ;;TODO params
 (define (open-stream cred proc method url params :key (raise-error? #f))
 
-
   (define (safe-parse-json string)
     ;; heading white space cause rfc.json parse error.
     (let1 trimmed (string-trim string)
