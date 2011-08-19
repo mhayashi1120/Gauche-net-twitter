@@ -127,7 +127,13 @@
           twitter-help-test/sxml
           twitter-help-languages/sxml twitter-help-configuration/sxml
 
-          twitter-open-stream
+          twitter-user-stream
+          twitter-sample-stream
+          twitter-site-stream
+          twitter-filter-stream
+          twitter-retweet-stream
+          twitter-firehose-stream
+          twitter-links-stream
           ))
 (select-module net.twitter)
 
@@ -161,11 +167,8 @@
 ;;
 ;; Credential
 ;;
-(define-class <twitter-cred> ()
-  ((consumer-key :init-keyword :consumer-key)
-   (consumer-secret :init-keyword :consumer-secret)
-   (access-token :init-keyword :access-token)
-   (access-token-secret :init-keyword :access-token-secret)))
+(define-class <twitter-cred> (<oauth-cred>)
+  ())
 
 ;;
 ;; Condition for error response
@@ -832,7 +835,48 @@
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
-(define (twitter-open-stream cred proc url params :key (raise-error? #f))
+(define (twitter-user-stream cred proc :key (replies #f) (raise-error? #f))
+  (open-stream cred proc 'post "https://userstream.twitter.com/2/user.json"
+               (make-query-params replies) :raise-error? raise-error?))
+
+(define (twitter-sample-stream cred proc :key (count #f) (delimited #f) 
+                               (raise-error? #f))
+  (open-stream cred proc 'post "http://stream.twitter.com/1/statuses/sample.json"
+               (make-query-params count delimited) :raise-error? raise-error?))
+
+;;TODO not works
+(define (twitter-filter-stream cred proc :key (count #f) (delimited #f)
+                               (follow #f) (locations #f) (track #f) 
+                               (raise-error? #f))
+  (open-stream cred proc 'post "http://stream.twitter.com/1/statuses/filter.json"
+               (make-query-params count delimited follow locations track)
+               :raise-error? raise-error?))
+
+;;TODO not works
+(define (twitter-retweet-stream cred proc :key (delimited #f) (raise-error? #f))
+  (open-stream cred proc 'get "http://stream.twitter.com/1/statuses/retweet.json"
+               (make-query-params delimited) :raise-error? raise-error?))
+
+;;TODO not works
+(define (twitter-firehose-stream cred proc :key (count #f) (delimited #f) 
+                                 (raise-error? #f))
+  (open-stream cred proc 'post "http://stream.twitter.com/1/statuses/firehose.json"
+               (make-query-params count delimited) :raise-error? raise-error?))
+
+;;TODO not works
+(define (twitter-links-stream cred proc :key (delimited #f) (raise-error? #f))
+  (open-stream cred proc 'post "http://stream.twitter.com/1/statuses/links.json"
+               (make-query-params delimited) :raise-error? raise-error?))
+
+;;TODO not works
+;; beta tested
+(define (twitter-site-stream cred proc :key (raise-error? #f))
+  (open-stream cred proc 'get "https://sitestream.twitter.com/2b/site.json"
+               (make-query-params) :raise-error? raise-error?))
+
+;;TODO params
+(define (open-stream cred proc method url params :key (raise-error? #f))
+
 
   (define (safe-parse-json string)
     ;; heading white space cause rfc.json parse error.
@@ -842,9 +886,7 @@
 
   (define (auth-header)
     (oauth-auth-header 
-     "GET" url '()
-     (~ cred'consumer-key) (~ cred'consumer-secret)
-     (~ cred'access-token) (~ cred'access-token-secret)))
+     (if (eq? method 'get) "GET" "POST") url cred))
 
   (define (stream-looper code headers total retrieve)
     (check-stream-error code headers)
@@ -862,13 +904,22 @@
       (receive (host path . rest) (uri-decompose-hierarchical spec)
         (values scheme host path))))
 
-  (let1 auth (auth-header)
+  (let ((auth (auth-header))
+        (query (oauth-compose-query params)))
     (receive (scheme host path)
         (parse-uri url)
-      (http-get host path
-                :secure (string=? "https" scheme)
-                :receiver stream-looper
-                :Authorization auth))))
+      (case method
+        ((get)
+         (http-get host #`",|path|?,|query|"
+                   :secure (string=? "https" scheme)
+                   :receiver stream-looper
+                   :Authorization auth))
+        ((post)
+         ;; Must be form data
+         (http-post host path (if (pair? params) (http-compose-form-data params #f) "")
+                    :secure (string=? "https" scheme)
+                    :receiver stream-looper
+                    :Authorization auth))))))
 
 (define (check-stream-error status headers)
   (unless (equal? status "200")
@@ -950,9 +1001,7 @@
     (if cred
       (let1 auth (oauth-auth-header
                   (if (eq? method 'get) "GET" "POST")
-                  #`"http://api.twitter.com,|path|" params
-                  (~ cred'consumer-key) (~ cred'consumer-secret)
-                  (~ cred'access-token) (~ cred'access-token-secret))
+                  #`"http://api.twitter.com,|path|" cred)
         (case method
           [(get) (apply http-get "api.twitter.com"
                         #`",|path|?,(oauth-compose-query params)"
@@ -996,11 +1045,8 @@
 (define (call/oauth-post-file->sxml cred path params . opts)
 
   (define (call)
-    (let1 auth (oauth-auth-header
-                "POST"
-                #`"http://api.twitter.com,|path|" '()
-                (~ cred'consumer-key) (~ cred'consumer-secret)
-                (~ cred'access-token) (~ cred'access-token-secret))
+    (let1 auth (oauth-auth-header 
+                "POST" #`"http://api.twitter.com,|path|" cred)
       (hack-mime-composing 
        (apply http-post "api.twitter.com" path
               params
