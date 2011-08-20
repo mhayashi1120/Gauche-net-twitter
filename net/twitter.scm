@@ -343,6 +343,9 @@
                     (make-query-params id user-id screen-name 
                                        count page max-id since-id trim-user include-entities)))
 
+;;;TODO statuses/update_with_media
+;; https://upload.twitter.com/1/statuses/update_with_media.format
+
 ;;
 ;; Directmessage methods
 ;;
@@ -885,7 +888,7 @@
 
   (define (auth-header)
     (oauth-auth-header 
-     (if (eq? method 'get) "GET" "POST") url cred))
+     (if (eq? method 'get) "GET" "POST") url params cred))
 
   (define (stream-looper code headers total retrieve)
     (check-stream-error code headers)
@@ -997,22 +1000,17 @@
 
 (define (call/oauth parser cred method path params . opts)
   (define (call)
-    (if cred
-      (let1 auth (oauth-auth-header
-                  (if (eq? method 'get) "GET" "POST")
-                  #`"http://api.twitter.com,|path|" cred)
-        (case method
-          [(get) (apply http-get "api.twitter.com"
-                        #`",|path|?,(oauth-compose-query params)"
-                        :Authorization auth opts)]
-          [(post) (apply http-post "api.twitter.com" path
-                         (oauth-compose-query params)
-                         :Authorization auth opts)]))
+    (let1 auth (and cred
+                    (oauth-auth-header
+                     (if (eq? method 'get) "GET" "POST")
+                     #`"http://api.twitter.com,|path|" params cred))
       (case method
         [(get) (apply http-get "api.twitter.com"
-                      #`",|path|?,(oauth-compose-query params)" opts)]
+                      #`",|path|?,(oauth-compose-query params)"
+                      :Authorization auth opts)]
         [(post) (apply http-post "api.twitter.com" path
-                       (oauth-compose-query params) opts)])))
+                       (oauth-compose-query params)
+                       :Authorization auth opts)])))
 
   (define (retrieve status headers body)
     (check-api-error status headers body)
@@ -1045,7 +1043,7 @@
 
   (define (call)
     (let1 auth (oauth-auth-header 
-                "POST" #`"http://api.twitter.com,|path|" cred)
+                "POST" #`"http://api.twitter.com,|path|" params cred)
       (hack-mime-composing 
        (apply http-post "api.twitter.com" path
               params
