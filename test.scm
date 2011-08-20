@@ -8,6 +8,8 @@
 (use net.twitter)
 (test-module 'net.twitter)
 
+(debug-print-width #f)
+
 (use util.list)
 (use file.util)
 (use rfc.uri)
@@ -65,6 +67,9 @@
           #t 
           (and ,@expr #t)))
 
+(define (wait-a-while)
+  (sys-sleep 2))
+
 ;; exercise
 
 (test-and* "help test"
@@ -95,6 +100,9 @@
 
   (test-and* "update status"
     (set! status-id (twitter-update *cred* msg)))
+
+  ;;TODO huh?
+  (wait-a-while)
 
   (test* "show status"
          msg
@@ -130,13 +138,16 @@
     (twitter-friendship-create/sxml *cred* (assoc-ref *settings* 'user2))
     (twitter-friendship-create/sxml *cred2* (assoc-ref *settings* 'user)))
 
-  (let ((msg (string-append "direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
+  (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
         (dm-id #f))
 
     (test-and* "sending direct message"
       (set! dm-id 
             ((if-car-sxpath '(// id *text*)) 
              (twitter-direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
+
+    ;;TODO huh?
+    (wait-a-while)
 
     (test* "sent direct message"
            msg
