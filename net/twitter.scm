@@ -184,8 +184,8 @@
 ;; OAuth authorization flow
 ;;
 
-(define (default-authenticate-callback r-token)
-  (let1 url (twitter-authorize-url r-token)
+(define (default-authenticate-callback temp-cred)
+  (let1 url (twitter-authorize-url temp-cred)
     (print "Open the following url and type in the shown PIN.")
     (print url)
     (let loop ()
@@ -196,13 +196,15 @@
               [else pin])))))
 
 (define twitter-authenticate-request 
-  (oauth-temporary-credential "http://api.twitter.com/oauth/request_token"))
+  (oauth-temporary-credential "http://api.twitter.com/oauth/request_token"
+                              :class <twitter-cred>))
 
 (define twitter-authorize-url 
   (oauth-authorize-constructor "https://api.twitter.com/oauth/authorize"))
 
 (define twitter-authorize
-  (oauth-access-token "http://api.twitter.com/oauth/access_token"))
+  (oauth-credential "http://api.twitter.com/oauth/access_token"
+                    :class <twitter-cred>))
 
 ;; Authenticate the client using OAuth PIN-based authentication flow.
 (define (twitter-authenticate-client key secret)
