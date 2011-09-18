@@ -208,9 +208,9 @@
 
 ;; Authenticate the client using OAuth PIN-based authentication flow.
 (define (twitter-authenticate-client key secret)
-  (let1 method (oauth-client-authenticator 
-                twitter-authenticate-request twitter-authorize)
-    (method key secret default-authenticate-callback)))
+  (and-let* ((temp (twitter-authenticate-request key secret))
+             (verifier (default-authenticate-callback temp)))
+    (twitter-authorize temp verifier)))
 
 ;;
 ;; Timeline methods
@@ -595,8 +595,10 @@
 ;; Account methods
 ;;
 
-(define (twitter-account-verify-credentials/sxml cred)
-  (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" '()))
+(define (twitter-account-verify-credentials/sxml cred :key (include-entities #f)
+                                                 (skip-status #f))
+  (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" 
+                    (make-query-params include-entities skip-status)))
 
 (define (twitter-account-verify-credentials? cred)
   (guard (e ((<twitter-api-error> e) #f))
@@ -880,6 +882,7 @@
                (make-query-params) :raise-error? raise-error?))
 
 ;;TODO params
+;;todo fallback when connection is broken
 (define (open-stream cred proc method url params :key (raise-error? #f))
 
   (define (safe-parse-json string)

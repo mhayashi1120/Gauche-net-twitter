@@ -68,7 +68,7 @@
           (and ,@expr #t)))
 
 (define (wait-a-while)
-  (sys-sleep 2))
+  (sys-sleep 10))
 
 ;; exercise
 
@@ -255,6 +255,8 @@
 
 (test-and* "update profile background image"
   (twitter-account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
+
+(test-end)
 
 (test-start "net.favotter")
 (use net.favotter)
