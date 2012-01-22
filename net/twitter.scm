@@ -781,7 +781,6 @@
                     (make-query-params id user-id screen-name
                                        include-entities skip-status)))
 
-;; TODO id deprecated
 (define (twitter-block-exists/sxml cred :key (id #f) (user-id #f) (screen-name #f))
   (call/oauth->sxml cred 'get #`"/1/blocks/exists.xml"
                     (make-query-params id user-id screen-name)))
