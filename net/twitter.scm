@@ -381,14 +381,18 @@
                     (make-query-params source-id source-screen-name
                                        target-id target-screen-name)))
 
-(define (twitter-friendship-exists/sxml cred user-a user-b)
+(define (twitter-friendship-exists/sxml cred :key 
+                                        (user-id-a #f) (user-id-b #f)
+                                        (screen-name-a #f) (screen-name-b #f))
   (call/oauth->sxml cred 'get #`"/1/friendships/exists.xml"
-                    (make-query-params user-a user-b)))
+                    (make-query-params 
+                     user-id-a user-id-b
+                     screen-name-a screen-name-b)))
 
-(define (twitter-friendship-exists? cred user-a user-b)
+(define (twitter-friendship-exists? cred . args)
   (string=?
    ((if-car-sxpath '(friends *text*))
-    (values-ref (twitter-friendship-exists/sxml cred user-a user-b) 0))
+    (values-ref (apply twitter-friendship-exists/sxml cred args) 0))
    "true"))
 
 (define (twitter-friendship-create/sxml cred id)
@@ -397,13 +401,21 @@
 (define (twitter-friendship-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/friendships/destroy/,|id|.xml" '()))
 
-(define (twitter-friendship-incoming/sxml cred cursor)
-  (call/oauth->sxml cred 'get #`"/1/friendships/incoming.xml"
-                    (make-query-params cursor)))
+;; for backward compatibility
+(define-method twitter-friendship-incoming/sxml (cred (cursor <top>))
+  (twitter-friendship-incoming/sxml cred :cursor cursor))
 
-(define (twitter-friendship-outgoing/sxml cred cursor)
+(define-method twitter-friendship-incoming/sxml (cred :key (cursor #f) (stringify-ids #f))
+  (call/oauth->sxml cred 'get #`"/1/friendships/incoming.xml"
+                    (make-query-params cursor stringify-ids)))
+
+;; for backward compatibility
+(define-method twitter-friendship-outgoing/sxml (cred (cursor <top>))
+  (twitter-friendship-outgoing/sxml cred :cursor cursor))
+
+(define-method twitter-friendship-outgoing/sxml (cred :key (cursor #f) (stringify-ids #f))
   (call/oauth->sxml cred 'get #`"/1/friendships/outgoing.xml"
-                    (make-query-params cursor)))
+                    (make-query-params cursor stringify-ids)))
 
 (define (twitter-friendship-update/sxml cred screen-name :key (device #f)
                                         (retweets #f))
@@ -633,7 +645,9 @@
 (define (twitter-account-update-profile-background-image/sxml cred file :key
                                                               (tile #f)
                                                               (include-entities #f)
-                                                              (skip-status #f))
+                                                              (skip-status #f)
+                                                              ;;TODO test
+                                                              (use #f))
   (call/oauth-post-file->sxml cred #`"/1/account/update_profile_background_image.xml"
                               `((image :file ,file)
                                 ,@(make-query-params 
@@ -642,10 +656,12 @@
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (twitter-account-update-profile-colors/sxml cred :key 
                                                     (profile-background-color #f)
-                                                    (profile-text-color #f)
                                                     (profile-link-color #f)
                                                     (profile-sidebar-fill-color #f)
-                                                    (profile-sidebar-border-color #f))
+                                                    (profile-sidebar-border-color #f)
+                                                    (profile-text-color #f)
+                                                    (include-entities #f)
+                                                    (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/account/update_profile_colors.xml"
                     (make-query-params profile-background-color profile-text-color
                                        profile-link-color
@@ -840,6 +856,8 @@
 ;;; Stream API
 ;;;
 
+;;TODO about http-user-agent
+
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
 (define (twitter-user-stream cred proc :key (replies #f) (raise-error? #f))
@@ -899,7 +917,7 @@
     (check-stream-error code headers)
     (let loop ()
       (guard (e (else 
-                 (when raise-error? (raise e))))
+                 (and raise-error? (raise e))))
         (receive (port size) (retrieve)
           (and-let* ((s (read-string size port))
                      (json (safe-parse-json s)))
