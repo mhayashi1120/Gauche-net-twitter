@@ -757,21 +757,31 @@
 ;; Block methods
 ;;
 
-(define (twitter-blocks/sxml cred :key (page #f))
+(define (twitter-blocks/sxml cred :key (page #f)
+                             (per-page #f) (include-entities #f) 
+                             (skip-status #f))
   (call/oauth->sxml cred 'get #`"/1/blocks/blocking.xml"
-                    (make-query-params page)))
+                    (make-query-params page 
+                                       per-page include-entities
+                                       skip-status)))
 
-(define (twitter-blocks/ids/sxml cred)
-  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml" '()))
+(define (twitter-blocks/ids/sxml cred :key (stringfy-ids #f))
+  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml" 
+                    (make-query-params stringfy-ids)))
 
-(define (twitter-block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (twitter-block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                   (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/blocks/create.xml"
-                    (make-query-params id user-id screen-name)))
+                    (make-query-params id user-id screen-name
+                                       include-entities skip-status)))
 
-(define (twitter-block-destroy/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (twitter-block-destroy/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                                    (include-entities #f) (skip-status #f))
   (call/oauth->sxml cred 'post #`"/1/blocks/destroy.xml"
-                    (make-query-params id user-id screen-name)))
+                    (make-query-params id user-id screen-name
+                                       include-entities skip-status)))
 
+;; TODO id deprecated
 (define (twitter-block-exists/sxml cred :key (id #f) (user-id #f) (screen-name #f))
   (call/oauth->sxml cred 'get #`"/1/blocks/exists.xml"
                     (make-query-params id user-id screen-name)))
