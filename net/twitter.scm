@@ -287,11 +287,13 @@
 
 (define (twitter-update/sxml cred message :key (in-reply-to-status-id #f)
                              (lat #f) (long #f) (place-id #f)
-                             (display-coordinates #f))
+                             (display-coordinates #f)
+                             (trim-user #f) (include-entities #f))
   (call/oauth->sxml cred 'post "/1/statuses/update.xml"
                     `(("status" ,message)
                       ,@(make-query-params in-reply-to-status-id lat long
-                                           place-id display-coordinates))))
+                                           place-id display-coordinates
+                                           trim-user include-entities))))
 
 ;; Returns tweet id on success
 (define (twitter-update cred message . opts)
@@ -869,6 +871,7 @@
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
+;; TODO erro-handler keyword
 (define (twitter-user-stream cred proc :key (replies #f) (raise-error? #f))
   (open-stream cred proc 'post "https://userstream.twitter.com/2/user.json"
                (make-query-params replies) :raise-error? raise-error?))
@@ -926,6 +929,7 @@
     (check-stream-error code headers)
     (let loop ()
       (guard (e (else 
+                 ;; TODO
                  (and raise-error? (raise e))))
         (receive (port size) (retrieve)
           (and-let* ((s (read-string size port))
