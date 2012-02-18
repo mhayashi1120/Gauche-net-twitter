@@ -4,17 +4,35 @@
 
 (use gauche.test)
 
-(test-start "net.twitter")
-(use net.twitter)
-(test-module 'net.twitter)
+(add-load-path ".")
 
-(debug-print-width #f)
-
-(use util.list)
+(use gauche.process)
 (use file.util)
-(use rfc.uri)
+(use net.favotter)
+(use net.twitter)
+(use net.twitter.account)
+(use net.twitter.auth)
+(use net.twitter.block)
+(use net.twitter.core)
+(use net.twitter.direct-message)
+(use net.twitter.favorite)
+(use net.twitter.friendship)
+(use net.twitter.help)
+(use net.twitter.legal)
+(use net.twitter.list)
+(use net.twitter.saved-search)
+(use net.twitter.spam)
+(use net.twitter.timeline)
+(use net.twitter.tweet :prefix tweet:)
+(use net.twitter.user)
 (use rfc.http)
+(use rfc.uri)
 (use srfi-1)
+(use srfi-13)
+(use srfi-19)
+(use srfi-27)
+(use sxml.sxpath)
+(use util.list)
 
 (define *settings*
   (with-input-from-file ".test-settings.scm"
@@ -70,28 +88,59 @@
 (define (wait-a-while)
   (sys-sleep 10))
 
+(map
+ test-module
+ '(
+   net.twitter.user
+   net.twitter.tweet
+   net.twitter.trends
+   net.twitter.timeline
+   net.twitter.stream
+   net.twitter.spam
+   net.twitter.search
+   net.twitter.saved-search
+   net.twitter.notification
+   net.twitter.list
+   net.twitter.legal
+   net.twitter.help
+   net.twitter.friendship
+   net.twitter.favorite
+   net.twitter.direct-message
+   net.twitter.core
+   net.twitter.block
+   net.twitter.auth
+   net.twitter.account
+   net.favotter
+   net.twitter
+   ))
+
+(define (test-executable file)
+  (run-process 
+   `(gosh -l ,file -b -u "gauche.test" -e "(test-module 'user)")
+   :wait #t))
+
+(test-executable "net/twitauth.scm")
+
 ;; exercise
 
+
 (test-and* "help test"
-  (twitter-help-test/sxml *cred*))
+  (help-test/sxml *cred*))
 
 (test-and* "help configuration"
-  (twitter-help-configuration/sxml *cred*))
+  (help-configuration/sxml *cred*))
 
 (test-and* "help languages"
-  (twitter-help-languages/sxml *cred*))
+  (help-languages/sxml *cred*))
 
 (test-and* "legal tos"
-  (twitter-legal-tos/sxml *cred*))
+  (legal-tos/sxml *cred*))
 
 (test-and* "legal privacy"
-  (twitter-legal-privacy/sxml *cred*))
-
-(use srfi-19)
-(use sxml.sxpath)
+  (legal-privacy/sxml *cred*))
 
 (test-and* "show user"
-  (twitter-user-show/sxml *cred* :id (assoc-ref *settings* 'user)))
+  (user-show/sxml *cred* :id (assoc-ref *settings* 'user)))
 
 (let ((msg (string-append "マルチバイト文字と日付 " (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
       (user-id #f)
@@ -99,44 +148,44 @@
       (status-id #f))
 
   (test-and* "update status"
-    (set! status-id (twitter-update *cred* msg)))
+    (set! status-id (tweet:update *cred* msg)))
 
   ;;TODO huh?
   (wait-a-while)
 
   (test* "show status"
          msg
-         ((if-car-sxpath '(status text *text*)) (twitter-show/sxml *cred* status-id)))
+         ((if-car-sxpath '(status text *text*)) (tweet:show/sxml *cred* status-id)))
 
   (test-and* "fetching user info"
     (set! user-id 
-          (let1 sxml (twitter-user-show/sxml *cred* :id (assoc-ref *settings* 'user))
+          (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
             ((if-car-sxpath '(user id *text*)) sxml)))
     (set! user-id2
-          (let1 sxml (twitter-user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
+          (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
             ((if-car-sxpath '(user id *text*)) sxml))))
 
   (test-and* "fetching timeline by id"
-    (twitter-user-timeline/sxml #f :id (assoc-ref *settings* 'user)))
+    (user-timeline/sxml #f :id (assoc-ref *settings* 'user)))
 
   (test-and* "fetching timeline by user-id"
-    (twitter-user-timeline/sxml #f :user-id user-id))
+    (user-timeline/sxml #f :user-id user-id))
 
   (test-and* "fetching public timeline"
-    (twitter-public-timeline/sxml))
+    (public-timeline/sxml))
 
   (test-and* "fetching home timeline"
-    (twitter-home-timeline/sxml *cred*))
+    (home-timeline/sxml *cred*))
 
   (test-and* "fetching mentions"
-    (twitter-mentions/sxml *cred*))
+    (mentions/sxml *cred*))
 
   (test-and* "searching"
-    (twitter-search/sxml (assoc-ref *settings* 'user)))
+    (search/sxml (assoc-ref *settings* 'user)))
 
   (test-and* "creating friendships"
-    (twitter-friendship-create/sxml *cred* (assoc-ref *settings* 'user2))
-    (twitter-friendship-create/sxml *cred2* (assoc-ref *settings* 'user)))
+    (friendship-create/sxml *cred* (assoc-ref *settings* 'user2))
+    (friendship-create/sxml *cred2* (assoc-ref *settings* 'user)))
 
   (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
         (dm-id #f))
@@ -144,96 +193,94 @@
     (test-and* "sending direct message"
       (set! dm-id 
             ((if-car-sxpath '(// id *text*)) 
-             (twitter-direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
+             (direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
 
     ;;TODO huh?
     (wait-a-while)
 
     (test* "sent direct message"
            msg
-           ((if-car-sxpath '(// text *text*)) (twitter-direct-messages-sent/sxml *cred*)))
+           ((if-car-sxpath '(// text *text*)) (direct-messages-sent/sxml *cred*)))
 
     (test* "received direct message"
            msg
-           ((if-car-sxpath '(// text *text*)) (twitter-direct-messages/sxml *cred2*)))
+           ((if-car-sxpath '(// text *text*)) (direct-messages/sxml *cred2*)))
 
     (test-and* "destroying direct message"
-      (twitter-direct-message-destroy/sxml *cred* dm-id)))
+      (direct-message-destroy/sxml *cred* dm-id)))
 
   (test-and* "retweeting status"
-    (twitter-retweet/sxml *cred2* status-id))
+    (tweet:retweet/sxml *cred2* status-id))
 
   (test-and* "retweets of status"
-    (twitter-retweets/sxml *cred* status-id)
-    (twitter-retweeted-by/sxml *cred* status-id)
-    (twitter-retweeted-by-ids/sxml *cred* status-id))
+    (tweet:retweets/sxml *cred* status-id)
+    (tweet:retweeted-by/sxml *cred* status-id)
+    (tweet:retweeted-by-ids/sxml *cred* status-id))
 
   (test-and* "retweets of me"
-    (twitter-retweets-of-me/sxml *cred*))
+    (retweets-of-me/sxml *cred*))
 
   (test-and* "retweeted by him"
-    (twitter-retweeted-by-me/sxml *cred2*))
+    (retweeted-by-me/sxml *cred2*))
 
   (test-and* "favorite status"
-    (twitter-favorite-create/sxml *cred2* status-id))
+    (favorite-create/sxml *cred2* status-id))
 
   (test-and* "favorites"
-    (twitter-favorites/sxml *cred* user-id2))
+    (favorites/sxml *cred* user-id2))
 
   (test-and* "unfavorite status"
-    (twitter-favorite-destroy/sxml *cred2* status-id))
+    (favorite-destroy/sxml *cred2* status-id))
 
   (test-and* "friend ids"
-    (twitter-friends/ids/sxml *cred*))
+    (friends/ids/sxml *cred*))
 
   (test-and* "follower ids"
-    (twitter-followers/ids/sxml *cred*))
+    (followers/ids/sxml *cred*))
 
   (let ((id #f))
     (test-and* "create saved search"
-      (let1 sxml (twitter-saved-search-create/sxml *cred* "TEST exclude:retweets")
+      (let1 sxml (saved-search-create/sxml *cred* "TEST exclude:retweets")
         (set! id ((if-car-sxpath '(// id *text*)) sxml))))
 
     (test-and* "showing saved search"
-      (twitter-saved-search-show/sxml *cred* id))
+      (saved-search-show/sxml *cred* id))
 
     (test-and* "list saved searches"
-      (twitter-saved-searches/sxml *cred*))
+      (saved-searches/sxml *cred*))
 
     (test-and* "destroying saved search"
-      (twitter-saved-search-destroy/sxml *cred* id)))
+      (saved-search-destroy/sxml *cred* id)))
 
   (test-and* "destroying friendships"
-    (twitter-friendship-destroy/sxml *cred* (assoc-ref *settings* 'user2))
-    (twitter-friendship-destroy/sxml *cred2* (assoc-ref *settings* 'user)))
+    (friendship-destroy/sxml *cred* (assoc-ref *settings* 'user2))
+    (friendship-destroy/sxml *cred2* (assoc-ref *settings* 'user)))
 
   (test-and* "deleting status"
-    (twitter-destroy/sxml *cred* status-id))
+    (tweet:destroy/sxml *cred* status-id))
 
   (test-and* "block"
-    (twitter-block-create/sxml *cred* :id (assoc-ref *settings* 'user2))
-    (twitter-block-exists? *cred* :id (assoc-ref *settings* 'user2))
-    (member user-id2 (twitter-blocks/ids *cred*))
-    (twitter-block-destroy/sxml *cred* :id (assoc-ref *settings* 'user2)))
-
+    (block-create/sxml *cred* :id (assoc-ref *settings* 'user2))
+    (block-exists? *cred* :id (assoc-ref *settings* 'user2))
+    (member user-id2 (blocks/ids *cred*))
+    (block-destroy/sxml *cred* :id (assoc-ref *settings* 'user2)))
   )
+
 
 ;; TODO list api
 ;; TODO streaming api
 
 (test-and* "rate limit user1"
-  (twitter-account-rate-limit-status/sxml *cred*))
+  (account-rate-limit-status/sxml *cred*))
 
 (test-and* "account credentials"
-  (twitter-account-verify-credentials? *cred*))
+  (account-verify-credentials? *cred*))
 
-(use srfi-13)
-(use srfi-27)
 (define (random-color)
   (string-pad (number->string (random-integer #x1000000) 16) 6 #\0))
 
 (test-and* "update profile color"
-  (twitter-account-update-profile-colors/sxml 
+  (account-update-profile-colors/sxml 
    *cred*
    :profile-background-color (random-color)
    :profile-text-color (random-color)
@@ -251,20 +298,12 @@
   (random-picture (filter (^x (#/^[^-]+\.png$/ x)) (sys-readdir "./testdata"))))
 
 (test-and* "update profile image"
-  (twitter-account-update-profile-image/sxml *cred* (random-mini-picture)))
+  (account-update-profile-image/sxml *cred* (random-mini-picture)))
 
 (test-and* "update profile background image"
-  (twitter-account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
+  (account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
 
 (test-end)
-
-(test-start "net.favotter")
-(use net.favotter)
-(test-module 'net.favotter)
-
-(test-end)
-
-
 
 
 
