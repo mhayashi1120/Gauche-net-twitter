@@ -13,7 +13,7 @@
   (use util.match)
   (export 
    <twitter-cred> <twitter-api-error>
-   make-query-params
+   make-query-params build-url
    retrieve-stream check-api-error
    call/oauth->sxml call/oauth
    call/oauth-post->sxml call/oauth-upload->sxml

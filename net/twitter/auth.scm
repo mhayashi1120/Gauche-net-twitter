@@ -28,16 +28,16 @@
 
 (define twitter-authenticate-request 
   (oauth-temporary-credential 
-   "http://api.twitter.com/oauth/request_token"
+   (build-url "api.twitter.com" "/oauth/request_token")
    :class <twitter-cred>))
 
 (define twitter-authorize-url 
   (oauth-authorize-constructor 
-   "https://api.twitter.com/oauth/authorize"))
+   (build-url "api.twitter.com" "/oauth/authorize")))
 
 (define twitter-authorize
   (oauth-credential
-   "http://api.twitter.com/oauth/access_token"
+   (build-url "api.twitter.com" "/oauth/access_token")
    :class <twitter-cred>))
 
 ;; Authenticate the client using OAuth PIN-based authentication flow.
