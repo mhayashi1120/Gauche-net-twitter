@@ -2,7 +2,7 @@
 ;;;  This is a convenience script to obtain access token.
 ;;;  
 
-(use net.twitter)
+(use net.twitter.auth)
 (use util.match)
 
 (define (usage)
