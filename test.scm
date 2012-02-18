@@ -5,7 +5,7 @@
 (use gauche.test)
 
 (add-load-path ".")
-(add-load-path "../Gauche-net-oauth")
+(add-load-path "Gauche-net-oauth")
 
 (use gauche.process)
 (use file.util)
