@@ -5,6 +5,7 @@
 (use gauche.test)
 
 (add-load-path ".")
+(add-load-path "../Gauche-net-oauth")
 
 (use gauche.process)
 (use file.util)
@@ -89,37 +90,38 @@
 (define (wait-a-while)
   (sys-sleep 10))
 
-(map
- test-module
- '(
-   net.twitter.user
-   net.twitter.tweet
-   net.twitter.trends
-   net.twitter.timeline
-   net.twitter.stream
-   net.twitter.spam
-   net.twitter.search
-   net.twitter.saved-search
-   net.twitter.notification
-   net.twitter.list
-   net.twitter.legal
-   net.twitter.help
-   net.twitter.friendship
-   net.twitter.favorite
-   net.twitter.direct-message
-   net.twitter.core
-   net.twitter.block
-   net.twitter.auth
-   net.twitter.account
-   net.favotter
-   net.twitter
-   ))
+(test-module 'net.twitter.user)
+(test-module 'net.twitter.tweet)
+(test-module 'net.twitter.trends)
+(test-module 'net.twitter.timeline)
+(test-module 'net.twitter.stream)
+(test-module 'net.twitter.spam)
+(test-module 'net.twitter.search)
+(test-module 'net.twitter.saved-search)
+(test-module 'net.twitter.notification)
+(test-module 'net.twitter.list)
+(test-module 'net.twitter.legal)
+(test-module 'net.twitter.help)
+(test-module 'net.twitter.friendship)
+(test-module 'net.twitter.favorite)
+(test-module 'net.twitter.direct-message)
+(test-module 'net.twitter.core)
+(test-module 'net.twitter.block)
+(test-module 'net.twitter.auth)
+(test-module 'net.twitter.account)
+(test-module 'net.favotter)
+(test-module 'net.twitter)
 
 (define (test-executable file)
   ;;FIXME only output the result...
-  (run-process 
-   `(gosh -b -l ,file -u "gauche.test" -e "(begin (test-module 'user) (exit 0))")
-   :wait #t))
+  (sys-putenv "GAUCHE_LOAD_PATH" (string-join *load-path* ":"))
+  (unwind-protect
+   (run-process 
+    `(gosh -b -l ,file
+           -u "gauche.test"
+           -e "(begin (test-module 'user) (exit 0))")
+    :wait #t)
+   (sys-putenv "GAUCHE_LOAD_PATH" "")))
 
 (test-executable "net/twitauth.scm")
 
@@ -197,7 +199,7 @@
             ((if-car-sxpath '(// id *text*)) 
              (direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
 
-    ;;TODO huh?
+    ;;TODO why?
     (wait-a-while)
 
     (test* "sent direct message"
