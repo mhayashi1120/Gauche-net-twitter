@@ -21,6 +21,7 @@
 (use net.twitter.legal)
 (use net.twitter.list)
 (use net.twitter.saved-search)
+(use net.twitter.search)
 (use net.twitter.spam)
 (use net.twitter.timeline)
 (use net.twitter.tweet :prefix tweet:)
@@ -115,8 +116,9 @@
    ))
 
 (define (test-executable file)
+  ;;FIXME only output the result...
   (run-process 
-   `(gosh -l ,file -b -u "gauche.test" -e "(test-module 'user)")
+   `(gosh -b -l ,file -u "gauche.test" -e "(begin (test-module 'user) (exit 0))")
    :wait #t))
 
 (test-executable "net/twitauth.scm")
@@ -150,7 +152,7 @@
   (test-and* "update status"
     (set! status-id (tweet:update *cred* msg)))
 
-  ;;TODO huh?
+  ;;TODO why?
   (wait-a-while)
 
   (test* "show status"
