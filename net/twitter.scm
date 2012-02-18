@@ -32,6 +32,7 @@
 
           twitter-show/sxml
           twitter-update/sxml twitter-update
+          twitter-update-with-media/sxml
           twitter-destroy/sxml
           twitter-retweet/sxml
           twitter-retweets/sxml
@@ -196,15 +197,18 @@
               [else pin])))))
 
 (define twitter-authenticate-request 
-  (oauth-temporary-credential "http://api.twitter.com/oauth/request_token"
-                              :class <twitter-cred>))
+  (oauth-temporary-credential 
+   "http://api.twitter.com/oauth/request_token"
+   :class <twitter-cred>))
 
 (define twitter-authorize-url 
-  (oauth-authorize-constructor "https://api.twitter.com/oauth/authorize"))
+  (oauth-authorize-constructor 
+   "https://api.twitter.com/oauth/authorize"))
 
 (define twitter-authorize
-  (oauth-credential "http://api.twitter.com/oauth/access_token"
-                    :class <twitter-cred>))
+  (oauth-credential
+   "http://api.twitter.com/oauth/access_token"
+   :class <twitter-cred>))
 
 ;; Authenticate the client using OAuth PIN-based authentication flow.
 (define (twitter-authenticate-client key secret)
@@ -300,6 +304,23 @@
   ((if-car-sxpath '(// status id *text*))
    (values-ref (apply twitter-update/sxml cred message opts) 0)))
 
+(define (twitter-update-with-media/sxml cred message media 
+                                        :key (possibly-sensitive #f)
+                                        (in-reply-to-status-id #f)
+                                        (lat #f) (long #f) (place-id #f)
+                                        (display-coordinates #f))
+  ;;TODO media 
+  (call/oauth-post-file->sxml 
+   cred "/1/statuses/update_with_media.xml"
+   `(("status" ,message)
+     ,@(map (^ (i m) `("media[]"
+                       :file ,m 
+                       :content-type "multipart/form-data;"))
+            (iota (length media) 0) media)
+     ,@(make-query-params possibly-sensitive 
+                          in-reply-to-status-id lat long
+                          place-id display-coordinates))))
+
 (define (twitter-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" '()))
 
@@ -346,9 +367,6 @@
   (call/oauth->sxml cred 'get #`"/1/statuses/retweeted_by_user.xml"
                     (make-query-params id user-id screen-name 
                                        count page max-id since-id trim-user include-entities)))
-
-;;;TODO statuses/update_with_media
-;; https://upload.twitter.com/1/statuses/update_with_media.format
 
 ;;
 ;; Directmessage methods
@@ -871,7 +889,7 @@
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
-;; TODO erro-handler keyword
+;; TODO error-handler keyword
 (define (twitter-user-stream cred proc :key (replies #f) (raise-error? #f))
   (open-stream cred proc 'post "https://userstream.twitter.com/2/user.json"
                (make-query-params replies) :raise-error? raise-error?))
@@ -1039,6 +1057,7 @@
     (let1 auth (and cred
                     (oauth-auth-header
                      (if (eq? method 'get) "GET" "POST")
+                     ;;TODO https
                      #`"http://api.twitter.com,|path|" params cred))
       (case method
         [(get) (apply http-get "api.twitter.com"
@@ -1078,6 +1097,7 @@
 (define (call/oauth-post-file->sxml cred path params . opts)
 
   (define (call)
+    ;;TODO https
     (let1 auth (oauth-auth-header 
                 "POST" #`"http://api.twitter.com,|path|" params cred)
       (hack-mime-composing 
