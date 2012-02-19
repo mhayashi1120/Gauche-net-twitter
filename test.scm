@@ -117,7 +117,6 @@
   (unwind-protect
    (run-process 
     `(gosh -b 
-           -I "."
            -l ,file
            -u "gauche.test"
            -e "(begin (test-module 'user) (exit 0))")
