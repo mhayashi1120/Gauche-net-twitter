@@ -114,14 +114,14 @@
 
 (define (test-executable file)
   ;;FIXME only output the result...
-  (sys-putenv "GAUCHE_LOAD_PATH" (string-join *load-path* ":"))
   (unwind-protect
    (run-process 
-    `(gosh -b -l ,file
+    `(gosh -b 
+           -I "."
+           -l ,file
            -u "gauche.test"
            -e "(begin (test-module 'user) (exit 0))")
-    :wait #t)
-   (sys-putenv "GAUCHE_LOAD_PATH" "")))
+    :wait #t)))
 
 (test-executable "net/twitauth.scm")
 

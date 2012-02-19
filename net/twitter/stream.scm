@@ -24,6 +24,7 @@
 ;;;
 
 ;;TODO about http-user-agent
+;; TODO https ? http?
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
