@@ -41,7 +41,7 @@
 (define (mentions/sxml cred :key (since-id #f) (max-id #f)
                        (count #f) (page #f)
                        (trim-user #f) (include-rts #f) (include-entities #f))
-  (call/oauth->sxml cred 'get "/statuses/mentions.xml"
+  (call/oauth->sxml cred 'get "/1/statuses/mentions.xml"
                     (make-query-params since-id max-id count page
                                        trim-user include-rts include-entities)))
 

@@ -11,7 +11,7 @@
   (use text.tr)
   (use util.list)
   (use util.match)
-  (export 
+  (export
    <twitter-cred> <twitter-api-error>
    make-query-params build-url
    retrieve-stream check-api-error
@@ -47,7 +47,7 @@
 (define-macro (make-query-params . vars)
   `(cond-list
     ,@(map (lambda (v)
-             `(,v `(,',(string-tr (x->string v) "-" "_") 
+             `(,v `(,',(string-tr (x->string v) "-" "_")
                     ,(cond
                       [(eq? ,v #t) "t"]
                       [else (x->string ,v)]))))
@@ -63,19 +63,8 @@
       (for-each (cut display <> port) `("\r\n--" ,boundary "--\r\n")))
     boundary))
 
-(define-macro (hack-mime-composing . expr)
-  (let ((original (gensym)))
-    `(let ((,original #f))
-       (with-module rfc.mime
-         (set! ,original mime-compose-message)
-         (set! mime-compose-message twitter-mime-compose))
-       (unwind-protect
-        (begin ,@expr)
-        (with-module rfc.mime
-          (set! mime-compose-message ,original))))))
-
 (define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth (lambda (body) 
+  (apply call/oauth (lambda (body)
                       (call-with-input-string body (cut ssax:xml->sxml <> '())))
 		 cred method path params opts))
 
@@ -100,38 +89,42 @@
   (call-with-values call retrieve))
 
 (define (call/oauth-post->sxml cred path files params . opts)
-
-  (define (call)
-    (let1 auth (oauth-auth-header 
-                "POST" (build-url "api.twitter.com" path)
-                params cred)
-      (hack-mime-composing 
-       (apply http-post "api.twitter.com" 
-              (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
-              files :Authorization auth :secure (twitter-use-https) opts))))
-
-  (define (retrieve status headers body)
-    (check-api-error status headers body)
-    (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
-            headers))
-
-  (call-with-values call retrieve))
+  (apply
+   (call/oauth-file-sender "api.twitter.com")
+   cred path files params opts))
 
 (define (call/oauth-upload->sxml cred path files params . opts)
-  (define (call)
-    (let1 auth (oauth-auth-header 
-                "POST" (build-url "upload.twitter.com" path) params cred)
-      (hack-mime-composing
-       (apply http-post "upload.twitter.com" 
-              #`",|path|?,(oauth-compose-query params)"
-              files :Authorization auth :secure (twitter-use-https) opts))))
+  (apply
+   (call/oauth-file-sender "upload.twitter.com")
+   cred path files params opts))
 
-  (define (retrieve status headers body)
-    (check-api-error status headers body)
-    (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
-            headers))
+(define-macro (hack-mime-composing . expr)
+  (let ((original (gensym)))
+    `(let ((,original #f))
+       (with-module rfc.mime
+         (set! ,original mime-compose-message)
+         (set! mime-compose-message twitter-mime-compose))
+       (unwind-protect
+        (begin ,@expr)
+        (with-module rfc.mime
+          (set! mime-compose-message ,original))))))
 
-  (call-with-values call retrieve))
+(define (call/oauth-file-sender host)
+  (^ [cred path files params . opts]
+    (define (call)
+      (let1 auth (oauth-auth-header
+                  "POST" (build-url host path) params cred)
+        (hack-mime-composing
+         (apply http-post host
+                (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
+                files :Authorization auth :secure (twitter-use-https) opts))))
+
+    (define (retrieve status headers body)
+      (check-api-error status headers body)
+      (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
+              headers))
+
+    (call-with-values call retrieve)))
 
 (define (build-url host path)
   (string-append
@@ -160,7 +153,7 @@
                       (error <twitter-api-error>
                              :status status :headers headers :body body
                              :body-json body-json
-                             (or (and body-json 
+                             (or (and body-json
                                       (guard (e (else #f))
                                         (aref (vref (aref body-json "errors") 0) "message")))
                                  body))))]
@@ -181,7 +174,7 @@
      ((null? lines)
       (string-join (reverse ret) " "))
 	 ((#/<h[0-9]>([^<]+)<\/h[0-9]>/ (car lines)) =>
-	  (lambda (m) 
+	  (lambda (m)
         (loop (cdr lines) (cons (m 1) ret))))
      (else
       (loop (cdr lines) ret)))))
