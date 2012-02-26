@@ -4,9 +4,6 @@
 
 (use gauche.test)
 
-(add-load-path ".")
-(add-load-path "Gauche-net-oauth")
-
 (use gauche.process)
 (use file.util)
 (use net.favotter)
@@ -161,12 +158,13 @@
          ((if-car-sxpath '(status text *text*)) (tweet:show/sxml *cred* status-id)))
 
   (test-and* "fetching user info"
-    (set! user-id 
-          (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
-            ((if-car-sxpath '(user id *text*)) sxml)))
-    (set! user-id2
-          (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
-            ((if-car-sxpath '(user id *text*)) sxml))))
+    (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
+      (set! user-id ((if-car-sxpath '(user id *text*)) sxml))
+      user-id)
+    
+    (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
+      (set! user-id2 ((if-car-sxpath '(user id *text*)) sxml))
+      user-id2))
 
   (test-and* "fetching timeline by id"
     (user-timeline/sxml #f :id (assoc-ref *settings* 'user)))
