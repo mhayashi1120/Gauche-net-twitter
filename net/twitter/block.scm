@@ -18,15 +18,15 @@
 ;;
 
 (define (blocks/sxml cred :key (page #f)
-                     (per-page #f) (include-entities #f) 
+                     (per-page #f) (include-entities #f)
                      (skip-status #f))
   (call/oauth->sxml cred 'get #`"/1/blocks/blocking.xml"
-                    (make-query-params page 
+                    (make-query-params page
                                        per-page include-entities
                                        skip-status)))
 
 (define (blocks/ids/sxml cred :key (stringfy-ids #f))
-  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml" 
+  (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml"
                     (make-query-params stringfy-ids)))
 
 (define (block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f)
@@ -55,6 +55,6 @@
     (apply block-exists/sxml args)
     #t))
 
-(define (blocks/ids cred)
-  ((sxpath '(// id *text*)) (blocks/ids/sxml cred)))
+(define (blocks/ids cred . args)
+  ((sxpath '(// id *text*)) (apply blocks/ids/sxml cred args)))
 
