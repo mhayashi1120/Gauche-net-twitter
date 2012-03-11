@@ -3,7 +3,6 @@
   (use net.twitter.core)
   (use util.list)
   (export
-   public-timeline/sxml
    home-timeline/sxml
    user-timeline/sxml
    mentions/sxml
@@ -19,10 +18,6 @@
 ;;
 ;; Timeline methods
 ;;
-(define (public-timeline/sxml :key (trim-user #f) (include-entities #f))
-  (call/oauth->sxml #f 'get "/1/statuses/public_timeline.xml"
-                    (make-query-params trim-user include-entities)))
-
 (define (home-timeline/sxml cred :key (since-id #f) (max-id #f)
                             (count #f) (page #f)
                             (trim-user #f) (include-entities #f))
