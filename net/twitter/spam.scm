@@ -5,10 +5,8 @@
    report-spam/sxml))
 (select-module net.twitter.spam)
 
-(define (report-spam/sxml cred :key (id #f) (user-id #f) (screen-name #f)
-                          (include-entities #f) (skip-status #f))
+(define (report-spam/sxml cred :key (id #f) (user-id #f) (screen-name #f))
   (call/oauth->sxml cred 'post #`"/1/report_spam.xml"
-                    (make-query-params id user-id screen-name
-                                       include-entities skip-status)))
+                    (make-query-params id user-id screen-name)))
 
 

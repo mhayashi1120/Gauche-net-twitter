@@ -26,19 +26,20 @@
 ;;
 ;; Credential
 ;;
+
 (define-class <twitter-cred> (<oauth-cred>)
   ())
 
 ;;
 ;; Condition for error response
 ;;
+
 (define-condition-type <twitter-api-error> <error> #f
   (status #f)
   (headers #f)
   (body #f)
   (body-sxml #f)
   (body-json #f))
-
 
 ;;
 ;; A convenience macro to construct query parameters, skipping
@@ -63,9 +64,12 @@
       (for-each (cut display <> port) `("\r\n--" ,boundary "--\r\n")))
     boundary))
 
+(define (parse-xml-string str)
+  (call-with-input-string str
+    (cut ssax:xml->sxml <> '())))
+
 (define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth (lambda (body)
-                      (call-with-input-string body (cut ssax:xml->sxml <> '())))
+  (apply call/oauth parse-xml-string
 		 cred method path params opts))
 
 (define (call/oauth parser cred method path params . opts)
@@ -83,8 +87,7 @@
                        :Authorization auth :secure (twitter-use-https) opts)])))
 
   (define (retrieve status headers body)
-    (check-api-error status headers body)
-    (values (parser body) headers))
+    (%api-adapter status headers body))
 
   (call-with-values call retrieve))
 
@@ -120,9 +123,7 @@
                 files :Authorization auth :secure (twitter-use-https) opts))))
 
     (define (retrieve status headers body)
-      (check-api-error status headers body)
-      (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
-              headers))
+      (%api-adapter status headers body))
 
     (call-with-values call retrieve)))
 
@@ -131,37 +132,63 @@
    (if (twitter-use-https) "https" "http")
    "://" host path))
 
+(define (%api-adapter status headers body)
+  (let1 type (if-let1 ct (rfc822-header-ref headers "content-type")
+               (match (mime-parse-content-type ct)
+                 [(_ "xml" . _) 'xml]
+                 [(_ "json" . _) 'json]
+                 [(_ "html" . _) 'html])
+               (error <twitter-api-error>
+                      :status status :headers headers :body body
+                      body))
+    (unless (equal? status "200")
+      (raise-api-error type status headers body))
+    (ecase type
+      ['xml
+       (values (parse-xml-string body) headers)]
+      ['json
+       (values (parse-json-string body) headers)])))
+
+(define (raise-api-error type status headers body)
+  (ecase type
+    ['xml
+     (let1 body-sxml
+         (guard (e (else #f))
+           (parse-xml-string body))
+       (error <twitter-api-error>
+              :status status :headers headers :body body
+              :body-sxml body-sxml
+              (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
+                  body)))]
+    ['json
+     (let1 body-json
+         (guard (e (else #f))
+           (parse-json-string body))
+       (let ((aref assoc-ref)
+             (vref vector-ref))
+         (error <twitter-api-error>
+                :status status :headers headers :body body
+                :body-json body-json
+                (or (and body-json
+                         (guard (e (else #f))
+                           (aref (vref (aref body-json "errors") 0) "message")))
+                    body))))]
+    ['html
+     (error <twitter-api-error>
+            :status status :headers headers :body body
+            (parse-html-message body))]))
+
 (define (check-api-error status headers body)
   (unless (equal? status "200")
     (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
           (match (mime-parse-content-type ct)
-                 [(_ "xml" . _)
-                  (let1 body-sxml
-                      (guard (e (else #f))
-                        (call-with-input-string body (cut ssax:xml->sxml <> '())))
-                    (error <twitter-api-error>
-                           :status status :headers headers :body body
-                           :body-sxml body-sxml
-                           (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
-                               body)))]
-                 [(_ "json" . _)
-                  (let1 body-json
-                      (guard (e (else #f))
-                        (parse-json-string body))
-                    (let ((aref assoc-ref)
-                          (vref vector-ref))
-                      (error <twitter-api-error>
-                             :status status :headers headers :body body
-                             :body-json body-json
-                             (or (and body-json
-                                      (guard (e (else #f))
-                                        (aref (vref (aref body-json "errors") 0) "message")))
-                                 body))))]
-                 [(_ "html" . _)
-                  (error <twitter-api-error>
-                         :status status :headers headers :body body
-                         (parse-html-message body))]
-                 [_ #f]))
+            [(_ "xml" . _)
+             (raise-api-error 'xml status headers body)]
+            [(_ "json" . _)
+             (raise-api-error 'json status headers body)]
+            [(_ "html" . _)
+             (raise-api-error 'html status headers body)]
+            [_ #f]))
         (error <twitter-api-error>
                :status status :headers headers :body body
                body))))

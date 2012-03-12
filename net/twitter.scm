@@ -23,7 +23,6 @@
   (export
    <twitter-cred> <twitter-api-error>
 
-   twitter-public-timeline/sxml
    twitter-home-timeline/sxml
    twitter-user-timeline/sxml
    twitter-mentions/sxml twitter-mentions
