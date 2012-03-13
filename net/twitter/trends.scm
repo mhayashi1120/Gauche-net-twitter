@@ -8,7 +8,7 @@
 ;; CRED can be #f
 (define (trends-available/sxml cred :key (lat #f) (long #f))
   (call/oauth->sxml cred 'get #`"/1/trends/available.xml"
-                    (make-query-params lat long)))
+                    (query-params lat long)))
 
 ;; CRED can be #f
 (define (trends-location/sxml cred woeid)

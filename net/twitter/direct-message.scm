@@ -17,23 +17,23 @@
 
 (define (direct-messages/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f))
   (call/oauth->sxml cred 'get #`"/1/direct_messages.xml"
-                    (make-query-params count page max-id since-id)))
+                    (query-params count page max-id since-id)))
 
 (define (direct-messages-sent/sxml cred :key
                                    (count #f) (page #f)
                                    (max-id #f) (since-id #f)
                                    (include-entities #f))
   (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
-                    (make-query-params count page max-id since-id
-                                       include-entities)))
+                    (query-params count page max-id since-id
+                                  include-entities)))
 
 (define (direct-message-new/sxml cred user text :key (user-id #f) (screen-name #f)
                                  (wrap-links #f))
   (call/oauth->sxml cred 'post #`"/1/direct_messages/new.xml"
-                    (make-query-params user text user-id screen-name wrap-links)))
+                    (query-params user text user-id screen-name wrap-links)))
 
 (define (direct-message-destroy/sxml cred id :key (include-entities #f))
   (call/oauth->sxml cred 'post #`"/1/direct_messages/destroy.xml"
-                    (make-query-params id include-entities)))
+                    (query-params id include-entities)))
 
 

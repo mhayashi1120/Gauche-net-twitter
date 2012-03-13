@@ -8,9 +8,9 @@
 
 (define (legal-tos/sxml cred :key (lang #f))
   (call/oauth->sxml cred 'get "/1/legal/tos.xml"
-                    (make-query-params lang)))
+                    (query-params lang)))
 
 (define (legal-privacy/sxml cred :key (lang #f))
   (call/oauth->sxml cred 'get "/1/legal/privacy.xml"
-                    (make-query-params lang)))
+                    (query-params lang)))
 

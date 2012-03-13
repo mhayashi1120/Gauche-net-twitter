@@ -18,7 +18,7 @@
 
 (define (saved-search-create/sxml cred query)
   (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml" 
-					(make-query-params query)))
+					(query-params query)))
 
 (define (saved-search-destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/saved_searches/destroy/,|id|.xml" '()))

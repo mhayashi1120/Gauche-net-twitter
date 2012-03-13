@@ -21,9 +21,9 @@
                      (show-user #f) (result-type #f)
                      (max-id #f) (since #f) ; deprecated
                      )
-  (let1 params (make-query-params q lang locale rpp
-                                  page since-id until geocode
-                                  show-user result-type)
+  (let1 params (query-params q lang locale rpp
+                             page since-id until geocode
+                             show-user result-type)
     (define (call)
       (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
 

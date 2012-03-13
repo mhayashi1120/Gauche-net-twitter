@@ -13,7 +13,7 @@
   (use util.match)
   (export
    <twitter-cred> <twitter-api-error>
-   make-query-params build-url
+   make-query-params query-params build-url
    retrieve-stream check-api-error
    call/oauth->sxml call/oauth
    call/oauth-post->sxml call/oauth-upload->sxml
@@ -54,6 +54,23 @@
                       [else (x->string ,v)]))))
            vars)))
 
+(define-syntax query-params
+  (syntax-rules ()
+    [(_)
+     '()]
+    [(_ var . rest)
+     (let* ([name (string-tr (x->string 'var) "-" "_")]
+            [value var]
+            [val (cond
+                  [(eq? value #f) #f]
+                  [(eq? value #t) "t"]
+                  [else value])])
+       (cond
+        [(not val)
+         (query-params . rest)]
+        [else
+         (cons (list name val) (query-params . rest))]))]))
+
 (with-module rfc.mime
   (define (twitter-mime-compose parts
                                 :optional (port (current-output-port))
@@ -68,11 +85,11 @@
   (call-with-input-string str
     (cut ssax:xml->sxml <> '())))
 
+;;TODO make obsolete
 (define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth parse-xml-string
-		 cred method path params opts))
+  (apply call/oauth cred method path params opts))
 
-(define (call/oauth parser cred method path params . opts)
+(define (call/oauth cred method path params . opts)
   (define (call)
     (let1 auth (and cred
                     (oauth-auth-header
