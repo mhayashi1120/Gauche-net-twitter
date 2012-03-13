@@ -172,9 +172,6 @@
   (test-and* "fetching timeline by user-id"
     (user-timeline/sxml #f :user-id user-id))
 
-  (test-and* "fetching public timeline"
-    (public-timeline/sxml))
-
   (test-and* "fetching home timeline"
     (home-timeline/sxml *cred*))
 
