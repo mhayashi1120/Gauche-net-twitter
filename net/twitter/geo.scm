@@ -1,7 +1,6 @@
 (define-module net.twitter.geo
   (use net.twitter.core)
   (use srfi-1)
-  (use util.list)
   (export
    geo-search/json geo-similar-places/json
    geo-reverse-geocode/json geo-id/json

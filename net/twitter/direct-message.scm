@@ -1,7 +1,5 @@
 (define-module net.twitter.direct-message
   (use net.twitter.core)
-  (use util.list)
-  (use sxml.sxpath)
   (export
    direct-message-show/sxml
    direct-messages/sxml

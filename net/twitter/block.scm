@@ -1,6 +1,5 @@
 (define-module net.twitter.block
   (use net.twitter.core)
-  (use util.list)
   (use sxml.sxpath)
   (export
    blocks/sxml

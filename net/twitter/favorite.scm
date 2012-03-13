@@ -1,6 +1,5 @@
 (define-module net.twitter.favorite
   (use net.twitter.core)
-  (use util.list)
 
   (export
    favorites/sxml

@@ -1,8 +1,7 @@
 (define-module net.twitter.tweet
-  (use sxml.sxpath)
   (use srfi-1)
   (use net.twitter.core)
-  (use util.list)
+  (use sxml.sxpath)
   (export
    show/sxml
    update/sxml

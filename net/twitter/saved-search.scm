@@ -1,7 +1,5 @@
 (define-module net.twitter.saved-search
   (use net.twitter.core)
-  (use util.list)
-  (use sxml.sxpath)
   (export
    saved-searches/sxml
    saved-search-show/sxml

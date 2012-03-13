@@ -1,6 +1,5 @@
 (define-module net.twitter.spam
   (use net.twitter.core)
-  (use util.list)
   (export
    report-spam/sxml))
 (select-module net.twitter.spam)

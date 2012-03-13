@@ -1,6 +1,5 @@
 (define-module net.twitter.account
   (use net.twitter.core)
-  (use util.list)
 
   (export 
    account-verify-credentials/sxml

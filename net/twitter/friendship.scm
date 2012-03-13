@@ -1,7 +1,6 @@
 (define-module net.twitter.friendship
-  (use sxml.sxpath)
   (use net.twitter.core)
-  (use util.list)
+  (use sxml.sxpath)
   (export
    friendship-show/sxml
    friendship-exists/sxml

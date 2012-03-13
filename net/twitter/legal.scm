@@ -1,7 +1,6 @@
 (define-module net.twitter.legal
   (use net.twitter.core)
   (use srfi-1)
-  (use util.list)
   (export
    legal-tos/sxml legal-privacy/sxml))
 (select-module net.twitter.legal)

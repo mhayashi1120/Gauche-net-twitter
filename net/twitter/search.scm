@@ -3,7 +3,6 @@
   (use rfc.http)
   (use sxml.ssax)
   (use text.unicode)
-  (use util.list)
   (export
    search/sxml))
 (select-module net.twitter.search)

@@ -1,6 +1,5 @@
 (define-module net.twitter.notification
   (use net.twitter.core)
-  (use util.list)
   (export
    notifications-follow/sxml
    notifications-leave/sxml))

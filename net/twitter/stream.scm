@@ -6,7 +6,6 @@
   (use rfc.uri)
   (use srfi-13)
   (use text.parse)
-  (use util.list)
   (export
    user-stream
    sample-stream

@@ -1,6 +1,5 @@
 (define-module net.twitter.list
   (use net.twitter.core)
-  (use util.list)
   (use sxml.sxpath)
   (export
    lists/sxml

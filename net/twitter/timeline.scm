@@ -1,7 +1,6 @@
 (define-module net.twitter.timeline
-  (use sxml.sxpath)
   (use net.twitter.core)
-  (use util.list)
+  (use sxml.sxpath)
   (export
    home-timeline/sxml
    user-timeline/sxml

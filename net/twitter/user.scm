@@ -1,6 +1,5 @@
 (define-module net.twitter.user
   (use net.twitter.core)
-  (use util.list)
   (export
    user-show/sxml
    user-lookup/sxml

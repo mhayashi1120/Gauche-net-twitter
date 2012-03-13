@@ -1,6 +1,5 @@
 (define-module net.twitter.trends
   (use net.twitter.core)
-  (use util.list)
   (export
    trends-available/sxml trends-location/sxml))
 (select-module net.twitter.trends)

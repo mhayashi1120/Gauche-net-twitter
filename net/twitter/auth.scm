@@ -2,8 +2,6 @@
   (use net.oauth)
   (use net.twitter.core)
   (use srfi-13)
-  (use sxml.sxpath)
-  (use util.list)
 
   (export
    twitter-authenticate-client
