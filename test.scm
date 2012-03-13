@@ -15,6 +15,7 @@
 (use net.twitter.direct-message)
 (use net.twitter.favorite)
 (use net.twitter.friendship)
+(use net.twitter.geo)
 (use net.twitter.help)
 (use net.twitter.legal)
 (use net.twitter.list)
@@ -106,6 +107,7 @@
 (test-module 'net.twitter.block)
 (test-module 'net.twitter.auth)
 (test-module 'net.twitter.account)
+(test-module 'net.twitter.geo)
 (test-module 'net.favotter)
 (test-module 'net.twitter)
 
