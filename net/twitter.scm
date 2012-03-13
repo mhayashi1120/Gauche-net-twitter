@@ -23,7 +23,6 @@
   (export
    <twitter-cred> <twitter-api-error>
 
-   twitter-public-timeline/sxml
    twitter-home-timeline/sxml
    twitter-user-timeline/sxml
    twitter-mentions/sxml twitter-mentions
@@ -129,7 +128,6 @@
 ;; Timeline methods
 ;;
 
-(define twitter-public-timeline/sxml timeline:public-timeline/sxml)
 (define twitter-home-timeline/sxml timeline:home-timeline/sxml)
 (define twitter-user-timeline/sxml timeline:user-timeline/sxml)
 (define twitter-mentions/sxml timeline:mentions/sxml)

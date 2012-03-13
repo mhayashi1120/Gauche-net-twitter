@@ -1,6 +1,5 @@
 (define-module net.twitter.account
   (use net.twitter.core)
-  (use util.list)
 
   (export 
    account-verify-credentials/sxml
@@ -20,7 +19,7 @@
          cred :key (include-entities #f)
          (skip-status #f))
   (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" 
-                    (make-query-params include-entities skip-status)))
+                    (query-params include-entities skip-status)))
 
 (define (account-verify-credentials? cred)
   (guard (e ((<twitter-api-error> e) #f))
@@ -38,8 +37,8 @@
                                       (start-sleep-time #f) (end-sleep-time #f)
                                       (time-zone #f) (lang #f))
   (call/oauth->sxml cred 'post "/1/account/settings.xml" 
-                    (make-query-params trend-location-woeid sleep-time-enabled
-                                       start-sleep-time end-sleep-time time-zone lang)))
+                    (query-params trend-location-woeid sleep-time-enabled
+                                  start-sleep-time end-sleep-time time-zone lang)))
 
 (define (account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
@@ -51,7 +50,7 @@
   (call/oauth-post->sxml
    cred #`"/1/account/update_profile_image.xml"
    `((image :file ,file))
-   (make-query-params include-entities skip-status)))
+   (query-params include-entities skip-status)))
 
 (define (account-update-profile-background-image/sxml 
          cred file :key
@@ -62,7 +61,7 @@
   (call/oauth-post->sxml
    cred #`"/1/account/update_profile_background_image.xml"
    `((image :file ,file))
-   (make-query-params tile include-entities skip-status)))
+   (query-params tile include-entities skip-status)))
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (account-update-profile-colors/sxml
@@ -76,10 +75,10 @@
          (skip-status #f))
   (call/oauth->sxml
    cred 'post #`"/1/account/update_profile_colors.xml"
-   (make-query-params profile-background-color profile-text-color
-                      profile-link-color
-                      profile-sidebar-fill-color
-                      profile-sidebar-border-color)))
+   (query-params profile-background-color profile-text-color
+                 profile-link-color
+                 profile-sidebar-fill-color
+                 profile-sidebar-border-color)))
 
 (define (account-update-profile/sxml
          cred :key (name #f)
@@ -88,6 +87,6 @@
          (include-entities #f) (skip-status #f))
   (call/oauth->sxml
    cred 'post #`"/1/account/update_profile.xml"
-   (make-query-params name url location description
-                      include-entities skip-status)))
+   (query-params name url location description
+                 include-entities skip-status)))
 
