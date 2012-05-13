@@ -16,17 +16,19 @@
 (select-module net.twitter.tweet)
 
 ;; cred can be #f to view public tweet.
-(define (show/sxml cred id :key (include-entities #f) (trim-user #f))
+(define (show/sxml cred id :key (include-entities #f) (trim-user #f)
+                   :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/statuses/show/,|id|.xml"
-					(query-params include-entities trim-user)))
+					(api-params _keys include-entities trim-user)))
 
 (define (update/sxml cred message :key (in-reply-to-status-id #f)
                      (lat #f) (long #f) (place-id #f)
                      (display-coordinates #f)
-                     (trim-user #f) (include-entities #f))
+                     (trim-user #f) (include-entities #f)
+                     :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/statuses/update.xml"
                     `(("status" ,message)
-                      ,@(query-params in-reply-to-status-id lat long
+                      ,@(query-params _keys in-reply-to-status-id lat long
                                       place-id display-coordinates
                                       trim-user include-entities))))
 
@@ -39,7 +41,8 @@
                                 :key (possibly-sensitive #f)
                                 (in-reply-to-status-id #f)
                                 (lat #f) (long #f) (place-id #f)
-                                (display-coordinates #f))
+                                (display-coordinates #f)
+                                :allow-other-keys _keys)
   (call/oauth-upload->sxml
    cred "/1/statuses/update_with_media.xml"
    (map (^ (i m) `("media[]"
@@ -48,7 +51,7 @@
                    ))
         (iota (length media) 0) media)
    `(("status" ,message)
-     ,@(query-params possibly-sensitive
+     ,@(query-params _keys possibly-sensitive
                      in-reply-to-status-id lat long
                      place-id display-coordinates))))
 
@@ -60,15 +63,18 @@
   (call/oauth->sxml cred 'post #`"/1/statuses/retweet/,|id|.xml" 
                     (query-params)))
 
-(define (retweets/sxml cred id :key (count #f))
+(define (retweets/sxml cred id :key (count #f)
+                       :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/statuses/retweets/,|id|.xml"
-                    (query-params count)))
+                    (api-params _keys count)))
 
-(define (retweeted-by/sxml cred id :key (count #f) (page #f))
+(define (retweeted-by/sxml cred id :key (count #f) (page #f)
+                           :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by.xml"
-                    (query-params count page)))
+                    (api-params _keys count page)))
 
-(define (retweeted-by-ids/sxml cred id :key (count #f) (page #f))
+(define (retweeted-by-ids/sxml cred id :key (count #f) (page #f)
+                               :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/statuses/,|id|/retweeted_by/ids.xml"
-                    (query-params count page)))
+                    (api-params _keys count page)))
 

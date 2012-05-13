@@ -5,9 +5,10 @@
 (select-module net.twitter.trends)
 
 ;; CRED can be #f
-(define (trends-available/sxml cred :key (lat #f) (long #f))
+(define (trends-available/sxml cred :key (lat #f) (long #f)
+                               :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/trends/available.xml"
-                    (query-params lat long)))
+                    (api-params _keys lat long)))
 
 ;; CRED can be #f
 (define (trends-location/sxml cred woeid)

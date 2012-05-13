@@ -18,31 +18,36 @@
 
 (define (blocks/sxml cred :key (page #f)
                      (per-page #f) (include-entities #f)
-                     (skip-status #f))
+                     (skip-status #f)
+                     :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/blocks/blocking.xml"
-                    (query-params page
-                                  per-page include-entities
-                                  skip-status)))
+                    (api-params _keys page
+                                per-page include-entities
+                                skip-status)))
 
-(define (blocks/ids/sxml cred :key (stringfy-ids #f))
+(define (blocks/ids/sxml cred :key (stringfy-ids #f)
+                         :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/blocks/blocking/ids.xml"
-                    (query-params stringfy-ids)))
+                    (api-params _keys stringfy-ids)))
 
 (define (block-create/sxml cred :key (id #f) (user-id #f) (screen-name #f)
-                           (include-entities #f) (skip-status #f))
+                           (include-entities #f) (skip-status #f)
+                           :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/blocks/create.xml"
-                    (query-params id user-id screen-name
-                                  include-entities skip-status)))
+                    (api-params _keys id user-id screen-name
+                                include-entities skip-status)))
 
 (define (block-destroy/sxml cred :key (id #f) (user-id #f) (screen-name #f)
-                            (include-entities #f) (skip-status #f))
+                            (include-entities #f) (skip-status #f)
+                            :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/blocks/destroy.xml"
-                    (query-params id user-id screen-name
-                                  include-entities skip-status)))
+                    (api-params _keys id user-id screen-name
+                                include-entities skip-status)))
 
-(define (block-exists/sxml cred :key (id #f) (user-id #f) (screen-name #f))
+(define (block-exists/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+                           :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/blocks/exists.xml"
-                    (query-params id user-id screen-name)))
+                    (api-params _keys id user-id screen-name)))
 
 (define (block-exists? . args)
   (guard (e

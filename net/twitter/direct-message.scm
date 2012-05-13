@@ -13,25 +13,29 @@
   (call/oauth->sxml cred 'get #`"/1/direct_messages/show/,|id|.xml"
                     '()))
 
-(define (direct-messages/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f))
+(define (direct-messages/sxml cred :key (count #f) (page #f) (max-id #f) (since-id #f)
+                              :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/direct_messages.xml"
-                    (query-params count page max-id since-id)))
+                    (api-params _keys count page max-id since-id)))
 
 (define (direct-messages-sent/sxml cred :key
                                    (count #f) (page #f)
                                    (max-id #f) (since-id #f)
-                                   (include-entities #f))
+                                   (include-entities #f)
+                                   :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/direct_messages/sent.xml"
-                    (query-params count page max-id since-id
-                                  include-entities)))
+                    (api-params _keys count page max-id since-id
+                                include-entities)))
 
 (define (direct-message-new/sxml cred user text :key (user-id #f) (screen-name #f)
-                                 (wrap-links #f))
+                                 (wrap-links #f)
+                                 :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/new.xml"
-                    (query-params user text user-id screen-name wrap-links)))
+                    (api-params _keys user text user-id screen-name wrap-links)))
 
-(define (direct-message-destroy/sxml cred id :key (include-entities #f))
+(define (direct-message-destroy/sxml cred id :key (include-entities #f)
+                                     :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/direct_messages/destroy.xml"
-                    (query-params id include-entities)))
+                    (api-params _keys id include-entities)))
 
 

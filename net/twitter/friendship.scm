@@ -22,26 +22,30 @@
 
 (define (friends/ids/sxml cred :key (id #f) (user-id #f)
                           (screen-name #f)
-                          (cursor #f))
+                          (cursor #f)
+                          :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/friends/ids.xml"
-                    (query-params id user-id screen-name cursor)))
+                    (api-params _keys id user-id screen-name cursor)))
 
 ;; Returns list of user ids
 (define (friends/ids cred :key (id #f) (user-id #f)
-                     (screen-name #f))
+                     (screen-name #f)
+                     :allow-other-keys _keys)
   (retrieve-ids/sxml friends/ids/sxml
                      cred :id id :user-id user-id
                      :screen-name screen-name))
 
 (define (followers/ids/sxml cred :key (id #f) (user-id #f)
                             (screen-name #f)
-                            (cursor #f))
+                            (cursor #f)
+                            :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/followers/ids.xml"
-                    (query-params id user-id screen-name cursor)))
+                    (api-params _keys id user-id screen-name cursor)))
 
 ;; Returns ids of *all* followers; paging is handled automatically.
 (define (followers/ids cred :key (id #f) (user-id #f)
-                       (screen-name #f))
+                       (screen-name #f)
+                       :allow-other-keys _keys)
   (retrieve-ids/sxml followers/ids/sxml
                      cred :id id :user-id user-id
                      :screen-name screen-name))
@@ -51,16 +55,18 @@
 
 
 (define (friendship-show/sxml cred :key (source-id #f) (source-screen-name #f)
-                              (target-id #f) (target-screen-name #f))
+                              (target-id #f) (target-screen-name #f)
+                              :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/show.xml"
-                    (query-params source-id source-screen-name
+                    (api-params _keys source-id source-screen-name
                                   target-id target-screen-name)))
 
 (define (friendship-exists/sxml cred :key 
                                 (user-id-a #f) (user-id-b #f)
-                                (screen-name-a #f) (screen-name-b #f))
+                                (screen-name-a #f) (screen-name-b #f)
+                                :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/exists.xml"
-                    (query-params 
+                    (api-params _keys 
                      user-id-a user-id-b
                      screen-name-a screen-name-b)))
 
@@ -80,21 +86,24 @@
 (define-method friendship-incoming/sxml (cred (cursor <top>))
   (friendship-incoming/sxml cred :cursor cursor))
 
-(define-method friendship-incoming/sxml (cred :key (cursor #f) (stringify-ids #f))
+(define-method friendship-incoming/sxml (cred :key (cursor #f) (stringify-ids #f)
+                                              :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/incoming.xml"
-                    (query-params cursor stringify-ids)))
+                    (api-params _keys cursor stringify-ids)))
 
 ;; for backward compatibility
 (define-method friendship-outgoing/sxml (cred (cursor <top>))
   (friendship-outgoing/sxml cred :cursor cursor))
 
-(define-method friendship-outgoing/sxml (cred :key (cursor #f) (stringify-ids #f))
+(define-method friendship-outgoing/sxml (cred :key (cursor #f) (stringify-ids #f)
+                                              :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/outgoing.xml"
-                    (query-params cursor stringify-ids)))
+                    (api-params _keys cursor stringify-ids)))
 
 (define (friendship-update/sxml cred screen-name :key (device #f)
-                                (retweets #f))
+                                (retweets #f)
+                                :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/friendships/update.xml" 
-                    (query-params screen-name device retweets)))
+                    (api-params _keys screen-name device retweets)))
 
 

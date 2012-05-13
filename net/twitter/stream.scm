@@ -29,48 +29,55 @@
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
 ;; proc accept one arg
 ;; TODO error-handler keyword
-(define (user-stream cred proc :key (replies #f) (raise-error? #f))
+(define (user-stream cred proc :key (replies #f) (raise-error? #f)
+                     :allow-other-keys _keys)
   (open-stream cred proc 'post "https://userstream.twitter.com/2/user.json"
-               (query-params replies) :raise-error? raise-error?))
+               (api-params _keys replies) :raise-error? raise-error?))
 
 (define (sample-stream cred proc :key (count #f) (delimited #f)
-                       (raise-error? #f))
+                       (raise-error? #f)
+                       :allow-other-keys _keys)
   (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/sample.json"
-               (query-params count delimited) :raise-error? raise-error?))
+               (api-params _keys count delimited) :raise-error? raise-error?))
 
 (define (filter-stream cred proc :key (count #f) (delimited #f)
                        (follow #f) (locations #f) (track #f)
                        (stall-warnings #f)
-                       (raise-error? #f))
+                       (raise-error? #f)
+                       :allow-other-keys _keys)
   ;;FIXME too many follow make excessive URL length.
   (open-stream cred proc 'post "https://stream.twitter.com/1/statuses/filter.json"
-               (query-params count delimited follow locations track)
+               (api-params _keys count delimited follow locations track)
                :raise-error? raise-error?))
 
 ;;TODO not works
 (define (retweet-stream cred proc :key (delimited #f) (stall-warnings #f)
-                        (raise-error? #f))
+                        (raise-error? #f)
+                        :allow-other-keys _keys)
   (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/retweet.json"
-               (query-params delimited stall-warnings)
+               (api-params _keys delimited stall-warnings)
                :raise-error? raise-error?))
 
 ;;TODO not works
 (define (firehose-stream cred proc :key (count #f) (delimited #f)
-                         (raise-error? #f))
+                         (raise-error? #f)
+                         :allow-other-keys _keys)
   (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/firehose.json"
-               (query-params count delimited)
+               (api-params _keys count delimited)
                :raise-error? raise-error?))
 
 ;;TODO not works
 (define (links-stream cred proc :key (count #f) (delimited #f)
-                      (stall-warnings #f) (raise-error? #f))
+                      (stall-warnings #f) (raise-error? #f)
+                      :allow-other-keys _keys)
   (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/links.json"
-               (query-params count delimited stall-warnings)
+               (api-params _keys count delimited stall-warnings)
                :raise-error? raise-error?))
 
 ;;TODO not works
 ;; beta tested
-(define (site-stream cred proc :key (raise-error? #f))
+(define (site-stream cred proc :key (raise-error? #f)
+                     :allow-other-keys _keys)
   (open-stream cred proc 'get "https://sitestream.twitter.com/2b/site.json"
                (query-params)
                :raise-error? raise-error?))

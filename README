@@ -159,10 +159,6 @@ a condition <twitter-api-error> is signalled.
 
   Twitter-authenticate-client returns an instance of <twitter-cred>.
 
-[Function] twitter-public-timeline/sxml
-
-  Access public timeline.  This API doesn't require authentication.
-
 [Function] twitter-home-timeline/sxml cred :key (since-id #f) (max-id #f)
                                                 (count #f) (page #f))
 

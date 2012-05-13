@@ -8,12 +8,13 @@
   (use rfc.mime)
   (use sxml.ssax)
   (use sxml.sxpath)
-  (use text.tr)
   (use util.list)
   (use util.match)
+  (use text.tr)
   (export
    <twitter-cred> <twitter-api-error>
-   make-query-params query-params build-url
+   make-query-params query-params api-params
+   build-url
    retrieve-stream check-api-error
    call/oauth->sxml call/oauth
    call/oauth-post->sxml call/oauth-upload->sxml
@@ -50,9 +51,29 @@
     ,@(map (lambda (v)
              `(,v `(,',(string-tr (x->string v) "-" "_")
                     ,(cond
+                      [(eq? ,v #f) #f]
                       [(eq? ,v #t) "t"]
                       [else (x->string ,v)]))))
            vars)))
+
+(define-macro (api-params keys . vars)
+  `(begin
+     (use text.tr)
+     (append
+      (query-params ,@vars)
+      (let loop ([ks ,keys]
+                 [res '()])
+        (cond
+         [(null? ks) (reverse! res)]
+         [else
+          (let* ([key (car ks)]
+                 [name (string-tr (keyword->string key) "-" "_")]
+                 [val (x->string (cadr ks))])
+            (cond
+             [(not val)
+              (loop (cddr ks) res)]
+             [else
+              (loop (cddr ks) (cons (list name val) res))]))])))))
 
 (define-syntax query-params
   (syntax-rules ()
@@ -64,7 +85,7 @@
             [val (cond
                   [(eq? value #f) #f]
                   [(eq? value #t) "t"]
-                  [else value])])
+                  [else (x->string value)])])
        (cond
         [(not val)
          (query-params . rest)]

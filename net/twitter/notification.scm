@@ -6,11 +6,13 @@
 (select-module net.twitter.notification)
 
 (define (notifications-follow/sxml cred :key
-                                   (id #f) (user-id #f) (screen-name #f))
+                                   (id #f) (user-id #f) (screen-name #f)
+                                   :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/notifications/follow.xml"
-                    (query-params id user-id screen-name)))
+                    (api-params _keys id user-id screen-name)))
 
 (define (notifications-leave/sxml cred :key
-                                  (id #f) (user-id #f) (screen-name #f))
+                                  (id #f) (user-id #f) (screen-name #f)
+                                  :allow-other-keys _keys)
   (call/oauth->sxml cred 'post #`"/1/notifications/leave.xml"
-                    (query-params id user-id screen-name)))
+                    (api-params _keys id user-id screen-name)))

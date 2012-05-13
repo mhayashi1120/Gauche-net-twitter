@@ -3,8 +3,10 @@
   (use rfc.http)
   (use sxml.ssax)
   (use text.unicode)
+  (use text.tr)
   (export
-   search/sxml))
+   search/sxml
+   ))
 (select-module net.twitter.search)
 
 (define (compose-query params)
@@ -19,10 +21,14 @@
                      (since-id #f) (until #f) (geocode #f)
                      (show-user #f) (result-type #f)
                      (max-id #f) (since #f) ; deprecated
-                     )
-  (let1 params (query-params q lang locale rpp
-                             page since-id until geocode
-                             show-user result-type)
+                     ;; (include-entities #f) (with-twitter-user-id #f)
+                     :allow-other-keys _keys)
+  (let1 params (api-params _keys q lang locale rpp
+                           page since-id until geocode
+                           show-user result-type
+                           ;;FIXME TODO: include-entities make slow loading .
+                           ;; include-entities with-twitter-user-id
+                           )
     (define (call)
       (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
 

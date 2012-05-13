@@ -19,7 +19,7 @@
          cred :key (include-entities #f)
          (skip-status #f))
   (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" 
-                    (query-params include-entities skip-status)))
+                    (api-params _keys include-entities skip-status)))
 
 (define (account-verify-credentials? cred)
   (guard (e ((<twitter-api-error> e) #f))
@@ -37,7 +37,7 @@
                                       (start-sleep-time #f) (end-sleep-time #f)
                                       (time-zone #f) (lang #f))
   (call/oauth->sxml cred 'post "/1/account/settings.xml" 
-                    (query-params trend-location-woeid sleep-time-enabled
+                    (api-params _keys trend-location-woeid sleep-time-enabled
                                   start-sleep-time end-sleep-time time-zone lang)))
 
 (define (account-rate-limit-status/sxml cred)
@@ -50,7 +50,7 @@
   (call/oauth-post->sxml
    cred #`"/1/account/update_profile_image.xml"
    `((image :file ,file))
-   (query-params include-entities skip-status)))
+   (api-params _keys include-entities skip-status)))
 
 (define (account-update-profile-background-image/sxml 
          cred file :key
@@ -61,7 +61,7 @@
   (call/oauth-post->sxml
    cred #`"/1/account/update_profile_background_image.xml"
    `((image :file ,file))
-   (query-params tile include-entities skip-status)))
+   (api-params _keys tile include-entities skip-status)))
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (account-update-profile-colors/sxml
@@ -75,7 +75,7 @@
          (skip-status #f))
   (call/oauth->sxml
    cred 'post #`"/1/account/update_profile_colors.xml"
-   (query-params profile-background-color profile-text-color
+   (api-params _keys profile-background-color profile-text-color
                  profile-link-color
                  profile-sidebar-fill-color
                  profile-sidebar-border-color)))
@@ -87,6 +87,6 @@
          (include-entities #f) (skip-status #f))
   (call/oauth->sxml
    cred 'post #`"/1/account/update_profile.xml"
-   (query-params name url location description
+   (api-params _keys name url location description
                  include-entities skip-status)))
 

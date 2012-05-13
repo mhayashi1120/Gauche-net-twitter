@@ -5,11 +5,13 @@
    legal-tos/sxml legal-privacy/sxml))
 (select-module net.twitter.legal)
 
-(define (legal-tos/sxml cred :key (lang #f))
+(define (legal-tos/sxml cred :key (lang #f)
+                        :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/legal/tos.xml"
-                    (query-params lang)))
+                    (api-params _keys lang)))
 
-(define (legal-privacy/sxml cred :key (lang #f))
+(define (legal-privacy/sxml cred :key (lang #f)
+                            :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/legal/privacy.xml"
-                    (query-params lang)))
+                    (api-params _keys lang)))
 
