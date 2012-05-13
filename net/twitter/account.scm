@@ -57,7 +57,7 @@
 
 (define (account-update-profile-background-image/sxml
          cred file :key (tile #f) (include-entities #f)
-         (skip-status #f) (use #f)
+         (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth-post->sxml
    cred #`"/1/account/update_profile_background_image.xml"
