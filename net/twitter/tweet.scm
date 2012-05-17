@@ -28,9 +28,9 @@
                      :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/statuses/update.xml"
                     `(("status" ,message)
-                      ,@(query-params _keys in-reply-to-status-id lat long
-                                      place-id display-coordinates
-                                      trim-user include-entities))))
+                      ,@(api-params _keys in-reply-to-status-id lat long
+                                    place-id display-coordinates
+                                    trim-user include-entities))))
 
 ;; Returns tweet id on success
 (define (update cred message . opts)
@@ -51,17 +51,17 @@
                    ))
         (iota (length media) 0) media)
    `(("status" ,message)
-     ,@(query-params _keys possibly-sensitive
-                     in-reply-to-status-id lat long
-                     place-id display-coordinates))))
+     ,@(api-params _keys possibly-sensitive
+                   in-reply-to-status-id lat long
+                   place-id display-coordinates))))
 
 (define (destroy/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" 
-                    (query-params)))
+                    (api-params '())))
 
 (define (retweet/sxml cred id)
   (call/oauth->sxml cred 'post #`"/1/statuses/retweet/,|id|.xml" 
-                    (query-params)))
+                    (api-params '())))
 
 (define (retweets/sxml cred id :key (count #f)
                        :allow-other-keys _keys)

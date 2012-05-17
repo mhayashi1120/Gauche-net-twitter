@@ -31,9 +31,10 @@
 (define (friends/ids cred :key (id #f) (user-id #f)
                      (screen-name #f)
                      :allow-other-keys _keys)
-  (retrieve-ids/sxml friends/ids/sxml
-                     cred :id id :user-id user-id
-                     :screen-name screen-name))
+  (apply retrieve-ids/sxml friends/ids/sxml
+         cred :id id :user-id user-id
+         :screen-name screen-name
+         _keys))
 
 (define (followers/ids/sxml cred :key (id #f) (user-id #f)
                             (screen-name #f)
@@ -46,9 +47,10 @@
 (define (followers/ids cred :key (id #f) (user-id #f)
                        (screen-name #f)
                        :allow-other-keys _keys)
-  (retrieve-ids/sxml followers/ids/sxml
-                     cred :id id :user-id user-id
-                     :screen-name screen-name))
+  (apply retrieve-ids/sxml followers/ids/sxml
+         cred :id id :user-id user-id
+         :screen-name screen-name
+         _keys))
 
 (define (retrieve-ids/sxml f . args)
   (apply retrieve-stream (sxpath '(// id *text*)) f args))
@@ -59,7 +61,7 @@
                               :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/show.xml"
                     (api-params _keys source-id source-screen-name
-                                  target-id target-screen-name)))
+                                target-id target-screen-name)))
 
 (define (friendship-exists/sxml cred :key 
                                 (user-id-a #f) (user-id-b #f)

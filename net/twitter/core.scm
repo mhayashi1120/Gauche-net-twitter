@@ -13,7 +13,7 @@
   (use text.tr)
   (export
    <twitter-cred> <twitter-api-error>
-   make-query-params query-params api-params
+   query-params api-params
    build-url
    retrieve-stream check-api-error
    call/oauth->sxml call/oauth
@@ -45,17 +45,7 @@
 ;;
 ;; A convenience macro to construct query parameters, skipping
 ;; if #f is given to the variable.
-;;
-(define-macro (make-query-params . vars)
-  `(cond-list
-    ,@(map (lambda (v)
-             `(,v `(,',(string-tr (x->string v) "-" "_")
-                    ,(cond
-                      [(eq? ,v #f) #f]
-                      [(eq? ,v #t) "t"]
-                      [else (x->string ,v)]))))
-           vars)))
-
+;; keys are keyword list that append to vars after parsing.
 (define-macro (api-params keys . vars)
   `(begin
      (use text.tr)
@@ -68,7 +58,11 @@
          [else
           (let* ([key (car ks)]
                  [name (string-tr (keyword->string key) "-" "_")]
-                 [val (x->string (cadr ks))])
+                 [v (cadr ks)]
+                 [val (cond
+                       [(eq? v #f) #f]
+                       [(eq? v #t) "t"]
+                       [else (x->string v)])])
             (cond
              [(not val)
               (loop (cddr ks) res)]

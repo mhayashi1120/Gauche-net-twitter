@@ -79,7 +79,7 @@
 (define (site-stream cred proc :key (raise-error? #f)
                      :allow-other-keys _keys)
   (open-stream cred proc 'get "https://sitestream.twitter.com/2b/site.json"
-               (query-params)
+               (api-params _keys)
                :raise-error? raise-error?))
 
 ;;TODO params
