@@ -81,8 +81,8 @@
 
 ;; check only non error have occur.
 (define-macro (test-and* name . expr)
-  `(test* ,name 
-          #t 
+  `(test* ,name
+          #t
           (and ,@expr #t)))
 
 (define (wait-a-while)
@@ -114,8 +114,8 @@
 (define (test-executable file)
   ;;FIXME only output the result...
   (unwind-protect
-   (run-process 
-    `(gosh -b 
+   (run-process
+    `(gosh -b
            -l ,file
            -u "gauche.test"
            -e "(begin (test-module 'user) (exit 0))")
@@ -163,7 +163,7 @@
     (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
       (set! user-id ((if-car-sxpath '(user id *text*)) sxml))
       user-id)
-    
+
     (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
       (set! user-id2 ((if-car-sxpath '(user id *text*)) sxml))
       user-id2))
@@ -191,8 +191,8 @@
         (dm-id #f))
 
     (test-and* "sending direct message"
-      (set! dm-id 
-            ((if-car-sxpath '(// id *text*)) 
+      (set! dm-id
+            ((if-car-sxpath '(// id *text*))
              (direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
 
     ;;TODO why?
@@ -240,7 +240,9 @@
 
   (let ((id #f))
     (test-and* "create saved search"
-      (let1 sxml (saved-search-create/sxml *cred* "TEST exclude:retweets")
+      ;; use date to avoid creation fail (cause of previous test error)
+      (let* ([text (format "\"~a\" exclude:retweets" (date->string (current-date)))]
+             [sxml (saved-search-create/sxml *cred* text)])
         (set! id ((if-car-sxpath '(// id *text*)) sxml))))
 
     (test-and* "showing saved search"
@@ -281,7 +283,7 @@
   (string-pad (number->string (random-integer #x1000000) 16) 6 #\0))
 
 (test-and* "update profile color"
-  (account-update-profile-colors/sxml 
+  (account-update-profile-colors/sxml
    *cred*
    :profile-background-color (random-color)
    :profile-text-color (random-color)

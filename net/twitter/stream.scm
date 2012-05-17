@@ -126,7 +126,7 @@
                    :Authorization auth)]
         ['post
          (http-post host (if (pair? params)
-                           #`",|path|?,(oauth-compose-query params)" 
+                           #`",|path|?,(oauth-compose-query params)"
                            path)
                     ""
                     :secure (string=? "https" scheme)

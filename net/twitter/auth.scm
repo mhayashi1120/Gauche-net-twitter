@@ -24,13 +24,13 @@
               [(string-null? pin) (loop)]
               [else pin])))))
 
-(define twitter-authenticate-request 
-  (oauth-temporary-credential 
+(define twitter-authenticate-request
+  (oauth-temporary-credential
    (build-url "api.twitter.com" "/oauth/request_token")
    :class <twitter-cred>))
 
-(define twitter-authorize-url 
-  (oauth-authorize-constructor 
+(define twitter-authorize-url
+  (oauth-authorize-constructor
    (build-url "api.twitter.com" "/oauth/authorize")))
 
 (define twitter-authorize

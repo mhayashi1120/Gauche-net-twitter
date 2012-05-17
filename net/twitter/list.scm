@@ -47,7 +47,7 @@
          lists/sxml cred args))
 
 ;; (or list-id (and slug (or owner-id owner-screen-name)))
-(define (list-show/sxml cred :key (list-id #f) 
+(define (list-show/sxml cred :key (list-id #f)
                         (slug #f) (owner-id #f) (owner-screen-name #f)
                         :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/lists/show.xml"
@@ -60,7 +60,7 @@
                             (include-entities #f) (include-rts #f)
                             :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/lists/statuses.xml"
-                    (api-params _keys list-id 
+                    (api-params _keys list-id
                                   slug owner-id owner-screen-name
                                   since-id max-id per-page page
                                   include-entities include-rts)))
@@ -85,18 +85,18 @@
                     (api-params _keys list-id slug owner-id owner-screen-name
                                   name mode description)))
 
-(define (list-destroy/sxml cred :key (list-id #f) 
+(define (list-destroy/sxml cred :key (list-id #f)
                            (slug #f) (owner-id #f) (owner-screen-name #f)
                            :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/lists/destroy.xml"
                     (api-params _keys list-id slug owner-id owner-screen-name)))
 
-(define (list-members/sxml cred :key (list-id #f) 
+(define (list-members/sxml cred :key (list-id #f)
                            (slug #f) (owner-id #f) (owner-screen-name #f)
                            (cursor #f) (include-entities #f) (skip-status #f)
                            :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/lists/members.xml"
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   cursor include-entities skip-status)))
 
 (define (list-member-show/sxml cred :key (list-id #f)
@@ -104,8 +104,8 @@
                                (user-id #f) (screen-name #f)
                                (include-entities #f) (skip-status #f)
                                :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/lists/members/show.xml" 
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+  (call/oauth->sxml cred 'get "/1/lists/members/show.xml"
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   user-id screen-name
                                   include-entities skip-status)))
 
@@ -114,10 +114,10 @@
                                  (user-id #f) (screen-name #f)
                                  :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/lists/members/create.xml"
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   user-id screen-name)))
 
-(define (list-members-create-all/sxml cred :key (list-id #f) 
+(define (list-members-create-all/sxml cred :key (list-id #f)
                                       (slug #f) (owner-id #f)
                                       (owner-screen-name #f)
                                       (user-ids #f) (screen-names #f)
@@ -125,7 +125,7 @@
   (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
         (screen-name (and (pair? screen-names) (string-join screen-names ","))))
     (call/oauth->sxml cred 'post "/1/lists/members/create_all.xml"
-                      (api-params _keys list-id slug owner-id owner-screen-name 
+                      (api-params _keys list-id slug owner-id owner-screen-name
                                     user-id screen-name))))
 
 (define (list-member-destroy/sxml cred :key (list-id #f)
@@ -133,7 +133,7 @@
                                   (user-id #f) (screen-name #f)
                                   :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/lists/members/destroy.xml"
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   user-id screen-name)))
 
 ;; args are passed to twitter-list-members/sxml
@@ -141,31 +141,31 @@
   (apply retrieve-stream (sxpath '(// user id *text*))
          list-members/sxml args))
 
-(define (list-subscribers/sxml cred  :key (list-id #f) 
+(define (list-subscribers/sxml cred  :key (list-id #f)
                                (slug #f) (owner-id #f) (owner-screen-name #f)
                                (cursor #f) (include-entities #f) (skip-status #f)
                                :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/lists/subscribers.xml"
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   cursor include-entities skip-status)))
 
-(define (list-subscriber-show/sxml cred :key (list-id #f) 
+(define (list-subscriber-show/sxml cred :key (list-id #f)
                                    (slug #f) (owner-id #f) (owner-screen-name #f)
                                    (user-id #f) (screen-name #f)
                                    (include-entities #f) (skip-status #f)
                                    :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/subscribers/show.xml" 
-                    (api-params _keys list-id slug owner-id owner-screen-name 
+  (call/oauth->sxml cred 'get "/1/subscribers/show.xml"
+                    (api-params _keys list-id slug owner-id owner-screen-name
                                   user-id screen-name)))
 
-(define (list-subscriber-create/sxml cred :key (list-id #f) 
+(define (list-subscriber-create/sxml cred :key (list-id #f)
                                      (slug #f) (owner-id #f)
                                      (owner-screen-name #f)
                                      :allow-other-keys _keys)
   (call/oauth->sxml cred 'post "/1/lists/subscribers/create.xml"
                     (api-params _keys list-id slug owner-id owner-screen-name)))
 
-(define (list-subscriber-destroy/sxml cred :key (list-id #f) 
+(define (list-subscriber-destroy/sxml cred :key (list-id #f)
                                       (slug #f) (owner-id #f)
                                       (owner-screen-name #f)
                                       :allow-other-keys _keys)
@@ -177,17 +177,17 @@
   (apply retrieve-stream (sxpath '(// user id *text*))
          list-subscribers/sxml args))
 
-(define (list-memberships/sxml cred :key (user-id #f) (screen-name #f) 
+(define (list-memberships/sxml cred :key (user-id #f) (screen-name #f)
                                (cursor #f) (filter-to-owned-lists #f)
                                :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/lists/memberships.xml"
                     (api-params _keys user-id screen-name
                                   filter-to-owned-lists cursor)))
 
-;; args are passed to list-memberships/sxml 
+;; args are passed to list-memberships/sxml
 (define (list-memberships/ids cred . args)
-  (apply retrieve-stream (sxpath '(// list id *text*)) 
-         list-memberships/sxml 
+  (apply retrieve-stream (sxpath '(// list id *text*))
+         list-memberships/sxml
          cred args))
 
 (define (list-subscriptions/sxml cred :key (user-id #f) (screen-name #f)
@@ -198,6 +198,6 @@
 
 ;; args are passed to list-subscriptions/sxml
 (define (list-subscriptions/ids cred . args)
-  (apply retrieve-stream (sxpath '(// list id *text*)) 
+  (apply retrieve-stream (sxpath '(// list id *text*))
          list-subscriptions/sxml
          cred args))

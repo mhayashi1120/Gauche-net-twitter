@@ -56,11 +56,11 @@
                    place-id display-coordinates))))
 
 (define (destroy/sxml cred id)
-  (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml" 
+  (call/oauth->sxml cred 'post #`"/1/statuses/destroy/,|id|.xml"
                     (api-params '())))
 
 (define (retweet/sxml cred id)
-  (call/oauth->sxml cred 'post #`"/1/statuses/retweet/,|id|.xml" 
+  (call/oauth->sxml cred 'post #`"/1/statuses/retweet/,|id|.xml"
                     (api-params '())))
 
 (define (retweets/sxml cred id :key (count #f)

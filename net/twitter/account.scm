@@ -1,7 +1,7 @@
 (define-module net.twitter.account
   (use net.twitter.core)
 
-  (export 
+  (export
    account-verify-credentials/sxml
    account-verify-credentials?
    account-totals/sxml
@@ -19,7 +19,7 @@
          cred :key (include-entities #f)
          (skip-status #f)
          :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml" 
+  (call/oauth->sxml cred 'get #`"/1/account/verify_credentials.xml"
                     (api-params _keys include-entities skip-status)))
 
 (define (account-verify-credentials? cred)
@@ -38,14 +38,14 @@
                                       (start-sleep-time #f) (end-sleep-time #f)
                                       (time-zone #f) (lang #f)
                                       :allow-other-keys _keys)
-  (call/oauth->sxml cred 'post "/1/account/settings.xml" 
+  (call/oauth->sxml cred 'post "/1/account/settings.xml"
                     (api-params _keys trend-location-woeid sleep-time-enabled
                                   start-sleep-time end-sleep-time time-zone lang)))
 
 (define (account-rate-limit-status/sxml cred)
   (call/oauth->sxml cred 'get #`"/1/account/rate_limit_status.xml" '()))
 
-(define (account-update-profile-image/sxml 
+(define (account-update-profile-image/sxml
          cred file :key
          (include-entities #f)
          (skip-status #f)
@@ -66,7 +66,7 @@
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (account-update-profile-colors/sxml
-         cred :key 
+         cred :key
          (profile-background-color #f)
          (profile-link-color #f)
          (profile-sidebar-fill-color #f)

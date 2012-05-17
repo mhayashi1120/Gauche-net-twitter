@@ -15,7 +15,7 @@
   (call/oauth->sxml cred 'get #`"/1/saved_searches/show/,|id|.xml" '()))
 
 (define (saved-search-create/sxml cred query)
-  (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml" 
+  (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml"
 					(api-params '() query)))
 
 (define (saved-search-destroy/sxml cred id)

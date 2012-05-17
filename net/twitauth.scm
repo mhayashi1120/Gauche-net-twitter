@@ -1,6 +1,6 @@
 ;;;
 ;;;  This is a convenience script to obtain access token.
-;;;  
+;;;
 
 (use net.twitter.auth)
 (use util.match)
@@ -38,4 +38,4 @@
   (print " (access-token        . \""(ref cred'access-token)"\")")
   (print " (access-token-secret . \""(ref cred'access-token-secret)"\")")
   (print ")"))
-         
+

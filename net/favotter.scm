@@ -33,14 +33,14 @@
 
 (define-macro (make-query-params . vars)
   `(cond-list
-    ,@(map 
+    ,@(map
 	   (lambda (v)
 		 `(,v `(,',(string-tr (x->string v) "-" "_") ,(x->string ,v))))
 	   vars)))
 
 ;;
 ;; Public web api (no credentials)
-;; 
+;;
 
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-user user :key (mode #f) (threshold #f) (page #f))
@@ -49,21 +49,21 @@
 
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-public :key (mode #f) (threshold #f) (page #f))
-  (call/web #`"/home.php" 
+  (call/web #`"/home.php"
 			(make-query-params mode threshold page)))
 
 ;; delayed access. See `Delayed evaluation' section in info.
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-user-stream user :key (mode #f) (threshold #f))
-  (retrieve-stream 
-   (lambda (page) 
+  (retrieve-stream
+   (lambda (page)
 	 (favotter-user user :mode mode :threshold threshold :page page))))
 
 ;; delayed access. See `Delayed evaluation' section in info.
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-public-stream :key (mode #f) (threshold #f))
-  (retrieve-stream 
-   (lambda (page) 
+  (retrieve-stream
+   (lambda (page)
 	 (favotter-public :mode mode :threshold threshold :page page))))
 
 ;;
@@ -86,8 +86,8 @@
 		(new '()))
 	(map
 	 (lambda (fav)
-	   (if (find 
-			(lambda (x) 
+	   (if (find
+			(lambda (x)
 			  (string=? (ref x 'status-id) (ref fav 'status-id)))
 			old-favs)
 		 (set! merging (cons fav merging))
@@ -105,7 +105,7 @@
 (define (call/web path params)
 
   (define (call)
-	(apply http-get "favotter.net" 
+	(apply http-get "favotter.net"
 		   #`",|path|?,(compose-query params)"
 		   '()))
 
@@ -123,10 +123,10 @@
 
 (define (parse-web-page port)
   (let1 obj (read-from-port port)
-	(map 
+	(map
 	 (lambda (item)
 	   (make <favotter-favorite>
-		 :status-id 
+		 :status-id
 		 (if-let1 m (#/<div[ \t]+id=\"status_([0-9]+)\"/ item)
 				  (m 1)
 		   #f)
@@ -134,7 +134,7 @@
 		 (if-let1 m (#/<strong>[ \n\t]*<a[ \t]+title=\"([^\"]+)\"/ item)
 				  (m 1))
 		 :text
-		 ;;TODO when text have newline 
+		 ;;TODO when text have newline
 		 (if-let1 m (#/<span class=\"[ \t]*status_text[ \t]+description[ \t]*\">([^\n]*)(?:<\/span>)?/ item)
 				  (html-to-text (m 1))
 		   #f)
@@ -185,7 +185,7 @@
 
 (define (read-from-port port)
   (define (end-of-read favs)
-	(map 
+	(map
 	 (lambda (s) (string-join s "\n"))
 	 (reverse favs)))
 
@@ -201,7 +201,7 @@
 		  (end-of-read favs))
 		 ((#/<div[ \t]id=\"status_[0-9]+\"[^>]*>.*/ l) =>
 		  (lambda (m)
-			(loop (read-line) #t 
+			(loop (read-line) #t
 				  (list (m 0))
 				  (if (pair? fav)
 					(cons (reverse (cons (m 'before) fav)) favs)

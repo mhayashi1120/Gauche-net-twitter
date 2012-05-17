@@ -63,12 +63,12 @@
                     (api-params _keys source-id source-screen-name
                                 target-id target-screen-name)))
 
-(define (friendship-exists/sxml cred :key 
+(define (friendship-exists/sxml cred :key
                                 (user-id-a #f) (user-id-b #f)
                                 (screen-name-a #f) (screen-name-b #f)
                                 :allow-other-keys _keys)
   (call/oauth->sxml cred 'get #`"/1/friendships/exists.xml"
-                    (api-params _keys 
+                    (api-params _keys
                      user-id-a user-id-b
                      screen-name-a screen-name-b)))
 
@@ -105,7 +105,7 @@
 (define (friendship-update/sxml cred screen-name :key (device #f)
                                 (retweets #f)
                                 :allow-other-keys _keys)
-  (call/oauth->sxml cred 'post #`"/1/friendships/update.xml" 
+  (call/oauth->sxml cred 'post #`"/1/friendships/update.xml"
                     (api-params _keys screen-name device retweets)))
 
 

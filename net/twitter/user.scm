@@ -27,18 +27,18 @@
                           (include-entities #f) (skip-status #f)
                           :allow-other-keys _keys)
   (call/oauth->sxml cred 'get "/1/users/search.xml"
-                    (api-params _keys q per-page page 
+                    (api-params _keys q per-page page
                                   include-entities skip-status)))
 
 ;; CRED can be #f
 (define (user-suggestions/sxml cred :key (lang #f)
                                :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/users/suggestions.xml" 
+  (call/oauth->sxml cred 'get "/1/users/suggestions.xml"
                     (api-params _keys lang)))
 
 ;; CRED can be #f
 (define (user-suggestions/category/sxml cred slug :key (lang #f)
                                         :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml" 
+  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml"
                     (api-params _keys lang)))
 
