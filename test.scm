@@ -268,9 +268,40 @@
     (block-destroy/sxml *cred* :id (assoc-ref *settings* 'user2)))
   )
 
+(let* ([sxml (list-create/sxml *cred* "hoge")]
+       [id ((if-car-sxpath '(// id *text*)) sxml)])
+
+  (test-and* "a set of list api methods"
+    (list-show/sxml *cred* :list-id id)
+    (list-statuses/sxml *cred* :list-id id)
+    (list-update/sxml *cred* :list-id id :name "FOO")
+    ;; check successfully created
+    (equal? ((if-car-sxpath '(// list name *text*))
+             (list-show/sxml *cred* :list-id id)) "FOO")
+    (list-member-create/sxml *cred* :list-id id
+                             :screen-name (assoc-ref *settings* 'user2))
+    ;; list member was successfully created"
+    (list-member-show/sxml *cred* :list-id id
+                               :screen-name (assoc-ref *settings* 'user2))
+
+    ;; subscribe a created list.
+    (list-subscriber-create/sxml *cred2* :list-id id)
+
+    ;; check the existence of subscriber was created.
+    (list-subscribers/sxml *cred* :list-id id)
+
+    (member id (list-memberships/ids *cred2* :list-id id))
+    (member id (list-subscriptions/ids *cred2* :list-id id))
+
+    (list-subscriber-destroy/sxml *cred2* :list-id id)
+
+    (list-member-destroy/sxml *cred* :list-id id 
+                              :screen-name (assoc-ref *settings* 'user2))
+
+    ;; cleanup list
+    (list-destroy/sxml *cred* :list-id id)))
 
 ;; TODO geo api
-;; TODO list api
 ;; TODO streaming api
 
 (test-and* "rate limit user1"
