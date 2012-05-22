@@ -1,5 +1,4 @@
 .test-settings.scm
 Makefile
 config.log
-configure
 config.status
