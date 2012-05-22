@@ -45,7 +45,7 @@
                            page since-id until geocode
                            max-id show-user result-type)
     (define (call)
-      (http-get "search.twitter.com" #?= #`"/search.json?,(compose-query params)"))
+      (http-get "search.twitter.com" #`"/search.json?,(compose-query params)"))
 
     (define (retrieve status headers body)
       (check-api-error status headers body)

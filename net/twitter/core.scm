@@ -13,7 +13,7 @@
   (use text.tr)
   (export
    <twitter-cred> <twitter-api-error>
-   query-params api-params
+   api-params
    build-url
    retrieve-stream check-api-error
    call/oauth->sxml call/oauth
@@ -47,8 +47,7 @@
 ;; if #f is given to the variable.
 ;; keys are keyword list that append to vars after parsing.
 (define-macro (api-params keys . vars)
-  `(begin
-     (use text.tr)
+  `(with-module net.twitter.core
      (append
       (query-params ,@vars)
       (let loop ([ks ,keys]
@@ -57,34 +56,31 @@
          [(null? ks) (reverse! res)]
          [else
           (let* ([key (car ks)]
-                 [name (string-tr (keyword->string key) "-" "_")]
+                 [name (->param-key key)]
                  [v (cadr ks)]
-                 [val (cond
-                       [(eq? v #f) #f]
-                       [(eq? v #t) "t"]
-                       [else (x->string v)])])
+                 [val (->param-value v)])
             (cond
              [(not val)
               (loop (cddr ks) res)]
              [else
               (loop (cddr ks) (cons (list name val) res))]))])))))
 
-(define-syntax query-params
-  (syntax-rules ()
-    [(_)
-     '()]
-    [(_ var . rest)
-     (let* ([name (string-tr (x->string 'var) "-" "_")]
-            [value var]
-            [val (cond
-                  [(eq? value #f) #f]
-                  [(eq? value #t) "t"]
-                  [else (x->string value)])])
-       (cond
-        [(not val)
-         (query-params . rest)]
-        [else
-         (cons (list name val) (query-params . rest))]))]))
+(define (->param-key x)
+  (string-tr (x->string x) "-" "_"))
+
+(define (->param-value x)
+  (cond
+   [(eq? x #f) #f]
+   [(eq? x #t) "t"]
+   [else (x->string x)]))
+
+(define-macro (query-params . vars)
+  `(with-module net.twitter.core
+     (cond-list
+      ,@(map (lambda (v)
+               `(,v `(,',(->param-key v)
+                      ,(->param-value ,v))))
+             vars))))
 
 (with-module rfc.mime
   (define (twitter-mime-compose parts
