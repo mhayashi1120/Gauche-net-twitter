@@ -55,15 +55,21 @@
         (cond
          [(null? ks) (reverse! res)]
          [else
-          (let* ([key (car ks)]
-                 [name (->param-key key)]
-                 [v (cadr ks)]
-                 [val (->param-value v)])
+          (let* ([key (->param-key (car ks))]
+                 [val (->param-value (cadr ks))])
             (cond
              [(not val)
               (loop (cddr ks) res)]
              [else
-              (loop (cddr ks) (cons (list name val) res))]))])))))
+              (loop (cddr ks) (cons (list key val) res))]))])))))
+
+(define-macro (query-params . vars)
+  `(with-module net.twitter.core
+     (cond-list
+      ,@(map (^v
+              `(,v `(,',(->param-key v)
+                     ,(->param-value ,v))))
+             vars))))
 
 (define (->param-key x)
   (string-tr (x->string x) "-" "_"))
@@ -73,14 +79,6 @@
    [(eq? x #f) #f]
    [(eq? x #t) "t"]
    [else (x->string x)]))
-
-(define-macro (query-params . vars)
-  `(with-module net.twitter.core
-     (cond-list
-      ,@(map (lambda (v)
-               `(,v `(,',(->param-key v)
-                      ,(->param-value ,v))))
-             vars))))
 
 (with-module rfc.mime
   (define (twitter-mime-compose parts
