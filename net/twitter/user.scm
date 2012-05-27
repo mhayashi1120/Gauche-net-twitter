@@ -17,7 +17,7 @@
 (define (user-lookup/sxml cred :key (user-ids '()) (screen-names '())
                           (include-entities #f) (skip-status #f)
                           :allow-other-keys _keys)
-  (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
+  (let ((user-id (and (pair? user-ids) (string-join (map x->string user-ids) ",")))
         (screen-name (and (pair? screen-names) (string-join screen-names ","))))
     (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
                       (api-params _keys user-id screen-name

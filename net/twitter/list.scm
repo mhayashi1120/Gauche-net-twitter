@@ -18,7 +18,6 @@
    list-member-destroy/sxml
    list-members/ids
    list-subscribers/sxml
-   list-subscriber-show/sxml
    list-subscriber-create/sxml
    list-subscriber-destroy/sxml
    list-subscribers/ids
@@ -122,7 +121,7 @@
                                       (owner-screen-name #f)
                                       (user-ids #f) (screen-names #f)
                                       :allow-other-keys _keys)
-  (let ((user-id (and (pair? user-ids) (string-join user-ids ",")))
+  (let ((user-id (and (pair? user-ids) (string-join (map x->string user-ids) ",")))
         (screen-name (and (pair? screen-names) (string-join screen-names ","))))
     (call/oauth->sxml cred 'post "/1/lists/members/create_all.xml"
                       (api-params _keys list-id slug owner-id owner-screen-name
@@ -148,15 +147,6 @@
   (call/oauth->sxml cred 'get "/1/lists/subscribers.xml"
                     (api-params _keys list-id slug owner-id owner-screen-name
                                   cursor include-entities skip-status)))
-
-(define (list-subscriber-show/sxml cred :key (list-id #f)
-                                   (slug #f) (owner-id #f) (owner-screen-name #f)
-                                   (user-id #f) (screen-name #f)
-                                   (include-entities #f) (skip-status #f)
-                                   :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/subscribers/show.xml"
-                    (api-params _keys list-id slug owner-id owner-screen-name
-                                  user-id screen-name)))
 
 (define (list-subscriber-create/sxml cred :key (list-id #f)
                                      (slug #f) (owner-id #f)

@@ -28,7 +28,7 @@
       (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
 
     (define (retrieve status headers body)
-      (check-api-error status headers body)
+      (check-search-error status headers body)
       (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
               headers))
 
@@ -47,7 +47,7 @@
       (http-get "search.twitter.com" #`"/search.json?,(compose-query params)"))
 
     (define (retrieve status headers body)
-      (check-api-error status headers body)
+      (check-search-error status headers body)
       (values (call-with-input-string body (cut parse-json <>))
               headers))
 

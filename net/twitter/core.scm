@@ -15,7 +15,7 @@
    <twitter-cred> <twitter-api-error>
    api-params
    build-url
-   retrieve-stream check-api-error
+   retrieve-stream check-search-error
    call/oauth->sxml call/oauth
    call/oauth-post->sxml call/oauth-upload->sxml
    ))
@@ -204,7 +204,7 @@
             :status status :headers headers :body body
             (parse-html-message body))]))
 
-(define (check-api-error status headers body)
+(define (check-search-error status headers body)
   (unless (equal? status "200")
     (or (and-let* ([ct (rfc822-header-ref headers "content-type")])
           (match (mime-parse-content-type ct)
