@@ -1,5 +1,5 @@
 ;;;
-;;; Twitter access module
+;;; Twitter access module (general methods / backward compatibility)
 ;;;
 
 (define-module net.twitter
@@ -76,7 +76,6 @@
    twitter-list-member-destroy/sxml
    twitter-list-members/ids
    twitter-list-subscribers/sxml
-   twitter-list-subscriber-show/sxml
    twitter-list-subscriber-create/sxml
    twitter-list-subscriber-destroy/sxml
    twitter-list-subscribers/ids
@@ -203,7 +202,6 @@
 (define twitter-list-member-destroy/sxml list:list-member-destroy/sxml)
 (define twitter-list-members/ids list:list-members/ids)
 (define twitter-list-subscribers/sxml list:list-subscribers/sxml)
-(define twitter-list-subscriber-show/sxml list:list-subscriber-show/sxml)
 (define twitter-list-subscriber-create/sxml list:list-subscriber-create/sxml)
 (define twitter-list-subscriber-destroy/sxml list:list-subscriber-destroy/sxml)
 (define twitter-list-subscribers/ids list:list-subscribers/ids)

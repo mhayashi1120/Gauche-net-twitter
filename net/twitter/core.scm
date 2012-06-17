@@ -64,12 +64,11 @@
               (loop (cddr ks) (cons (list key val) res))]))])))))
 
 (define-macro (query-params . vars)
-  `(with-module net.twitter.core
-     (cond-list
-      ,@(map (^v
-              `(,v `(,',(->param-key v)
-                     ,(->param-value ,v))))
-             vars))))
+  `(cond-list
+    ,@(map (^v
+            `(,v `(,',(->param-key v)
+                   ,(->param-value ,v))))
+           vars)))
 
 (define (->param-key x)
   (string-tr (x->string x) "-" "_"))
@@ -128,8 +127,8 @@
    cred path files params opts))
 
 (define-macro (hack-mime-composing . expr)
-  (let ((original (gensym)))
-    `(let ((,original #f))
+  (let ([original (gensym)])
+    `(let ([,original #f])
        (with-module rfc.mime
          (set! ,original mime-compose-message)
          (set! mime-compose-message twitter-mime-compose))
@@ -178,27 +177,25 @@
 (define (raise-api-error type status headers body)
   (ecase type
     ['xml
-     (let1 body-sxml
-         (guard (e (else #f))
-           (parse-xml-string body))
+     (let* ([body-sxml (guard (e [else '()]) (parse-xml-string body))]
+            [msg (or ((if-car-sxpath '(// error *text*)) body-sxml) body)])
        (error <twitter-api-error>
               :status status :headers headers :body body
               :body-sxml body-sxml
-              (or (and body-sxml ((if-car-sxpath '(// error *text*)) body-sxml))
-                  body)))]
+              msg))]
     ['json
-     (let1 body-json
-         (guard (e (else #f))
-           (parse-json-string body))
-       (let ((aref assoc-ref)
-             (vref vector-ref))
-         (error <twitter-api-error>
-                :status status :headers headers :body body
-                :body-json body-json
-                (or (and body-json
-                         (guard (e (else #f))
-                           (aref (vref (aref body-json "errors") 0) "message")))
-                    body))))]
+     (let* ([body-json (guard (e [else '()]) (parse-json-string body))]
+            [aref assoc-ref]
+            [vref vector-ref]
+            [msg (or (and-let* ([errors (aref body-json "errors")]
+                                [error0 (vref errors 0)]
+                                [msg (aref error0 "message")])
+                       msg)
+                     body)])
+       (error <twitter-api-error>
+              :status status :headers headers :body body
+              :body-json body-json
+              msg))]
     ['html
      (error <twitter-api-error>
             :status status :headers headers :body body
@@ -221,8 +218,8 @@
 
 ;; select body elements text
 (define (parse-html-message body)
-  (let loop ((lines (string-split body "\n"))
-			 (ret '()))
+  (let loop ([lines (string-split body "\n")]
+			 [ret '()])
 	(cond
      ((null? lines)
       (string-join (reverse ret) " "))
@@ -233,7 +230,8 @@
       (loop (cdr lines) ret)))))
 
 (define (retrieve-stream getter f . args)
-  (let loop ((cursor "-1") (ids '()))
+  (let loop ([cursor "-1"]
+             [ids '()])
     (let* ([r (apply f (append args (list :cursor cursor)))]
            [next ((if-car-sxpath '(// next_cursor *text*)) r)]
            [ids (cons (getter r) ids)])
