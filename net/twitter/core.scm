@@ -16,7 +16,7 @@
    api-params
    build-url
    retrieve-stream check-search-error
-   call/oauth->sxml call/oauth
+   call/oauth->sxml call/oauth->json call/oauth
    call/oauth-post->sxml call/oauth-upload->sxml
    ))
 (select-module net.twitter.core)
@@ -95,26 +95,35 @@
 
 ;;TODO make obsolete
 (define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth cred method path params opts))
+  (apply call/oauth cred method #`",|path|.xml" params opts))
+
+(define (call/oauth->json cred method path params . opts)
+  (apply call/oauth cred method #`",|path|.json" params opts))
 
 (define (call/oauth cred method path params . opts)
-  (define (call)
-    (let1 auth (and cred
-                    (oauth-auth-header
-                     (if (eq? method 'get) "GET" "POST")
-                     (build-url "api.twitter.com" path) params cred))
-      (case method
-        [(get) (apply http-get "api.twitter.com"
-                      #`",|path|?,(oauth-compose-query params)"
-                      :Authorization auth :secure (twitter-use-https) opts)]
-        [(post) (apply http-post "api.twitter.com" path
-                       (oauth-compose-query params)
-                       :Authorization auth :secure (twitter-use-https) opts)])))
+  (let1 path
+      (cond
+       [(#/\.xml$/ path) path]
+       [(#/\.json$/ path) path]
+       [else #`",|path|.json"])
 
-  (define (retrieve status headers body)
-    (%api-adapter status headers body))
+    (define (call)
+      (let1 auth (and cred
+                      (oauth-auth-header
+                       (if (eq? method 'get) "GET" "POST")
+                       (build-url "api.twitter.com" path) params cred))
+        (case method
+          [(get) (apply http-get "api.twitter.com"
+                        #`",|path|?,(oauth-compose-query params)"
+                        :Authorization auth :secure (twitter-use-https) opts)]
+          [(post) (apply http-post "api.twitter.com" path
+                         (oauth-compose-query params)
+                         :Authorization auth :secure (twitter-use-https) opts)])))
 
-  (call-with-values call retrieve))
+    (define (retrieve status headers body)
+      (%api-adapter status headers body))
+
+    (call-with-values call retrieve)))
 
 (define (call/oauth-post->sxml cred path files params . opts)
   (apply

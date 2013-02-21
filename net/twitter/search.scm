@@ -29,10 +29,21 @@
 
     (define (retrieve status headers body)
       (check-search-error status headers body)
-      (values (call-with-input-string body (cut ssax:xml->sxml <> '()))
+      (values (hack-georss-sxml body)
               headers))
 
     (call-with-values call retrieve)))
+
+(define (hack-georss-sxml s)
+  (call-with-input-string s
+    (^x
+     (guard (e [else
+                (if-let1 m (#/<feed / s)
+                  (ssax:xml->sxml
+                   (open-input-string (string-append (m 'before) "<feed xmlns:georss=\"http://www.georss.org/georss\" " (m 'after)))
+                   '())
+                  #f)])
+       (ssax:xml->sxml x '())))))
 
 (define (search/json q :key (lang #f) (locale #f)
                      (rpp #f) (page #f)
