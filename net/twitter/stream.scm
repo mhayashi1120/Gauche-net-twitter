@@ -37,7 +37,7 @@
 (define (sample-stream cred proc :key (count #f) (delimited #f)
                        (raise-error? #f)
                        :allow-other-keys _keys)
-  (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/sample.json"
+  (open-stream cred proc 'get "https://stream.twitter.com/1.1/statuses/sample.json"
                (api-params _keys count delimited) :raise-error? raise-error?))
 
 (define (filter-stream cred proc :key (count #f) (delimited #f)
@@ -46,7 +46,7 @@
                        (raise-error? #f)
                        :allow-other-keys _keys)
   ;;FIXME too many follow make excessive URL length.
-  (open-stream cred proc 'post "https://stream.twitter.com/1/statuses/filter.json"
+  (open-stream cred proc 'post "https://stream.twitter.com/1.1/statuses/filter.json"
                (api-params _keys count delimited follow locations track)
                :raise-error? raise-error?))
 
@@ -54,7 +54,7 @@
 (define (retweet-stream cred proc :key (delimited #f) (stall-warnings #f)
                         (raise-error? #f)
                         :allow-other-keys _keys)
-  (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/retweet.json"
+  (open-stream cred proc 'get "https://stream.twitter.com/1.1/statuses/retweet.json"
                (api-params _keys delimited stall-warnings)
                :raise-error? raise-error?))
 
@@ -62,7 +62,7 @@
 (define (firehose-stream cred proc :key (count #f) (delimited #f)
                          (raise-error? #f)
                          :allow-other-keys _keys)
-  (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/firehose.json"
+  (open-stream cred proc 'get "https://stream.twitter.com/1.1/statuses/firehose.json"
                (api-params _keys count delimited)
                :raise-error? raise-error?))
 
@@ -70,7 +70,7 @@
 (define (links-stream cred proc :key (count #f) (delimited #f)
                       (stall-warnings #f) (raise-error? #f)
                       :allow-other-keys _keys)
-  (open-stream cred proc 'get "https://stream.twitter.com/1/statuses/links.json"
+  (open-stream cred proc 'get "https://stream.twitter.com/1.1/statuses/links.json"
                (api-params _keys count delimited stall-warnings)
                :raise-error? raise-error?))
 

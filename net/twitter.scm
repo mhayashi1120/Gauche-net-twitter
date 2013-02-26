@@ -23,96 +23,96 @@
   (export
    <twitter-cred> <twitter-api-error>
 
-   twitter-home-timeline/sxml
-   twitter-user-timeline/sxml
-   twitter-mentions/sxml twitter-mentions
-   twitter-retweeted-to-me/sxml
-   twitter-retweeted-by-me/sxml
-   twitter-retweets-of-me/sxml
-   twitter-retweeted-to-user/sxml
-   twitter-retweeted-by-user/sxml
+   twitter-home-timeline/json
+   twitter-user-timeline/json
+   twitter-mentions/json twitter-mentions
+   twitter-retweeted-to-me/json
+   twitter-retweeted-by-me/json
+   twitter-retweets-of-me/json
+   twitter-retweeted-to-user/json
+   twitter-retweeted-by-user/json
 
-   twitter-search/sxml
+   twitter-search/json
 
-   twitter-show/sxml
-   twitter-update/sxml twitter-update
-   twitter-update-with-media/sxml
-   twitter-destroy/sxml
-   twitter-retweet/sxml
-   twitter-retweets/sxml
-   twitter-retweeted-by/sxml
-   twitter-retweeted-by-ids/sxml
+   twitter-show/json
+   twitter-update/json twitter-update
+   twitter-update-with-media/json
+   twitter-destroy/json
+   twitter-retweet/json
+   twitter-retweets/json
+   twitter-retweeted-by/json
+   twitter-retweeted-by-ids/json
 
-   twitter-user-show/sxml
-   twitter-user-lookup/sxml
-   twitter-user-search/sxml
-   twitter-user-suggestions/sxml
-   twitter-user-suggestions/category/sxml
+   twitter-user-show/json
+   twitter-user-lookup/json
+   twitter-user-search/json
+   twitter-user-suggestions/json
+   twitter-user-suggestions/category/json
 
-   twitter-friends/ids/sxml twitter-friends/ids
-   twitter-followers/ids/sxml twitter-followers/ids
-   twitter-friendship-show/sxml
-   twitter-friendship-exists/sxml twitter-friendship-exists?
-   twitter-friendship-create/sxml twitter-friendship-destroy/sxml
-   twitter-friendship-update/sxml
+   twitter-friends/ids/json twitter-friends/ids
+   twitter-followers/ids/json twitter-followers/ids
+   twitter-friendship-show/json
+   twitter-friendship-exists/json twitter-friendship-exists?
+   twitter-friendship-create/json twitter-friendship-destroy/json
+   twitter-friendship-update/json
 
-   twitter-direct-messages/sxml
-   twitter-direct-messages-sent/sxml
-   twitter-direct-message-new/sxml
-   twitter-direct-message-destroy/sxml
+   twitter-direct-messages/json
+   twitter-direct-messages-sent/json
+   twitter-direct-message-new/json
+   twitter-direct-message-destroy/json
 
-   twitter-lists/sxml
+   twitter-lists/json
    twitter-lists/ids twitter-lists/slugs
-   twitter-list-show/sxml
-   twitter-list-statuses/sxml
-   twitter-list-create/sxml
+   twitter-list-show/json
+   twitter-list-statuses/json
+   twitter-list-create/json
    twitter-list-create
-   twitter-list-update/sxml
-   twitter-list-destroy/sxml
-   twitter-list-members/sxml
-   twitter-list-member-show/sxml
-   twitter-list-member-create/sxml
-   twitter-list-members-create-all/sxml
-   twitter-list-member-destroy/sxml
+   twitter-list-update/json
+   twitter-list-destroy/json
+   twitter-list-members/json
+   twitter-list-member-show/json
+   twitter-list-member-create/json
+   twitter-list-members-create-all/json
+   twitter-list-member-destroy/json
    twitter-list-members/ids
-   twitter-list-subscribers/sxml
-   twitter-list-subscriber-create/sxml
-   twitter-list-subscriber-destroy/sxml
+   twitter-list-subscribers/json
+   twitter-list-subscriber-create/json
+   twitter-list-subscriber-destroy/json
    twitter-list-subscribers/ids
-   twitter-list-subscriptions/sxml twitter-list-subscriptions/ids
-   twitter-list-memberships/sxml twitter-list-memberships/ids
+   twitter-list-subscriptions/json twitter-list-subscriptions/ids
+   twitter-list-memberships/json twitter-list-memberships/ids
 
-   twitter-favorites/sxml
-   twitter-favorite-create/sxml
-   twitter-favorite-destroy/sxml
+   twitter-favorites/json
+   twitter-favorite-create/json
+   twitter-favorite-destroy/json
 
-   twitter-account-verify-credentials/sxml
-   twitter-account-totals/sxml
-   twitter-account-settings/sxml
-   twitter-account-settings-update/sxml
-   twitter-account-rate-limit-status/sxml
-   twitter-account-update-profile-image/sxml
-   twitter-account-update-profile-background-image/sxml
-   twitter-account-update-profile-colors/sxml
-   twitter-account-update-profile/sxml
+   twitter-account-verify-credentials/json
+   twitter-account-totals/json
+   twitter-account-settings/json
+   twitter-account-settings-update/json
+   twitter-account-rate-limit-status/json
+   twitter-account-update-profile-image/json
+   twitter-account-update-profile-background-image/json
+   twitter-account-update-profile-colors/json
+   twitter-account-update-profile/json
    twitter-account-verify-credentials?
 
-   twitter-notifications-follow/sxml
-   twitter-notifications-leave/sxml
+   twitter-notifications-follow/json
+   twitter-notifications-leave/json
 
-   twitter-blocks/sxml
-   twitter-blocks/ids/sxml
-   twitter-block-create/sxml
-   twitter-block-destroy/sxml
-   twitter-block-exists/sxml
+   twitter-blocks/json
+   twitter-blocks/ids/json
+   twitter-block-create/json
+   twitter-block-destroy/json
+   twitter-block-exists/json
    twitter-block-exists?
    twitter-blocks/ids
 
-   twitter-report-spam/sxml
+   twitter-report-spam/json
 
-   twitter-trends-available/sxml twitter-trends-location/sxml
+   twitter-trends-available/json twitter-trends-location/json
 
-   twitter-legal-tos/sxml twitter-legal-privacy/sxml
+   twitter-legal-tos/json twitter-legal-privacy/json
    ))
 (select-module net.twitter)
 
@@ -127,140 +127,128 @@
 ;; Timeline methods
 ;;
 
-(define twitter-home-timeline/sxml timeline:home-timeline/sxml)
-(define twitter-user-timeline/sxml timeline:user-timeline/sxml)
-(define twitter-mentions/sxml timeline:mentions/sxml)
+(define twitter-home-timeline/json timeline:home-timeline/json)
+(define twitter-user-timeline/json timeline:user-timeline/json)
+(define twitter-mentions/json timeline:mentions/json)
 (define twitter-mentions timeline:mentions)
-(define twitter-retweeted-to-me/sxml timeline:retweeted-to-me/sxml)
-(define twitter-retweeted-by-me/sxml timeline:retweeted-by-me/sxml)
-(define twitter-retweets-of-me/sxml timeline:retweets-of-me/sxml)
-(define twitter-retweeted-to-user/sxml timeline:retweeted-to-user/sxml)
-(define twitter-retweeted-by-user/sxml timeline:retweeted-by-user/sxml)
+(define twitter-retweeted-to-me/json timeline:retweeted-to-me/json)
+(define twitter-retweeted-by-me/json timeline:retweeted-by-me/json)
+(define twitter-retweets-of-me/json timeline:retweets-of-me/json)
+(define twitter-retweeted-to-user/json timeline:retweeted-to-user/json)
+(define twitter-retweeted-by-user/json timeline:retweeted-by-user/json)
 
 ;;
 ;; Search API method
 ;;
 
-(define twitter-search/sxml search:search/sxml)
+(define twitter-search/json search:search/json)
 
 ;;
 ;; Status method
 ;;
 
-(define twitter-show/sxml tweet:show/sxml)
-(define twitter-update/sxml tweet:update/sxml)
+(define twitter-show/json tweet:show/json)
+(define twitter-update/json tweet:update/json)
 (define twitter-update tweet:update)
-(define twitter-update-with-media/sxml tweet:update-with-media/sxml)
-(define twitter-destroy/sxml tweet:destroy/sxml)
-(define twitter-retweet/sxml tweet:retweet/sxml)
-(define twitter-retweets/sxml tweet:retweets/sxml)
-(define twitter-retweeted-by/sxml tweet:retweeted-by/sxml)
-(define twitter-retweeted-by-ids/sxml tweet:retweeted-by-ids/sxml)
+(define twitter-update-with-media/json tweet:update-with-media/json)
+(define twitter-destroy/json tweet:destroy/json)
+(define twitter-retweet/json tweet:retweet/json)
+(define twitter-retweets/json tweet:retweets/json)
 
 ;;
 ;; Directmessage methods
 ;;
 
-(define twitter-direct-messages/sxml dm:direct-messages/sxml)
-(define twitter-direct-messages-sent/sxml dm:direct-messages-sent/sxml)
-(define twitter-direct-message-new/sxml dm:direct-message-new/sxml)
-(define twitter-direct-message-destroy/sxml dm:direct-message-destroy/sxml)
+(define twitter-direct-messages/json dm:direct-messages/json)
+(define twitter-direct-messages-sent/json dm:direct-messages-sent/json)
+(define twitter-direct-message-new/json dm:direct-message-new/json)
+(define twitter-direct-message-destroy/json dm:direct-message-destroy/json)
 
 ;;
 ;; Friends & Followers
 ;;
 
-(define twitter-friends/ids/sxml friendship:friends/ids/sxml)
+(define twitter-friends/ids/json friendship:friends/ids/json)
 (define twitter-friends/ids friendship:friends/ids)
-(define twitter-followers/ids/sxml friendship:followers/ids/sxml)
+(define twitter-followers/ids/json friendship:followers/ids/json)
 (define twitter-followers/ids friendship:followers/ids)
 
-(define twitter-friendship-show/sxml friendship:friendship-show/sxml)
-(define twitter-friendship-exists/sxml friendship:friendship-exists/sxml)
-(define twitter-friendship-exists? friendship:friendship-exists?)
-(define twitter-friendship-create/sxml friendship:friendship-create/sxml)
-(define twitter-friendship-destroy/sxml friendship:friendship-destroy/sxml)
-(define twitter-friendship-update/sxml friendship:friendship-update/sxml)
+(define twitter-friendship-show/json friendship:friendship-show/json)
+(define twitter-friendship-create/json friendship:friendship-create/json)
+(define twitter-friendship-destroy/json friendship:friendship-destroy/json)
+(define twitter-friendship-update/json friendship:friendship-update/json)
 
 ;;
 ;; List methods
 ;;
 
-(define twitter-lists/sxml list:lists/sxml)
-(define twitter-lists/ids list:lists/ids)
-(define twitter-lists/slugs list:lists/slugs)
-(define twitter-list-show/sxml list:list-show/sxml)
-(define twitter-list-statuses/sxml list:list-statuses/sxml)
-(define twitter-list-create/sxml list:list-create/sxml)
+(define twitter-lists/json list:lists/json)
+(define twitter-list-show/json list:list-show/json)
+(define twitter-list-statuses/json list:list-statuses/json)
+(define twitter-list-create/json list:list-create/json)
 (define twitter-list-create list:list-create)
-(define twitter-list-update/sxml list:list-update/sxml)
-(define twitter-list-destroy/sxml list:list-destroy/sxml)
-(define twitter-list-members/sxml list:list-members/sxml)
-(define twitter-list-member-show/sxml list:list-member-show/sxml)
-(define twitter-list-member-create/sxml list:list-member-create/sxml)
-(define twitter-list-members-create-all/sxml list:list-members-create-all/sxml)
-(define twitter-list-member-destroy/sxml list:list-member-destroy/sxml)
-(define twitter-list-members/ids list:list-members/ids)
-(define twitter-list-subscribers/sxml list:list-subscribers/sxml)
-(define twitter-list-subscriber-create/sxml list:list-subscriber-create/sxml)
-(define twitter-list-subscriber-destroy/sxml list:list-subscriber-destroy/sxml)
-(define twitter-list-subscribers/ids list:list-subscribers/ids)
-(define twitter-list-memberships/sxml list:list-memberships/sxml)
-(define twitter-list-memberships/ids list:list-memberships/ids)
-(define twitter-list-subscriptions/sxml list:list-subscriptions/sxml)
-(define twitter-list-subscriptions/ids list:list-subscriptions/ids)
+(define twitter-list-update/json list:list-update/json)
+(define twitter-list-destroy/json list:list-destroy/json)
+(define twitter-list-members/json list:list-members/json)
+(define twitter-list-member-show/json list:list-member-show/json)
+(define twitter-list-member-create/json list:list-member-create/json)
+(define twitter-list-members-create-all/json list:list-members-create-all/json)
+(define twitter-list-member-destroy/json list:list-member-destroy/json)
+(define twitter-list-subscribers/json list:list-subscribers/json)
+(define twitter-list-subscriber-create/json list:list-subscriber-create/json)
+(define twitter-list-subscriber-destroy/json list:list-subscriber-destroy/json)
+(define twitter-list-memberships/json list:list-memberships/json)
+(define twitter-list-subscriptions/json list:list-subscriptions/json)
 
 
 ;;
 ;; Favorites methods
 ;;
 
-(define twitter-favorites/sxml favorite:favorites/sxml)
-(define twitter-favorite-create/sxml favorite:favorite-create/sxml)
-(define twitter-favorite-destroy/sxml favorite:favorite-destroy/sxml)
+(define twitter-favorites/json favorite:favorites/json)
+(define twitter-favorite-create/json favorite:favorite-create/json)
+(define twitter-favorite-destroy/json favorite:favorite-destroy/json)
 
 ;;
 ;; Account methods
 ;;
 
-(define twitter-account-verify-credentials/sxml account:account-verify-credentials/sxml)
+(define twitter-account-verify-credentials/json account:account-verify-credentials/json)
 (define twitter-account-verify-credentials? account:account-verify-credentials?)
-(define twitter-account-totals/sxml account:account-totals/sxml)
-(define twitter-account-settings/sxml account:account-settings/sxml)
-(define twitter-account-settings-update/sxml account:account-settings-update/sxml)
-(define twitter-account-rate-limit-status/sxml account:account-rate-limit-status/sxml)
-(define twitter-account-update-profile-image/sxml account:account-update-profile-image/sxml)
-(define twitter-account-update-profile-background-image/sxml account:account-update-profile-background-image/sxml)
-(define twitter-account-update-profile-colors/sxml account:account-update-profile-colors/sxml)
-(define twitter-account-update-profile/sxml account:account-update-profile/sxml)
+(define twitter-account-totals/json account:account-totals/json)
+(define twitter-account-settings/json account:account-settings/json)
+(define twitter-account-settings-update/json account:account-settings-update/json)
+(define twitter-account-update-profile-image/json account:account-update-profile-image/json)
+(define twitter-account-update-profile-background-image/json account:account-update-profile-background-image/json)
+(define twitter-account-update-profile-colors/json account:account-update-profile-colors/json)
+(define twitter-account-update-profile/json account:account-update-profile/json)
 
 ;;
 ;; User methods
 ;;
 
-(define twitter-user-show/sxml user:user-show/sxml)
-(define twitter-user-lookup/sxml user:user-lookup/sxml)
-(define twitter-user-search/sxml user:user-search/sxml)
-(define twitter-user-suggestions/sxml user:user-suggestions/sxml)
-(define twitter-user-suggestions/category/sxml user:user-suggestions/category/sxml)
+(define twitter-user-show/json user:user-show/json)
+(define twitter-user-lookup/json user:user-lookup/json)
+(define twitter-user-search/json user:user-search/json)
+(define twitter-user-suggestions/json user:user-suggestions/json)
+(define twitter-user-suggestions/category/json user:user-suggestions/category/json)
 
 
 ;;
 ;; Notification methods
 ;;
 
-(define twitter-notifications-follow/sxml notification:notifications-follow/sxml)
-(define twitter-notifications-leave/sxml notification:notifications-leave/sxml)
+(define twitter-notifications-follow/json notification:notifications-follow/json)
+(define twitter-notifications-leave/json notification:notifications-leave/json)
 
 ;;
 ;; Block methods
 ;;
 
-(define twitter-blocks/sxml block:blocks/sxml)
-(define twitter-blocks/ids/sxml block:blocks/ids/sxml)
-(define twitter-block-create/sxml block:block-create/sxml)
-(define twitter-block-destroy/sxml block:block-destroy/sxml)
-(define twitter-block-exists/sxml block:block-exists/sxml)
+(define twitter-blocks-list/json block:blocks-list/json)
+(define twitter-blocks/ids/json block:blocks/ids/json)
+(define twitter-block-create/json block:block-create/json)
+(define twitter-block-destroy/json block:block-destroy/json)
 (define twitter-block-exists? block:block-exists?)
 (define twitter-blocks/ids block:blocks/ids)
 
@@ -268,19 +256,19 @@
 ;; Report spam methods
 ;;
 
-(define twitter-report-spam/sxml spam:report-spam/sxml)
+(define twitter-report-spam/json spam:report-spam/json)
 
 ;;
 ;; Trend methods
 ;;
 
-(define twitter-trends-available/sxml trends:trends-available/sxml)
-(define twitter-trends-location/sxml trends:trends-location/sxml)
+(define twitter-trends-available/json trends:trends-available/json)
+(define twitter-trends-location/json trends:trends-location/json)
 
 ;;
 ;; Legal methods
 ;;
 
-(define twitter-legal-tos/sxml legal:legal-tos/sxml)
-(define twitter-legal-privacy/sxml legal:legal-privacy/sxml)
+(define twitter-legal-tos/json legal:legal-tos/json)
+(define twitter-legal-privacy/json legal:legal-privacy/json)
 

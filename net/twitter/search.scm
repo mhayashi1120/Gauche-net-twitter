@@ -5,7 +5,7 @@
   (use sxml.ssax)
   (use text.unicode)
   (export
-   search/json search/sxml))
+   search/json))
 (select-module net.twitter.search)
 
 (define (compose-query params)
@@ -14,25 +14,6 @@
 (define (%-fix str)
   (regexp-replace-all* str #/%[\da-fA-F][\da-fA-F]/
                        (lambda (m) (string-upcase (m 0)))))
-
-(define (search/sxml q :key (lang #f) (locale #f)
-                     (rpp #f) (page #f)
-                     (since-id #f) (until #f) (geocode #f)
-                     (show-user #f) (result-type #f)
-                     (max-id #f)
-                     :allow-other-keys _keys)
-  (let1 params (api-params _keys q lang locale rpp
-                           page since-id until geocode
-                           max-id show-user result-type)
-    (define (call)
-      (http-get "search.twitter.com" #`"/search.atom?,(compose-query params)"))
-
-    (define (retrieve status headers body)
-      (check-search-error status headers body)
-      (values (hack-georss-sxml body)
-              headers))
-
-    (call-with-values call retrieve)))
 
 (define (hack-georss-sxml s)
   (call-with-input-string s

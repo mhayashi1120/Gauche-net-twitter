@@ -6,8 +6,6 @@
   (use rfc.http)
   (use rfc.json)
   (use rfc.mime)
-  (use sxml.ssax)
-  (use sxml.sxpath)
   (use util.list)
   (use util.match)
   (use text.tr)
@@ -16,8 +14,8 @@
    api-params
    build-url
    retrieve-stream check-search-error
-   call/oauth->sxml call/oauth->json call/oauth
-   call/oauth-post->sxml call/oauth-upload->sxml
+   call/oauth->json call/oauth
+   call/oauth-post->json call/oauth-upload->json
    ))
 (select-module net.twitter.core)
 
@@ -93,10 +91,6 @@
   (call-with-input-string str
     (cut ssax:xml->sxml <> '())))
 
-;;TODO make obsolete
-(define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth cred method #`",|path|.xml" params opts))
-
 (define (call/oauth->json cred method path params . opts)
   (apply call/oauth cred method #`",|path|.json" params opts))
 
@@ -125,15 +119,15 @@
 
     (call-with-values call retrieve)))
 
-(define (call/oauth-post->sxml cred path files params . opts)
+(define (call/oauth-post->json cred path files params . opts)
   (apply
    (call/oauth-file-sender "api.twitter.com")
-   cred path files params opts))
+   cred ",|path|.json" files params opts))
 
-(define (call/oauth-upload->sxml cred path files params . opts)
+(define (call/oauth-upload->json cred path files params . opts)
   (apply
    (call/oauth-file-sender "upload.twitter.com")
-   cred path files params opts))
+   cred ",|path|.json" files params opts))
 
 (define-macro (hack-mime-composing . expr)
   (let ([original (gensym)])
@@ -239,11 +233,12 @@
       (loop (cdr lines) ret)))))
 
 (define (retrieve-stream getter f . args)
-  (let loop ([cursor "-1"]
-             [ids '()])
-    (let* ([r (apply f (append args (list :cursor cursor)))]
-           [next ((if-car-sxpath '(// next_cursor *text*)) r)]
-           [ids (cons (getter r) ids)])
-      (if (equal? next "0")
-        (concatenate (reverse ids))
-        (loop next ids)))))
+  ;; getter: from f results then return list.
+  (let loop ([cursor -1]
+             [accum '()])
+    (let* ([r (apply f (append args `(:cursor ,cursor)))]
+           [next (assoc-ref r "next_cursor")]
+           [res (cons (getter r) accum)])
+      (if (equal? next 0)
+        (concatenate (reverse res))
+        (loop next res)))))
