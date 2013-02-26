@@ -256,7 +256,7 @@
 ;; Report spam methods
 ;;
 
-(define twitter-report-spam/json spam:report-spam/json)
+(define twitter-report-spam/json user:report-spam/json)
 
 ;;
 ;; Trend methods
