@@ -5,7 +5,8 @@
   (use sxml.ssax)
   (use text.unicode)
   (export
-   search/json))
+   search/json
+   search-tweets/json))
 (select-module net.twitter.search)
 
 (define (compose-query params)
@@ -15,17 +16,7 @@
   (regexp-replace-all* str #/%[\da-fA-F][\da-fA-F]/
                        (lambda (m) (string-upcase (m 0)))))
 
-(define (hack-georss-sxml s)
-  (call-with-input-string s
-    (^x
-     (guard (e [else
-                (if-let1 m (#/<feed / s)
-                  (ssax:xml->sxml
-                   (open-input-string (string-append (m 'before) "<feed xmlns:georss=\"http://www.georss.org/georss\" " (m 'after)))
-                   '())
-                  #f)])
-       (ssax:xml->sxml x '())))))
-
+;;TODO not documented..
 (define (search/json q :key (lang #f) (locale #f)
                      (rpp #f) (page #f)
                      (since-id #f) (until #f) (geocode #f)
@@ -44,3 +35,13 @@
               headers))
 
     (call-with-values call retrieve)))
+
+(define (search-tweets/json cred q :key (geocode #f) (lang #f) (locale #f)
+                            (result-type #f) (count #f) (until #f)
+                            (rpp #f) (page #f) (since-id #f) (max-id #f)
+                            (include-entities #f)
+                            :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/search/tweets"
+                    (api-params _keys q geocode lang locale
+                                result-type count until
+                                rpp page since-id  max-id include-entities)))

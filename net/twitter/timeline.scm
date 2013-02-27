@@ -46,39 +46,11 @@
                     (api-params _keys since-id max-id count page
                                   trim-user include-rts include-entities)))
 
-(define (retweeted-to-me/json cred :key (count #f) (page #f) (max-id #f) (since-id #f)
-                              (trim-user #f) (include-entities #f)
-                              :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweeted_to_me"
-                    (api-params _keys count page max-id since-id trim-user include-entities)))
-
-(define (retweeted-by-me/json cred :key (count #f) (page #f) (max-id #f) (since-id #f)
-                              (trim-user #f) (include-entities #f)
-                              :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweeted_by_me"
-                    (api-params _keys count page max-id since-id trim-user include-entities)))
-
 (define (retweets-of-me/json cred :key (count #f) (page #f) (max-id #f) (since-id #f)
                              (trim-user #f) (include-entities #f)
                              :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/retweets_of_me"
                     (api-params _keys count page max-id since-id trim-user include-entities)))
-
-(define (retweeted-to-user/json cred :key (id #f) (user-id #f) (screen-name #f)
-                                (count #f) (page #f) (max-id #f) (since-id #f)
-                                (trim-user #f) (include-entities #f)
-                                :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweeted_to_user"
-                    (api-params _keys id user-id screen-name
-                                  count page max-id since-id trim-user include-entities)))
-
-(define (retweeted-by-user/json cred :key (id #f) (user-id #f) (screen-name #f)
-                                (count #f) (page #f) (max-id #f) (since-id #f)
-                                (trim-user #f) (include-entities #f)
-                                :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweeted_by_user"
-                    (api-params _keys id user-id screen-name
-                                  count page max-id since-id trim-user include-entities)))
 
 ;;;
 ;;; Utilities

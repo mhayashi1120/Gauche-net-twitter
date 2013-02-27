@@ -6,6 +6,7 @@
    user-search/json
    user-suggestions/json
    user-suggestions/category/json
+   user-suggestion/members/json
 
    report-spam/json))
 (select-module net.twitter.user)
@@ -47,6 +48,11 @@
                                         :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|"
                     (api-params _keys lang)))
+
+(define (user-suggestion/members/json cred slug :key (_dummy #f)
+                                      :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|/members"
+                    (api-params _keys)))
 
 (define (report-spam/json cred :key (id #f) (user-id #f) (screen-name #f)
                           :allow-other-keys _keys)

@@ -5,10 +5,8 @@
    account-verify-credentials?
 
    account-verify-credentials/json
-   account-totals/json
    account-settings/json
    account-settings-update/json
-   account-rate-limit-status/json
    account-update-profile-image/json
    account-update-profile-background-image/json
    account-update-profile-colors/json
@@ -26,9 +24,6 @@
          :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/account/verify_credentials"
                     (api-params _keys include-entities skip-status)))
-
-(define (account-totals/json cred)
-  (call/oauth->json cred 'post "/1.1/account/totals" '()))
 
 (define (account-settings/json cred)
   (call/oauth->json cred 'get "/1.1/account/settings" '()))
@@ -95,7 +90,9 @@
 ;;;
 
 (define (account-verify-credentials? cred)
-  (guard (e ((<twitter-api-error> e) #f))
-    (account-verify-credentials/sxml cred)
+  (guard (e [(and (<twitter-api-error> e)
+                  (equal? (condition-ref e 'status) "401"))
+             #f])
+    (account-verify-credentials/json cred)
     #t))
 

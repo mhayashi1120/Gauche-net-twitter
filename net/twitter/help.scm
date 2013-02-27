@@ -10,9 +10,6 @@
 ;;; JSON api
 ;;;
 
-(define (help-test/json cred)
-  (call/oauth->json cred 'get "/1.1/help/test" '()))
-
 (define (help-configuration/json cred)
   (call/oauth->json cred 'get "/1.1/help/configuration" '()))
 
@@ -21,4 +18,14 @@
 
 (define (help-rate-limit-status/json cred)
   (call/oauth->json cred 'get #`"/1.1/application/rate_limit_status" '()))
+
+(define (help-tos/json cred :key (lang #f)
+                        :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/help/tos"
+                    (api-params _keys lang)))
+
+(define (help-privacy/json cred :key (lang #f)
+                            :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/help/privacy"
+                    (api-params _keys lang)))
 
