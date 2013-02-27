@@ -9,6 +9,8 @@
   (use util.list)
   (use util.match)
   (use text.tr)
+  (use sxml.ssax)
+  (use sxml.sxpath)
   (export
    <twitter-cred> <twitter-api-error>
    api-params

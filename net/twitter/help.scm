@@ -1,9 +1,11 @@
 (define-module net.twitter.help
   (use net.twitter.core)
   (export
-   help-test/json
    help-configuration/json
-   help-languages/json))
+   help-languages/json
+   help-rate-limit-status/json
+   help-tos/json
+   help-privacy/json))
 (select-module net.twitter.help)
 
 ;;;

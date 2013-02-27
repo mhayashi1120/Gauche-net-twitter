@@ -6,11 +6,7 @@
    home-timeline/json
    user-timeline/json
    mentions/json
-   retweeted-to-me/json
-   retweeted-by-me/json
    retweets-of-me/json
-   retweeted-to-user/json
-   retweeted-by-user/json
    ))
 (select-module net.twitter.timeline)
 
