@@ -13,18 +13,16 @@
 (use net.twitter.block)
 (use net.twitter.core)
 (use net.twitter.direct-message)
-(use net.twitter.favorite)
 (use net.twitter.friendship)
 (use net.twitter.geo)
 (use net.twitter.help)
-(use net.twitter.legal)
 (use net.twitter.list)
 (use net.twitter.saved-search)
 (use net.twitter.search)
-(use net.twitter.spam)
 (use net.twitter.timeline)
-(use net.twitter.tweet :prefix tweet:)
+(use net.twitter.status)
 (use net.twitter.user)
+(use net.twitter.favorite)
 (use rfc.http)
 (use rfc.uri)
 (use srfi-1)
@@ -89,16 +87,12 @@
   (sys-sleep 10))
 
 (test-module 'net.twitter.user)
-(test-module 'net.twitter.tweet)
-(test-module 'net.twitter.trends)
+(test-module 'net.twitter.status)
 (test-module 'net.twitter.timeline)
 (test-module 'net.twitter.stream)
-(test-module 'net.twitter.spam)
 (test-module 'net.twitter.search)
 (test-module 'net.twitter.saved-search)
-(test-module 'net.twitter.notification)
 (test-module 'net.twitter.list)
-(test-module 'net.twitter.legal)
 (test-module 'net.twitter.help)
 (test-module 'net.twitter.friendship)
 (test-module 'net.twitter.favorite)
@@ -150,14 +144,14 @@
       (status-id #f))
 
   (test-and* "update status"
-    (set! status-id (tweet:update *cred* msg)))
+    (set! status-id (status-update *cred* msg)))
 
   ;;TODO why?
   (wait-a-while)
 
   (test* "show status"
          msg
-         ((if-car-sxpath '(status text *text*)) (tweet:show/sxml *cred* status-id)))
+         ((if-car-sxpath '(status text *text*)) (status-show/sxml *cred* status-id)))
 
   (test-and* "fetching user info"
     (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
@@ -210,7 +204,7 @@
       (direct-message-destroy/sxml *cred* dm-id)))
 
   (test-and* "retweeting status"
-    (tweet:retweet/sxml *cred2* status-id))
+    (sattus-retweet/sxml *cred2* status-id))
 
   (test-and* "retweets of status"
     (tweet:retweets/sxml *cred* status-id)
