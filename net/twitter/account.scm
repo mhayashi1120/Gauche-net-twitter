@@ -2,62 +2,65 @@
   (use net.twitter.core)
 
   (export
-   account-verify-credentials?
+   verify-credentials?
 
-   account-verify-credentials/json
-   account-settings/json
-   account-settings-update/json
-   account-update-profile-image/json
-   account-update-profile-background-image/json
-   account-update-profile-colors/json
-   account-update-profile/json
-   ))
+   verify-credentials/json
+   settings/json
+   settings-update/json
+   update-profile-image/json
+   update-profile-background-image/json
+   update-profile-colors/json
+   update-profile/json
+   update-profile-banner/json
+   remove-profile/json
+   update-delivery-device/json))
 (select-module net.twitter.account)
 
 ;;;
 ;;; JSON api
 ;;;
 
-(define (account-verify-credentials/json
+(define (verify-credentials/json
          cred :key (include-entities #f)
          (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/account/verify_credentials"
                     (api-params _keys include-entities skip-status)))
 
-(define (account-settings/json cred)
-  (call/oauth->json cred 'get "/1.1/account/settings" '()))
+(define (settings/json cred . _keys)
+  (call/oauth->json cred 'get "/1.1/account/settings"
+                    (api-params _keys)))
 
-(define (account-settings-update/json cred :key (trend-location-woeid #f)
-                                      (sleep-time-enabled #f)
-                                      (start-sleep-time #f) (end-sleep-time #f)
-                                      (time-zone #f) (lang #f)
-                                      :allow-other-keys _keys)
+(define (settings-update/json cred :key (trend-location-woeid #f)
+                              (sleep-time-enabled #f)
+                              (start-sleep-time #f) (end-sleep-time #f)
+                              (time-zone #f) (lang #f)
+                              :allow-other-keys _keys)
   (call/oauth->json cred 'post "/1.1/account/settings"
                     (api-params _keys trend-location-woeid sleep-time-enabled
-                                  start-sleep-time end-sleep-time time-zone lang)))
+                                start-sleep-time end-sleep-time time-zone lang)))
 
-(define (account-update-profile-image/json
-         cred file :key
+(define (update-profile-image/json
+         cred image :key
          (include-entities #f)
          (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth-post->json
    cred #`"/1.1/account/update_profile_image"
-   `((image :file ,file))
+   `((image :file ,image))
    (api-params _keys include-entities skip-status)))
 
-(define (account-update-profile-background-image/json
-         cred file :key (tile #f) (include-entities #f)
-         (skip-status #f)
+(define (update-profile-background-image/json
+         cred image :key (tile #f) (include-entities #f)
+         (skip-status #f) (use #f)
          :allow-other-keys _keys)
   (call/oauth-post->json
    cred #`"/1.1/account/update_profile_background_image"
-   `((image :file ,file))
-   (api-params _keys tile include-entities skip-status)))
+   `((image :file ,image))
+   (api-params _keys tile include-entities skip-status use)))
 
 ;; ex: "000000", "000", "fff", "ffffff"
-(define (account-update-profile-colors/json
+(define (update-profile-colors/json
          cred :key
          (profile-background-color #f)
          (profile-link-color #f)
@@ -70,11 +73,11 @@
   (call/oauth->json
    cred 'post #`"/1.1/account/update_profile_colors"
    (api-params _keys profile-background-color profile-text-color
-                 profile-link-color
-                 profile-sidebar-fill-color
-                 profile-sidebar-border-color)))
+               profile-link-color
+               profile-sidebar-fill-color
+               profile-sidebar-border-color)))
 
-(define (account-update-profile/json
+(define (update-profile/json
          cred :key (name #f)
          (url #f) (location #f)
          (description #f)
@@ -83,16 +86,44 @@
   (call/oauth->json
    cred 'post #`"/1.1/account/update_profile"
    (api-params _keys name url location description
-                 include-entities skip-status)))
+               include-entities skip-status)))
 
+(define (update-profile-banner/json
+         cred :key (height #f) (width #f) (banner #f)
+         (offset-top #f) (offset-left #f)
+         :allow-other-keys _keys)
+  (call/oauth->json
+   cred 'post #`"/1.1/account/update_profile_banner"
+   ;;TODO test
+   (api-params _keys height width banner offset-top offset-left)))
+
+(define (remove-profile-banner/json
+         cred :key (name #f)
+         (url #f) (location #f)
+         (description #f)
+         (include-entities #f) (skip-status #f)
+         :allow-other-keys _keys)
+  ;;TODO test
+  (call/oauth->json
+   cred 'post #`"/1.1/account/remove_profile_banner"
+   (api-params _keys name url location description
+               include-entities skip-status)))
+
+(define (update-delivery-device/json
+         cred :key (device #f) (include-entities #f)
+         :allow-other-keys _keys)
+  ;;TODO test
+  (call/oauth->json
+   cred 'post #`"/1.1/account/update_delivery_device"
+   (api-params _keys device include-entities)))
 ;;;
 ;;; Utilities
 ;;;
 
-(define (account-verify-credentials? cred)
+(define (verify-credentials? cred)
   (guard (e [(and (<twitter-api-error> e)
                   (equal? (condition-ref e 'status) "401"))
              #f])
-    (account-verify-credentials/json cred)
+    (verify-credentials/json cred)
     #t))
 

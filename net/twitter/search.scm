@@ -38,10 +38,10 @@
 
 (define (search-tweets/json cred q :key (geocode #f) (lang #f) (locale #f)
                             (result-type #f) (count #f) (until #f)
-                            (rpp #f) (page #f) (since-id #f) (max-id #f)
+                            (since-id #f) (max-id #f)
                             (include-entities #f)
                             :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/search/tweets"
                     (api-params _keys q geocode lang locale
                                 result-type count until
-                                rpp page since-id  max-id include-entities)))
+                                since-id  max-id include-entities)))

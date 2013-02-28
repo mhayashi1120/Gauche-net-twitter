@@ -1,33 +1,35 @@
 (define-module net.twitter.help
   (use net.twitter.core)
   (export
-   help-configuration/json
-   help-languages/json
-   help-rate-limit-status/json
-   help-tos/json
-   help-privacy/json))
+   configuration/json
+   languages/json
+   rate-limit-status/json
+   tos/json
+   privacy/json))
 (select-module net.twitter.help)
 
 ;;;
 ;;; JSON api
 ;;;
 
-(define (help-configuration/json cred)
-  (call/oauth->json cred 'get "/1.1/help/configuration" '()))
+(define (configuration/json cred . _keys)
+  (call/oauth->json cred 'get "/1.1/help/configuration"
+                    (api-params _keys)))
 
-(define (help-languages/json cred)
-  (call/oauth->json cred 'get "/1.1/help/languages" '()))
+(define (languages/json cred . _keys)
+  (call/oauth->json cred 'get "/1.1/help/languages"
+                    (api-params _keys)))
 
-(define (help-rate-limit-status/json cred)
-  (call/oauth->json cred 'get #`"/1.1/application/rate_limit_status" '()))
+(define (rate-limit-status/json cred :key (resources #f)
+                                :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/application/rate_limit_status"
+                    (api-params _keys resources)))
 
-(define (help-tos/json cred :key (lang #f)
-                        :allow-other-keys _keys)
+(define (tos/json cred . _keys)
   (call/oauth->json cred 'get "/1.1/help/tos"
-                    (api-params _keys lang)))
+                    (api-params _keys)))
 
-(define (help-privacy/json cred :key (lang #f)
-                            :allow-other-keys _keys)
+(define (privacy/json cred . _keys)
   (call/oauth->json cred 'get "/1.1/help/privacy"
-                    (api-params _keys lang)))
+                    (api-params _keys)))
 

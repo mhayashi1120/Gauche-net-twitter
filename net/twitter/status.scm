@@ -2,13 +2,14 @@
   (use srfi-1)
   (use net.twitter.core)
   (export
-   status-update
-   status-show/json
-   status-update/json
-   status-update-with-media/json
-   status-destroy/json
-   status-retweet/json
-   status-retweets/json
+   update
+   show/json
+   update/json
+   update-with-media/json
+   destroy/json
+   retweet/json
+   retweets/json
+   oembed/json
    ))
 (select-module net.twitter.status)
 
@@ -17,24 +18,25 @@
 ;;;
 
 ;; cred can be #f to view public tweet.
-(define (status-show/json cred id :key (include-entities #f) (trim-user #f)
-                          :allow-other-keys _keys)
+(define (show/json cred id :key (include-entities #f) (trim-user #f)
+                   (include-my-retweet #f)
+                   :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/show"
-					(api-params _keys id include-entities trim-user)))
+					(api-params _keys id include-entities trim-user
+                                include-my-retweet)))
 
-(define (status-update/json cred message :key (in-reply-to-status-id #f)
-                            (lat #f) (long #f) (place-id #f)
-                            (display-coordinates #f)
-                            (trim-user #f) (include-entities #f)
-                            :allow-other-keys _keys)
+(define (update/json cred status :key (in-reply-to-status-id #f)
+                     (lat #f) (long #f) (place-id #f)
+                     (display-coordinates #f)
+                     (trim-user #f)
+                     :allow-other-keys _keys)
   (call/oauth->json cred 'post "/1.1/statuses/update"
-                    `(("status" ,message)
-                      ,@(api-params _keys in-reply-to-status-id lat long
-                                    place-id display-coordinates
-                                    trim-user include-entities))))
+                    (api-params _keys status in-reply-to-status-id
+                                lat long place-id
+                                display-coordinates trim-user)))
 
-(define (status-update-with-media/json
-         cred message media
+(define (update-with-media/json
+         cred status media
          :key (possibly-sensitive #f)
          (in-reply-to-status-id #f)
          (lat #f) (long #f) (place-id #f)
@@ -47,32 +49,45 @@
                    :content-type "image/jpeg"
                    ))
         (iota (length media) 0) media)
-   `(("status" ,message)
-     ,@(api-params _keys possibly-sensitive
-                   in-reply-to-status-id lat long
-                   place-id display-coordinates))))
+   (api-params _keys status possibly-sensitive
+               in-reply-to-status-id lat long
+               place-id display-coordinates)))
 
-(define (status-destroy/json cred id)
+(define (destroy/json cred id :key (trim-user #f)
+                      :allow-other-keys _keys)
   (call/oauth->json cred 'post #`"/1.1/statuses/destroy/,|id|"
-                    (api-params '())))
+                    (api-params _keys trim-user)))
 
-(define (status-retweet/json cred id)
+(define (retweet/json cred id :key (trim-user #f)
+                      :allow-other-keys _keys)
   (call/oauth->json cred 'post #`"/1.1/statuses/retweet/,|id|"
-                    (api-params '())))
+                    (api-params _keys trim-user)))
 
-(define (status-retweets/json cred id :key (count #f)
-                              :allow-other-keys _keys)
+(define (retweets/json cred id :key (count #f)
+                       (trim-user #f)
+                       :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/retweets/,|id|"
-                    (api-params _keys count)))
+                    (api-params _keys count trim-user)))
+
+(define (oembed/json cred id url
+                     :key (maxwidth #f) (omit-script #f)
+                     (hide-media #f) (hide-thread #f)
+                     (align #f) (related #f) (lang #f)
+                     :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/statuses/oembed"
+                    (api-params _keys id url
+                                maxwidth hide-media hide-thread
+                                omit-script align related lang)))
+
 
 ;;;
 ;;; Utilities
 ;;;
 
 ;; Returns tweet id on success
-(define (status-update cred message . opts)
-  ;;TODO to-string 
+(define (update cred message . opts)
+  ;;TODO to-string
   (x->string (assoc-ref
-              (values-ref (apply status-update/json cred message opts) 0)
+              (values-ref (apply update/json cred message opts) 0)
               "id")))
 

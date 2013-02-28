@@ -7,15 +7,15 @@
   (use net.twitter.friendship :prefix friendship:)
   (use net.twitter.user :prefix user:)
   (use net.twitter.list :prefix list:)
-  (use net.twitter.direct-message :prefix dm:)
+  (use net.twitter.dm :prefix dm:)
   (use net.twitter.trends :prefix trends:)
   (use net.twitter.block :prefix block:)
   (use net.twitter.account :prefix account:)
   (use net.twitter.stream :prefix stream:)
   (use net.twitter.favorite :prefix favorite:)
-  (use net.twitter.timeline :prefix timeline:)
+  (use net.twitter.timeline :prefix tl:)
   (use net.twitter.search :prefix search:)
-  (use net.twitter.status :prefix st:)
+  (use net.twitter.status :prefix status:)
 
   (export
    <twitter-cred> <twitter-api-error>
@@ -96,9 +96,6 @@
    twitter-trends-available/json
 
    ))
-;;TODO
-;; twitter-account-rate-limit-status/json
-
 (select-module net.twitter)
 
 (define <twitter-cred> <twitter-cred>)
@@ -112,11 +109,11 @@
 ;; Timeline methods
 ;;
 
-(define twitter-home-timeline/json timeline:home-timeline/json)
-(define twitter-user-timeline/json timeline:user-timeline/json)
-(define twitter-mentions/json timeline:mentions/json)
-(define twitter-mentions timeline:mentions)
-(define twitter-retweets-of-me/json timeline:retweets-of-me/json)
+(define twitter-home-timeline/json tl:home-timeline/json)
+(define twitter-user-timeline/json tl:user-timeline/json)
+(define twitter-mentions/json tl:mentions/json)
+(define twitter-mentions tl:mentions)
+(define twitter-retweets-of-me/json tl:retweets-of-me/json)
 
 ;;
 ;; Search API method
@@ -129,22 +126,22 @@
 ;; Status method
 ;;
 
-(define twitter-show/json st:status-show/json)
-(define twitter-update/json st:status-update/json)
-(define twitter-update st:status-update)
-(define twitter-update-with-media/json st:status-update-with-media/json)
-(define twitter-destroy/json st:status-destroy/json)
-(define twitter-retweet/json st:status-retweet/json)
-(define twitter-retweets/json st:status-retweets/json)
+(define twitter-show/json status:show/json)
+(define twitter-update/json status:update/json)
+(define twitter-update status:update)
+(define twitter-update-with-media/json status:update-with-media/json)
+(define twitter-destroy/json status:destroy/json)
+(define twitter-retweet/json status:retweet/json)
+(define twitter-retweets/json status:retweets/json)
 
 ;;
 ;; Directmessage methods
 ;;
 
-(define twitter-direct-messages/json dm:direct-messages/json)
-(define twitter-direct-messages-sent/json dm:direct-messages-sent/json)
-(define twitter-direct-message-new/json dm:direct-message-new/json)
-(define twitter-direct-message-destroy/json dm:direct-message-destroy/json)
+(define twitter-direct-messages/json dm:list/json)
+(define twitter-direct-messages-sent/json dm:sent/json)
+(define twitter-direct-message-new/json dm:new/json)
+(define twitter-direct-message-destroy/json dm:destroy/json)
 
 ;;
 ;; Friends & Followers
@@ -155,76 +152,75 @@
 (define twitter-followers/ids/json friendship:followers/ids/json)
 (define twitter-followers/ids friendship:followers/ids)
 
-(define twitter-friendship-show/json friendship:friendship-show/json)
-(define twitter-friendship-create/json friendship:friendship-create/json)
-(define twitter-friendship-destroy/json friendship:friendship-destroy/json)
-(define twitter-friendship-update/json friendship:friendship-update/json)
+(define twitter-friendship-show/json friendship:show/json)
+(define twitter-friendship-create/json friendship:create/json)
+(define twitter-friendship-destroy/json friendship:destroy/json)
+(define twitter-friendship-update/json friendship:update/json)
 
 ;;
 ;; List methods
 ;;
 
-(define twitter-lists/json list:lists/json)
-(define twitter-list-show/json list:list-show/json)
-(define twitter-list-statuses/json list:list-statuses/json)
-(define twitter-list-create/json list:list-create/json)
-(define twitter-list-create list:list-create)
-(define twitter-list-update/json list:list-update/json)
-(define twitter-list-destroy/json list:list-destroy/json)
-(define twitter-list-members/json list:list-members/json)
-(define twitter-list-member-show/json list:list-member-show/json)
-(define twitter-list-member-create/json list:list-member-create/json)
-(define twitter-list-members-create-all/json list:list-members-create-all/json)
-(define twitter-list-member-destroy/json list:list-member-destroy/json)
-(define twitter-list-subscribers/json list:list-subscribers/json)
-(define twitter-list-subscriber-create/json list:list-subscriber-create/json)
-(define twitter-list-subscriber-destroy/json list:list-subscriber-destroy/json)
-(define twitter-list-memberships/json list:list-memberships/json)
-(define twitter-list-subscriptions/json list:list-subscriptions/json)
+(define twitter-lists/json list:list/json)
+(define twitter-list-show/json list:show/json)
+(define twitter-list-statuses/json list:statuses/json)
+(define twitter-list-create/json list:create/json)
+(define twitter-list-create list:create)
+(define twitter-list-update/json list:update/json)
+(define twitter-list-destroy/json list:destroy/json)
+(define twitter-list-members/json list:members/json)
+(define twitter-list-member-show/json list:member-show/json)
+(define twitter-list-member-create/json list:member-create/json)
+(define twitter-list-members-create-all/json list:members-create-all/json)
+(define twitter-list-member-destroy/json list:member-destroy/json)
+(define twitter-list-subscribers/json list:subscribers/json)
+(define twitter-list-subscriber-create/json list:subscriber-create/json)
+(define twitter-list-subscriber-destroy/json list:subscriber-destroy/json)
+(define twitter-list-memberships/json list:memberships/json)
+(define twitter-list-subscriptions/json list:subscriptions/json)
 
 
 ;;
 ;; Favorites methods
 ;;
 
-(define twitter-favorites/json favorite:favorites/json)
-(define twitter-favorite-create/json favorite:favorite-create/json)
-(define twitter-favorite-destroy/json favorite:favorite-destroy/json)
+(define twitter-favorites/json favorite:list/json)
+(define twitter-favorite-create/json favorite:create/json)
+(define twitter-favorite-destroy/json favorite:destroy/json)
 
 ;;
 ;; Account methods
 ;;
 
-(define twitter-account-verify-credentials/json account:account-verify-credentials/json)
-(define twitter-account-verify-credentials? account:account-verify-credentials?)
-(define twitter-account-settings/json account:account-settings/json)
-(define twitter-account-settings-update/json account:account-settings-update/json)
-(define twitter-account-update-profile-image/json account:account-update-profile-image/json)
-(define twitter-account-update-profile-background-image/json account:account-update-profile-background-image/json)
-(define twitter-account-update-profile-colors/json account:account-update-profile-colors/json)
-(define twitter-account-update-profile/json account:account-update-profile/json)
+(define twitter-account-verify-credentials/json account:verify-credentials/json)
+(define twitter-account-verify-credentials? account:verify-credentials?)
+(define twitter-account-settings/json account:settings/json)
+(define twitter-account-settings-update/json account:settings-update/json)
+(define twitter-account-update-profile-image/json account:update-profile-image/json)
+(define twitter-account-update-profile-background-image/json account:update-profile-background-image/json)
+(define twitter-account-update-profile-colors/json account:update-profile-colors/json)
+(define twitter-account-update-profile/json account:update-profile/json)
 
 ;;
 ;; User methods
 ;;
 
-(define twitter-user-show/json user:user-show/json)
-(define twitter-user-lookup/json user:user-lookup/json)
-(define twitter-user-search/json user:user-search/json)
-(define twitter-user-suggestions/json user:user-suggestions/json)
-(define twitter-user-suggestions/category/json user:user-suggestions/category/json)
-;;TODO suggestion/members
+(define twitter-user-show/json user:show/json)
+(define twitter-user-lookup/json user:lookup/json)
+(define twitter-user-search/json user:search/json)
+(define twitter-user-suggestions/json user:suggestions/json)
+(define twitter-user-suggestions/category/json user:suggestions/category/json)
 
 ;;
 ;; Block methods
 ;;
 
-(define twitter-blocks-list/json block:blocks-list/json)
-(define twitter-blocks/ids/json block:blocks/ids/json)
-(define twitter-block-create/json block:block-create/json)
-(define twitter-block-destroy/json block:block-destroy/json)
-(define twitter-block-exists? block:block-exists?)
-(define twitter-blocks/ids block:blocks/ids)
+(define twitter-blocks-list/json block:list/json)
+(define twitter-blocks/ids/json block:ids/json)
+(define twitter-block-create/json block:create/json)
+(define twitter-block-destroy/json block:destroy/json)
+(define twitter-block-exists? block:exists?)
+(define twitter-blocks/ids block:ids)
 
 ;;
 ;; Report spam methods
@@ -237,5 +233,5 @@
 ;;
 
 ;;TODO remove? or add others?
-(define twitter-trends-available/json trends:trends-available/json)
+(define twitter-trends-available/json trends:available/json)
 

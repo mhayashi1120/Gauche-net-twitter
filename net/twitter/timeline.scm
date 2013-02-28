@@ -18,35 +18,40 @@
 ;; Timeline methods
 ;;
 (define (home-timeline/json cred :key (since-id #f) (max-id #f)
-                            (count #f) (page #f)
-                            (trim-user #f) (include-entities #f)
+                            (count #f) (trim-user #f) (include-entities #f)
+                            (exclude-replies #f) (contributor-details #f)
                             :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/statuses/home_timeline"
-                    (api-params _keys since-id max-id count page
-                                  trim-user include-entities)))
+                    (api-params _keys since-id max-id count
+                                trim-user include-entities
+                                exclude-replies contributor-details)))
 
 (define (user-timeline/json cred :key (id #f) (user-id #f) (screen-name #f)
                             (since-id #f) (max-id #f)
-                            (count #f) (page #f)
-                            (trim-user #f) (include-rts #f) (include-entities #f)
+                            (count #f)
+                            (trim-user #f) (include-rts #f)
+                            (exclude-replies #f) (contributor-details #f)
                             :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/statuses/user_timeline"
-                    (api-params _keys id user-id screen-name since-id max-id count page
-                                  trim-user include-rts include-entities)))
+                    (api-params _keys id user-id screen-name since-id max-id count
+                                trim-user include-rts exclude-replies
+                                contributor-details)))
 
 (define (mentions/json cred :key (since-id #f) (max-id #f)
-                       (count #f) (page #f)
-                       (trim-user #f) (include-rts #f) (include-entities #f)
+                       (count #f) (contributor-details #f)
+                       (trim-user #f) (include-entities #f)
                        :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/statuses/mentions_timeline"
-                    (api-params _keys since-id max-id count page
-                                  trim-user include-rts include-entities)))
+                    (api-params _keys since-id max-id count contributor-details
+                                trim-user include-entities)))
 
-(define (retweets-of-me/json cred :key (count #f) (page #f) (max-id #f) (since-id #f)
+(define (retweets-of-me/json cred :key (count #f) (max-id #f) (since-id #f)
                              (trim-user #f) (include-entities #f)
+                             (include-user-entities #f)
                              :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/retweets_of_me"
-                    (api-params _keys count page max-id since-id trim-user include-entities)))
+                    (api-params _keys count max-id since-id trim-user
+                                include-entities include-user-entities)))
 
 ;;;
 ;;; Utilities
@@ -59,7 +64,7 @@
                       (text)
                       (user screen_name)
                       (user id))]
-         [data (map (^s 
+         [data (map (^s
                      `(
                        ,(assoc-ref s "id")
                        ,(assoc-ref s "text")

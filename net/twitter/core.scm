@@ -18,6 +18,7 @@
    retrieve-stream check-search-error
    call/oauth->json call/oauth
    call/oauth-post->json call/oauth-upload->json
+   stringify-param
    ))
 (select-module net.twitter.core)
 
@@ -244,3 +245,12 @@
       (if (equal? next 0)
         (concatenate (reverse res))
         (loop next res)))))
+
+(define (stringify-param obj)
+  (cond
+   [(pair? obj)
+    ($ (cut string-join <> ",") $ map x->string obj)]
+   [(string? obj)
+    obj]
+   [else
+    (x->string obj)]))
