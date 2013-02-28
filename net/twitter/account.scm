@@ -12,7 +12,6 @@
    update-profile-colors/json
    update-profile/json
    update-profile-banner/json
-   remove-profile/json
    update-delivery-device/json))
 (select-module net.twitter.account)
 

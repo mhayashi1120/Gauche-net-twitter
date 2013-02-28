@@ -61,8 +61,7 @@
                                   :allow-other-keys _keys)
   ;;TODO post?
   (call/oauth->json cred 'get #`"/1.1/users/profile_banner"
-                    (api-params _keys id user-id screen-name
-                                include-entities)))
+                    (api-params _keys id user-id screen-name)))
 
 (define (report-spam/json cred :key (id #f) (user-id #f) (screen-name #f)
                           :allow-other-keys _keys)

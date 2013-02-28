@@ -145,7 +145,7 @@
                                    :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/lists/subscribers/show"
                     (api-params _keys list-id slug owner-id owner-screen-name
-                                  cursor include-entities skip-status)))
+                                include-entities skip-status)))
 
 (define (subscriber-create/json cred :key (list-id #f)
                                      (slug #f) (owner-id #f)

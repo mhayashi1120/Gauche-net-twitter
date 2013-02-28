@@ -44,7 +44,7 @@
 (test-module 'net.twitter.help)
 (test-module 'net.twitter.friendship)
 (test-module 'net.twitter.favorite)
-(test-module 'net.twitter.direct-message)
+(test-module 'net.twitter.dm)
 (test-module 'net.twitter.core)
 (test-module 'net.twitter.block)
 (test-module 'net.twitter.auth)
