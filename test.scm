@@ -12,7 +12,7 @@
 (use net.twitter.auth)
 (use net.twitter.block)
 (use net.twitter.core)
-(use net.twitter.direct-message)
+(use net.twitter.dm)
 (use net.twitter.friendship)
 (use net.twitter.geo)
 (use net.twitter.help)

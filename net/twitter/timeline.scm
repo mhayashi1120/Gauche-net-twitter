@@ -5,7 +5,7 @@
 
    home-timeline/json
    user-timeline/json
-   mentions/json
+   mentions-timeline/json
    retweets-of-me/json
    ))
 (select-module net.twitter.timeline)
@@ -37,7 +37,7 @@
                                 trim-user include-rts exclude-replies
                                 contributor-details)))
 
-(define (mentions/json cred :key (since-id #f) (max-id #f)
+(define (mentions-timeline/json cred :key (since-id #f) (max-id #f)
                        (count #f) (contributor-details #f)
                        (trim-user #f) (include-entities #f)
                        :allow-other-keys _keys)
@@ -59,7 +59,7 @@
 
 ;; Returns list of (tweet-id text user-screen-name user-id)
 (define (mentions cred . args)
-  (let* ([r (values-ref (apply mentions/json cred args) 0)]
+  (let* ([r (values-ref (apply mentions-timeline/json cred args) 0)]
          [accessors `((id_str)
                       (text)
                       (user screen_name)

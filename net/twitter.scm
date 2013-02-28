@@ -111,7 +111,7 @@
 
 (define twitter-home-timeline/json tl:home-timeline/json)
 (define twitter-user-timeline/json tl:user-timeline/json)
-(define twitter-mentions/json tl:mentions/json)
+(define twitter-mentions/json tl:mentions-timeline/json)
 (define twitter-mentions tl:mentions)
 (define twitter-retweets-of-me/json tl:retweets-of-me/json)
 
