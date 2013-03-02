@@ -60,14 +60,10 @@
 
 ;; ex: "000000", "000", "fff", "ffffff"
 (define (update-profile-colors/json
-         cred :key
-         (profile-background-color #f)
-         (profile-link-color #f)
-         (profile-sidebar-fill-color #f)
-         (profile-sidebar-border-color #f)
-         (profile-text-color #f)
-         (include-entities #f)
-         (skip-status #f)
+         cred :key (profile-background-color #f)
+         (profile-link-color #f) (profile-sidebar-fill-color #f)
+         (profile-sidebar-border-color #f) (profile-text-color #f)
+         (include-entities #f) (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth->json
    cred 'post #`"/1.1/account/update_profile_colors"

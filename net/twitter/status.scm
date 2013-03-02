@@ -79,15 +79,13 @@
                                 maxwidth hide-media hide-thread
                                 omit-script align related lang)))
 
-
 ;;;
 ;;; Utilities
 ;;;
 
 ;; Returns tweet id on success
 (define (update cred message . opts)
-  ;;TODO to-string
-  (x->string (assoc-ref
-              (values-ref (apply update/json cred message opts) 0)
-              "id")))
+  (assoc-ref
+   (values-ref (apply update/json cred message opts) 0)
+   "id"))
 

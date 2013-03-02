@@ -65,11 +65,12 @@
                       (user screen_name)
                       (user id))]
          [data (map (^s
-                     `(
-                       ,(assoc-ref s "id")
-                       ,(assoc-ref s "text")
-                       ,(assoc-ref "screen_name" (assoc-ref s "user"))
-                       ,(assoc-ref "id" (assoc-ref s "id"(assoc-ref s "user")))
-                       )
-                     ) r)])
+                     (let1 user (assoc-ref s "user")
+                       `(
+                         ,(assoc-ref s "id")
+                         ,(assoc-ref s "text")
+                         ,(assoc-ref user "screen_name")
+                         ,(assoc-ref user "id")
+                         )))
+                    (vector->list r))])
     (sort-by data car >)))

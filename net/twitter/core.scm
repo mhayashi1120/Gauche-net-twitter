@@ -248,6 +248,7 @@
 
 (define (stringify-param obj)
   (cond
+   [(not obj) #f]
    [(pair? obj)
     ($ (cut string-join <> ",") $ map x->string obj)]
    [(string? obj)
