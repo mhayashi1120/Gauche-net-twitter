@@ -1,3 +1,5 @@
+# Gauche-net-twitter (forked version)
+
 This module provides an interface to Twitter API using OAuth authentication.
 
 Step by step:
@@ -77,7 +79,9 @@ Step by step:
    
 
 
-Module API:
+# Module API
+
+[Module] net.twitter
 
 Some twitter API interface come with several flavors.  Procedures
 suffixed by /json return JSON representation of the server response,
@@ -91,16 +95,13 @@ return correspond typed value belongs to JSON object.
 For instance, twitter-followers/json returns two values such as
 the following (each result is truncated for conciseness):
 
-;;TODO
+gosh> (twitter-followers/ids/json cred :screen-name "chaton_gauche")
+  (("ids" . #(75017042 5327762 69605132 151305186
+    68190981 18044198 149962169 114554818
+    10967962 14988077 19059915 37883768
+    15674085 ....))
 
-gosh> (twitter-followers/json cred :screen-name "chaton_gauche")
-  (*TOP*
-   (*PI* xml "version=\"1.0\" encoding=\"UTF-8\"")
-   (ids (id "75017042") (id "5327762") (id "69605132") (id "151305186")
-    (id "68190981") (id "18044198") (id "149962169") (id "114554818")
-    (id "10967962") (id "14988077") (id "19059915") (id "37883768")
-    (id "15674085") ....))
-  (("date" "Mon, 07 Jun 2010 02:03:04 GMT")
+(("date" "Mon, 07 Jun 2010 02:03:04 GMT")
    ("server" "hi")
    ("status" "200 OK")
    ("x-transaction" "1275876184-68906-26775")
@@ -108,7 +109,7 @@ gosh> (twitter-followers/json cred :screen-name "chaton_gauche")
    ("etag" "\"83b847f06bfe0338b8c62c85f39a8294\"")
    ....)
 
-While twitter-followers/ids just returns a list of user ids:
+While twitter-followers/ids just returns a list of user ids as string:
 
   gosh> (twitter-followers/ids cred :screen-name "chaton_gauche")
   ("75017042" "5327762" "69605132" "151305186" "68190981" ...)
@@ -116,8 +117,12 @@ While twitter-followers/ids just returns a list of user ids:
 In both versions, if the server returns response other than 200,
 a condition <twitter-api-error> is signalled.
 
+`net.twitter' module methods as long as having backward compatibility,
+otherwise have more usefull methods in almost case. If you want to use
+API specific data type, require `net.twitter.friendship' module:
 
-[Module] net.twitter
+  gosh> (followers/ids cred :screen-name "chaton_gauche")
+  (75017042 5327762 69605132 151305186 68190981 ...)
 
 [Class] <twitter-cred>
 
@@ -139,6 +144,8 @@ a condition <twitter-api-error> is signalled.
    body          (string) response body, as is.
    body-sxml     (maybe SXML) if response body is XML, it is parsed and
                  SXML is set to this slots.  Otherwise it is #f.
+   body-json     (maybe JSON) if response body is json, it is parsed and
+                 JSON is set to this slots.  Otherwise it is #f.
 
 [Function] twitter-authenticate-client consumer-key consumer-secret
                                        :optional input-callback
@@ -1001,7 +1008,7 @@ as argument. RAISE-ERROR? #t means raising error every time disconnect from serv
 Otherwise twitter/stream.scm follow twitter reconnecting instructions.
 https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
 
-Credits:
+# Credits
 
 This module is based on the code brewed among several blogs.
 
