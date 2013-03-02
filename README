@@ -89,7 +89,9 @@ caller won't need to scan SXML.
 For instance, twitter-followers/sxml returns two values such as
 the following (each result is truncated for conciseness):
 
-  gosh> (twitter-followers/sxml cred :screen-name "chaton_gauche")
+;;TODO
+
+gosh> (twitter-followers/json cred :screen-name "chaton_gauche")
   (*TOP*
    (*PI* xml "version=\"1.0\" encoding=\"UTF-8\"")
    (ids (id "75017042") (id "5327762") (id "69605132") (id "151305186")
@@ -107,7 +109,7 @@ the following (each result is truncated for conciseness):
 While twitter-followers/ids just returns a list of user ids:
 
   gosh> (twitter-followers/ids cred :screen-name "chaton_gauche")
-  ("75017042" "5327762" "69605132" "151305186" "68190981" ...)
+  (75017042 5327762 69605132 151305186 68190981 ...)
 
 In both versions, if the server returns response other than 200,
 a condition <twitter-api-error> is signalled.
@@ -985,6 +987,17 @@ a condition <twitter-api-error> is signalled.
 	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
 	for instructions on traversing timelines efficiently.
 
+## [Module] net.twitter.stream
+
+All streaming api accepts PROC which accept a json object called each time 
+stream object is arrived from Twitter server. PROC must handle error if you
+don't want to disconnect from server everytime to meet client error.
+
+All streaming api accepts RAISE-ERROR? and ERROR-HANDLER keyword which controls
+reconnect behavior. ERROR-HANDLER is a  procedure which accept one error object
+as argument. RAISE-ERROR? #t means raising error every time disconnect from server.
+Otherwise twitter/stream.scm follow twitter reconnecting instructions.
+https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
 
 Credits:
 
