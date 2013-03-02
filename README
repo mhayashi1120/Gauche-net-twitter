@@ -80,13 +80,15 @@ Step by step:
 Module API:
 
 Some twitter API interface come with several flavors.  Procedures
-suffixed by /sxml return SXML representation of the server response,
+suffixed by /json return JSON representation of the server response,
 along the list of message headers.  They are for applications that
 needs full access to the server response.  Procedures without suffix,
 or different suffix, return more convenient values, so that the
-caller won't need to scan SXML.
+caller won't need to scan JSON. net.twitter such suffixed API return
+string object for backward compatibility. Each modularized API 
+return correspond typed value belongs to JSON object.
 
-For instance, twitter-followers/sxml returns two values such as
+For instance, twitter-followers/json returns two values such as
 the following (each result is truncated for conciseness):
 
 ;;TODO
@@ -109,7 +111,7 @@ gosh> (twitter-followers/json cred :screen-name "chaton_gauche")
 While twitter-followers/ids just returns a list of user ids:
 
   gosh> (twitter-followers/ids cred :screen-name "chaton_gauche")
-  (75017042 5327762 69605132 151305186 68190981 ...)
+  ("75017042" "5327762" "69605132" "151305186" "68190981" ...)
 
 In both versions, if the server returns response other than 200,
 a condition <twitter-api-error> is signalled.

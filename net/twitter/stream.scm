@@ -30,7 +30,7 @@
                      (raise-error? #f) (error-handler #f)
                      :allow-other-keys _keys)
   (set! track (stringify-param track))
-  (open-stream cred proc 'post "https://userstream.twitter.com/2/user.json"
+  (open-stream cred proc 'post "https://userstream.twitter.com/1.1/user.json"
                (api-params _keys replies delimited stall-warnings
                            with track locations)
                :error-handler (or error-handler raise-error?)))
@@ -121,23 +121,27 @@
                       :receiver stream-looper
                       :Authorization auth)]))))
 
-  (define tcpip-waitsec 0)
-  (define too-often-waitsec 0)
-  (define http-waitsec 0)
+  (define tcpip-waitsec #f)
+  (define too-often-waitsec #f)
+  (define http-waitsec #f)
 
   (define (check-stream-error status headers)
     (cond
      [(equal? status "200")
-      (set! tcpip-waitsec 0)
-      (set! too-often-waitsec 0)
-      (set! http-waitsec 0)]
+      (reset-wait-seconds)]
      [else
       (error <twitter-api-error>
              :status status :headers headers
              (format "Failed to open stream with code ~a"
                      status))]))
 
+  (define (reset-wait-seconds)
+    (set! tcpip-waitsec 0)
+    (set! too-often-waitsec 60)
+    (set! http-waitsec 5))
+
   (define (continue-connect)
+    (reset-wait-seconds)
     (while #t
       (guard (e
               [(eq? error-handler #t)
@@ -148,16 +152,16 @@
                (cond
                 [(equal? "420" (condition-ref e 'status))
                  ;; Login too often
+                 (sys-sleep too-often-waitsec)
                  (set! too-often-waitsec
-                       (max 60 (* too-often-waitsec 2)))
-                 (sys-sleep too-often-waitsec)]
+                       (* too-often-waitsec 2))]
                 [(#/^4/ (condition-ref e 'status))
                  ;; eternal error
                  (raise e)]
                 [else
+                 (sys-sleep http-waitsec)
                  (set! http-waitsec
-                       (min (max 5 (* http-waitsec 2)) 320))
-                 (sys-sleep http-waitsec)])]
+                       (min (* http-waitsec 2) 320))])]
               [else
                (set! tcpip-waitsec (min (+ tcpip-waitsec 0.25) 16))
                (sys-nanosleep (* tcpip-waitsec 1000000))])
