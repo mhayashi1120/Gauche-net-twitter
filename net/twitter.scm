@@ -7,10 +7,7 @@
   (use net.twitter.friendship :prefix friendship:)
   (use net.twitter.user :prefix user:)
   (use net.twitter.list :prefix list:)
-  (use net.twitter.dm :prefix dm:)
-  (use net.twitter.trends :prefix trends:)
   (use net.twitter.block :prefix block:)
-  (use net.twitter.stream :prefix stream:)
   (use net.twitter.favorite :prefix favorite:)
   (use net.twitter.timeline :prefix tl:)
   (use net.twitter.search :prefix search:)
@@ -44,11 +41,6 @@
    twitter-friendship-create/json twitter-friendship-destroy/json
    twitter-friendship-update/json
 
-   twitter-direct-messages/json
-   twitter-direct-messages-sent/json
-   twitter-direct-message-new/json
-   twitter-direct-message-destroy/json
-
    twitter-lists/json
    ;;TODO
    ;; twitter-lists/ids twitter-lists/slugs
@@ -58,18 +50,6 @@
    twitter-favorites/json
    twitter-favorite-create/json
    twitter-favorite-destroy/json
-
-   twitter-blocks-list/json
-   twitter-blocks/ids/json
-   twitter-block-create/json
-   twitter-block-destroy/json
-   twitter-block-exists?
-   twitter-blocks/ids
-
-   twitter-report-spam/json
-
-   twitter-trends-available/json
-
    ))
 (select-module net.twitter)
 
@@ -110,6 +90,7 @@
 
 (define (twitter-update . args)
   ($ x->string $ status:update $* args))
+
 ;;
 ;; Directmessage methods
 ;;
@@ -147,7 +128,6 @@
 (define twitter-list-show/json list:show/json)
 (define twitter-list-statuses/json list:statuses/json)
 
-
 ;;
 ;; Favorites methods
 ;;
@@ -164,25 +144,4 @@
 (define twitter-user-lookup/json user:lookup/json)
 (define twitter-user-search/json user:search/json)
 (define twitter-report-spam/json user:report-spam/json)
-
-;;
-;; Block methods
-;;
-
-(define twitter-blocks-list/json block:list/json)
-(define twitter-blocks/ids/json block:ids/json)
-(define twitter-block-create/json block:create/json)
-(define twitter-block-destroy/json block:destroy/json)
-(define twitter-block-exists? block:exists?)
-(define (twitter-blocks/ids . args)
-  ($ map number->string $ block:ids $* args))
-
-
-
-;;
-;; Trend methods
-;;
-
-;;TODO remove? or add others?
-(define twitter-trends-available/json trends:available/json)
 
