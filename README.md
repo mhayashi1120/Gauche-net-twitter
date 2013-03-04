@@ -126,49 +126,49 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Class] <twitter-cred>
 
-  An object holding necessary information to access to the user's Twitter
-  account.  It has the following instance slots.
-
-   consumer-key
-   consumer-secret
-   access-token
-   access-token-secret
+    An object holding necessary information to access to the user's Twitter
+    account.  It has the following instance slots.
+  
+     consumer-key
+     consumer-secret
+     access-token
+     access-token-secret
 
 [Condition type] <twitter-api-error>
 
-  A condition thrown when twitter server returns a response other
-  than 200.  The condition has the following slots.
-
-   status        (string) response status code, e.g. "403"
-   headers       (list of (string string)) list of response headers.
-   body          (string) response body, as is.
-   body-sxml     (maybe SXML) if response body is XML, it is parsed and
-                 SXML is set to this slots.  Otherwise it is #f.
-   body-json     (maybe JSON) if response body is json, it is parsed and
-                 JSON is set to this slots.  Otherwise it is #f.
+    A condition thrown when twitter server returns a response other
+    than 200.  The condition has the following slots.
+  
+     status        (string) response status code, e.g. "403"
+     headers       (list of (string string)) list of response headers.
+     body          (string) response body, as is.
+     body-sxml     (maybe SXML) if response body is XML, it is parsed and
+                   SXML is set to this slots.  Otherwise it is #f.
+     body-json     (maybe JSON) if response body is json, it is parsed and
+                   JSON is set to this slots.  Otherwise it is #f.
 
 [Function] twitter-authenticate-client consumer-key consumer-secret
                                        :optional input-callback
 
-  Authenticate the client using twitter's PIN-based OAuth authentication
-  flow.  First it obtains request-token, then ask the user to access
-  a specific URL to grant access by the client.  Once the user grant access,
-  Twitter presents a PIN to the user, which should be fed back
-  to the procedure to obtain access token and secret.
-
-  Once this process completes, the client program can store the access
-  token and access token secret to access the user's Twitter account,
-  until the user explicitly asks to discard those credentials.  So, 
-  in general, this procedure needs to be called once per user per client.
-
-  The INPUT-CALLBACK is a procedure that handles user intervention.
-  It is called by one argument, the Twitter URL the user should access.
-  By default it prints the URL and asks the user to go there and obtain
-  PIN, and prompts the user to enter it.  It should return the entered
-  PIN in string, or #f to indicate the user aborted the process.
-  If the callback returns an empty string, it is called again.
-
-  Twitter-authenticate-client returns an instance of <twitter-cred>.
+    Authenticate the client using twitter's PIN-based OAuth authentication
+    flow.  First it obtains request-token, then ask the user to access
+    a specific URL to grant access by the client.  Once the user grant access,
+    Twitter presents a PIN to the user, which should be fed back
+    to the procedure to obtain access token and secret.
+  
+    Once this process completes, the client program can store the access
+    token and access token secret to access the user's Twitter account,
+    until the user explicitly asks to discard those credentials.  So, 
+    in general, this procedure needs to be called once per user per client.
+  
+    The INPUT-CALLBACK is a procedure that handles user intervention.
+    It is called by one argument, the Twitter URL the user should access.
+    By default it prints the URL and asks the user to go there and obtain
+    PIN, and prompts the user to enter it.  It should return the entered
+    PIN in string, or #f to indicate the user aborted the process.
+    If the callback returns an empty string, it is called again.
+  
+    Twitter-authenticate-client returns an instance of <twitter-cred>.
 
 ## [Module] net.twitter.account
 
