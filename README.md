@@ -170,7 +170,8 @@ API specific data type, require `net.twitter.friendship' module:
 
   Twitter-authenticate-client returns an instance of <twitter-cred>.
 
-## File: twitter/account.scm
+## [Module] net.twitter.account
+
 [Function] update-delivery-device/json (https://api.twitter.com/1.1/account/update_delivery_device.json)
 
 	Sets which device Twitter delivers updates to for the authenticating user.
@@ -246,7 +247,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/help.scm
+## [Module] net.twitter.help
+
 [Function] privacy/json (https://api.twitter.com/1.1/help/privacy.json)
 
 	Returns http://twitter.com/privacy Twitter's Privacy Policy .
@@ -295,7 +297,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/favorite.scm
+## [Module] net.twitter.favorite
+
 [Function] destroy/json (https://api.twitter.com/1.1/favorites/destroy.json)
 
 	Un-favorites the status specified in the ID parameter as the
@@ -323,7 +326,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/search.scm
+## [Module] net.twitter.search
+
 [Function] search-tweets/json (https://api.twitter.com/1.1/search/tweets.json)
 
 	Returns a collection of relevant
@@ -345,7 +349,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/geo.scm
+## [Module] net.twitter.geo
+
 [Function] place/json (https://api.twitter.com/1.1/geo/place.json)
 
 	Creates a new place object at the given latitude and longitude. Before
@@ -403,7 +408,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/dm.scm
+## [Module] net.twitter.dm
+
 [Function] destroy/json (https://api.twitter.com/1.1/direct_messages/destroy.json)
 
 	Destroys the direct message specified in the required ID parameter. The
@@ -454,7 +460,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/friendship.scm
+## [Module] net.twitter.friendship
+
 [Function] friends-incoming/json (https://api.twitter.com/1.1/friendships/incoming.json)
 
 	Returns a collection of numeric IDs for every user who has a pending
@@ -573,7 +580,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/user.scm
+## [Module] net.twitter.user
+
 [Function] report-spam/json (https://api.twitter.com/1.1/users/report_spam.json)
 
 	Report the specified user as a spam account to Twitter. Additionally
@@ -645,7 +653,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/status.scm
+## [Module] net.twitter.status
+
 [Function] oembed/json (https://api.twitter.com/1.1/statuses/oembed.json)
 
 	Returns information allowing the creation of an embedded representation of
@@ -720,7 +729,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/trends.scm
+## [Module] net.twitter.trends
+
 [Function] place/json (https://api.twitter.com/1.1/trends/place.json)
 
 	Returns the top 10 trending topics for a specific WOEID , if trending
@@ -753,7 +763,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/list.scm
+## [Module] net.twitter.list
+
 [Function] subscriptions/json (https://api.twitter.com/1.1/lists/subscriptions.json)
 
 	Obtain a collection of the lists the specified user is subscribed to, 20
@@ -879,7 +890,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/block.scm
+## [Module] net.twitter.block
+
 [Function] destroy/json (https://api.twitter.com/1.1/blocks/destroy.json)
 
 	Un-blocks the user specified in the ID parameter for the authenticating
@@ -916,7 +928,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/saved-search.scm
+## [Module] net.twitter.saved-search
+
 [Function] destroy/json (https://api.twitter.com/1.1/saved_searches/destroy/:id.json)
 
 	Destroys a saved search for the authenticating user. The authenticating
@@ -942,7 +955,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
-## File: twitter/timeline.scm
+## [Module] net.twitter.timeline
+
 [Function] retweets-of-me/json (https://api.twitter.com/1.1/statuses/retweets_of_me.json)
 
 	Returns the most recent tweets authored by the authenticating user that
@@ -1013,7 +1027,9 @@ https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
 This module is based on the code brewed among several blogs.
 
 By Saito Atsushi: http://d.hatena.ne.jp/SaitoAtsushi/20100429/1272545442
+
 By tana-laevatein: http://d.hatena.ne.jp/tana-laevatein/20100505/1273025284
+
 By sirocco634: http://d.hatena.ne.jp/sirocco634/20100605#1275743091
 
 
