@@ -92,15 +92,6 @@
   ($ x->string $ status:update $* args))
 
 ;;
-;; Directmessage methods
-;;
-
-(define twitter-direct-messages/json dm:list/json)
-(define twitter-direct-messages-sent/json dm:sent/json)
-(define twitter-direct-message-new/json dm:new/json)
-(define twitter-direct-message-destroy/json dm:destroy/json)
-
-;;
 ;; Friends & Followers
 ;;
 
