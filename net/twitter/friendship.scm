@@ -64,20 +64,20 @@
                     (api-params _keys source-id source-screen-name
                                 target-id target-screen-name)))
 
-(define (create/json cred id :key (id #f) (user-id #f) (screen-name #f)
+(define (create/json cred :key (id #f) (user-id #f) (screen-name #f)
                      (follow #f)
                      :allow-other-keys _keys)
   (call/oauth->json cred 'post #`"/1.1/friendships/create"
                     (api-params _keys id user-id screen-name
                                 follow)))
 
-(define (destroy/json cred id :key (id #f) (user-id #f) (screen-name #f)
+(define (destroy/json cred :key (id #f) (user-id #f) (screen-name #f)
                       :allow-other-keys _keys)
   (call/oauth->json cred 'post #`"/1.1/friendships/destroy"
                     (api-params _keys id user-id screen-name)))
 
-(define (update/json cred screen-name :key (device #f)
-                     (retweets #f) (user-id #f)
+(define (update/json cred :key (device #f)
+                     (retweets #f) (screen-name #f) (user-id #f)
                      :allow-other-keys _keys)
   (call/oauth->json cred 'post #`"/1.1/friendships/update"
                     (api-params _keys screen-name device retweets user-id)))

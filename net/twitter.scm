@@ -89,7 +89,7 @@
 (define twitter-retweets/json status:retweets/json)
 
 (define (twitter-update . args)
-  ($ x->string $ status:update $* args))
+  ($ x->string $ status:update $* identity args))
 
 ;;
 ;; Friends & Followers
@@ -107,9 +107,9 @@
 (define twitter-friends/json friendship:friends/list/json)
 
 (define (twitter-friends/ids . args)
-  ($ map number->string $ friendship:friends/ids $* args))
-(define (twitter-followers/ids args)
-  ($ map number->string $ friendship:followers/ids $* args))
+  ($ map number->string $ friendship:friends/ids $* identity args))
+(define (twitter-followers/ids . args)
+  ($ map number->string $ friendship:followers/ids $* identity args))
 
 ;;
 ;; List methods

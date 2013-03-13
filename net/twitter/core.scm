@@ -112,10 +112,14 @@
         (case method
           [(get) (apply http-get "api.twitter.com"
                         #`",|path|?,(oauth-compose-query params)"
-                        :Authorization auth :secure (twitter-use-https) opts)]
+                        :Authorization auth :secure (twitter-use-https)
+                        :content-type "application/x-www-form-urlencoded"
+                        opts)]
           [(post) (apply http-post "api.twitter.com" path
                          (oauth-compose-query params)
-                         :Authorization auth :secure (twitter-use-https) opts)])))
+                         :Authorization auth :secure (twitter-use-https)
+                         :content-type "application/x-www-form-urlencoded"
+                         opts)])))
 
     (define (retrieve status headers body)
       (%api-adapter status headers body))
