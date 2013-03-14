@@ -21,6 +21,7 @@
 (use net.twitter.search)
 (use net.twitter.timeline)
 (use net.twitter.status)
+(use net.twitter.stream)
 (use net.twitter.user)
 (use net.twitter.favorite)
 (use rfc.http)
