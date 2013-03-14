@@ -42,16 +42,12 @@
          (lat #f) (long #f) (place-id #f)
          (display-coordinates #f)
          :allow-other-keys _keys)
-  (call/oauth-upload->json
+  (call/oauth-post->json
    cred "/1.1/statuses/update_with_media"
-   (map (^ (i m) `("media[]"
-                   :file ,m
-                   :content-type "image/jpeg"
-                   ))
-        (iota (length media) 0) media)
+   (map (^m `("media[]" :file ,m)) media)
    (api-params _keys status possibly-sensitive
-               in-reply-to-status-id lat long
-               place-id display-coordinates)))
+                in-reply-to-status-id lat long
+                place-id display-coordinates)))
 
 (define (destroy/json cred id :key (trim-user #f)
                       :allow-other-keys _keys)

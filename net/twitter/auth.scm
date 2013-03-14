@@ -44,3 +44,10 @@
              (verifier (default-authenticate-callback temp)))
     (twitter-authorize temp verifier)))
 
+
+;;TODO
+;; https://api.twitter.com/oauth2/invalidate_token
+;; access_token
+
+;; https://api.twitter.com/oauth2/token
+;; grant_type
