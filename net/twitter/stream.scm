@@ -49,7 +49,7 @@
   (set! track (stringify-param track))
   (set! follow (stringify-param follow))
   (open-stream cred proc 'post "https://stream.twitter.com/1.1/statuses/filter.json"
-               (api-params _keys count delimited follow locations track)
+               (api-params _keys delimited follow locations track stall-warnings)
                :error-handler (or error-handler raise-error?)))
 
 ;;TODO not yet checked
@@ -79,19 +79,19 @@
       ['get
        (oauth-auth-header "GET" url params cred)]
       ['post
-       (oauth-auth-header "POST" url params cred)]
-      ;;TODO what is post-body?
-      ['post-body
-       (oauth-auth-header "POST" url '() cred)]))
+       (oauth-auth-header "POST" url params cred)]))
 
   (define (stream-looper code headers total retrieve)
     (check-stream-error code headers)
     (let loop ()
       (receive (port size) (retrieve)
-        (and-let* ([s (read-string size port)]
-                   [json (safe-parse-json s)])
-          (proc json)))
-      (loop)))
+        (cond
+         [(negative? size)]
+         [else
+          (and-let* ([s (read-string size port)]
+                     [json (safe-parse-json s)])
+            (proc json))
+          (loop)]))))
 
   (define (connect)
     (let1 auth (auth-header)
@@ -110,14 +110,6 @@
                              #`",|path|?,(oauth-compose-query params)"
                              path)
                       ""
-                      :secure (string=? "https" scheme)
-                      :receiver stream-looper
-                      :Authorization auth)]
-          ['post-body
-           ;; When POSTing huge data.
-           (http-post host path (if (pair? params)
-                                  (http-compose-form-data params #f)
-                                  "")
                       :secure (string=? "https" scheme)
                       :receiver stream-looper
                       :Authorization auth)]))))
@@ -141,15 +133,16 @@
     (set! too-often-waitsec 60)
     (set! http-waitsec 5))
 
+  ;;TODO connection-adapter?
   (define (continue-connect)
     (reset-wait-seconds)
     (while #t
       (guard (e
               [(eq? error-handler #t)
                (raise e)]
-              [error-handler
-               (error-handler e)]
               [(<twitter-api-error> e)
+               (when error-handler
+                 (error-handler e))
                (cond
                 [(equal? "420" (condition-ref e 'status))
                  ;; Login too often
@@ -164,6 +157,8 @@
                  (set! http-waitsec
                        (min (* http-waitsec 2) 320))])]
               [else
+               (when error-handler
+                 (error-handler e))
                (set! tcpip-waitsec (min (+ tcpip-waitsec 0.25) 16))
                (sys-nanosleep (* tcpip-waitsec 1000000))])
         (connect))))

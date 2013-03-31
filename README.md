@@ -272,11 +272,13 @@ API specific data type, require `net.twitter.friendship' module:
 	current remaining uses for each of those resources within the current rate
 	limiting window, and its expiration time in
 	http://en.wikipedia.org/wiki/Unix_time epoch time . It also includes a
-	rate_limit_context field that indicates the current access token context.
-	You may also issue requests to this method without any parameters to
-	receive a map of all rate limited GET methods. If your application only
-	uses a few of methods, please explicitly provide a resources parameter
-	with the specified resource families you work with. Read more about
+	rate_limit_context field that indicates the current access token or
+	application-only authentication context. You may also issue requests to
+	this method without any parameters to receive a map of all rate limited
+	GET methods. If your application only uses a few of methods, please
+	explicitly provide a resources parameter with the specified resource
+	families you work with. When using app-only auth, this method's response
+	indicates the app-only auth rate limiting context. Read more about
 	https://dev.twitter.com/docs/rate-limiting/1.1 REST API Rate Limiting in
 	v1.1 and /docs/rate-limiting/1.1/limits review the limits .
 
@@ -874,6 +876,12 @@ API specific data type, require `net.twitter.friendship' module:
 	Timelines is a great way to embed list timelines on your website.
 
 
+[Function] ownerships/json (https://api.twitter.com/1.1/lists/ownerships.json)
+
+	Returns the lists owned by the specified Twitter user. Private lists will
+	only be shown if the authenticated user is also the owner of the lists.
+
+
 [Function] show/json (https://api.twitter.com/1.1/lists/show.json)
 
 	Returns the specified list. Private lists will only be shown if the
@@ -886,7 +894,17 @@ API specific data type, require `net.twitter.friendship' module:
 	including their own. The user is specified using the user_id or
 	screen_name parameters. If no user is given, the authenticating user is
 	used. This method used to be GET lists in version 1.0 of the API and has
-	been renamed for consistency with other call.
+	been renamed for consistency with other call. A maximum of 100 results
+	will be returned by this call. Subscribed lists are returned first,
+	followed by owned lists. This means that if a user subscribes to 90 lists
+	and owns 20 lists, this method returns 90 subscriptions and 10 owned
+	lists. The reverse method returns owned lists first, so with reverse=true
+	, 20 owned lists and 80 subscriptions would be returned. If your goal is
+	to obtain every list a user owns or subscribes to, use
+	https://dev.twitter.com/docs/api/1.1/get/lists/ownerships GET
+	lists/ownerships and/or
+	https://dev.twitter.com/docs/api/1.1/get/lists/subscriptions GET
+	lists/subscriptions instead.
 
 
 
@@ -960,8 +978,8 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] retweets-of-me/json (https://api.twitter.com/1.1/statuses/retweets_of_me.json)
 
 	Returns the most recent tweets authored by the authenticating user that
-	have recently been retweeted by others. This timeline is a subset of the
-	user's https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline GET
+	have been retweeted by others. This timeline is a subset of the user's
+	https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline GET
 	statuses/user_timeline . See
 	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
 	for instructions on traversing timelines.

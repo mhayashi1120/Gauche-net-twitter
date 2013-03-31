@@ -3,6 +3,7 @@
   (export
    list/json
    show/json
+   ownerships/json
    statuses/json
    create/json
    update/json
@@ -30,19 +31,24 @@
 ;;; JSON api
 ;;;
 
-;; require user-id or screen-name
 ;;TODO rename?
 (define (list/json cred :key (id #f) (user-id #f) (screen-name #f)
+                   (reverse #f)
                    :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/lists/list"
-                    (api-params _keys id user-id screen-name)))
+                    (api-params _keys id user-id screen-name reverse)))
 
-;; (or list-id (and slug (or owner-id owner-screen-name)))
 (define (show/json cred :key (list-id #f)
                         (slug #f) (owner-id #f) (owner-screen-name #f)
                         :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/lists/show"
                     (api-params _keys list-id slug owner-id owner-screen-name)))
+
+(define (ownerships/json cred :key (user-id #f)
+                         (screen-name #f) (count #f) (cursor #f)
+                         :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/lists/ownerships"
+                    (api-params _keys user-id screen-name count cursor)))
 
 (define (statuses/json cred :key (list-id #f)
                             (slug #f) (owner-id #f) (owner-screen-name #f)
