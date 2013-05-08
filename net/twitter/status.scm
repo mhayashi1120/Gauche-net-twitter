@@ -10,6 +10,7 @@
    retweet/json
    retweets/json
    oembed/json
+   retweeters/ids/json
    ))
 (select-module net.twitter.status)
 
@@ -74,6 +75,11 @@
                     (api-params _keys id url
                                 maxwidth hide-media hide-thread
                                 omit-script align related lang)))
+
+(define (retweeters/ids/json cred id :key (cursor #f) (stringify-ids #f)
+                             :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/statuses/retweeters/ids"
+                    (api-params _keys id cursor stringify-ids)))
 
 ;;;
 ;;; Utilities
