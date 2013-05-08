@@ -12,7 +12,7 @@
   (use sxml.ssax)
   (use sxml.sxpath)
   (export
-   <twitter-cred> <twitter-api-error>
+   <twitter-cred> <twitter-api-error> <twitter-timeout-error>
    api-params
    build-url
    retrieve-stream check-search-error
@@ -43,6 +43,9 @@
   (body #f)
   (body-sxml #f)
   (body-json #f))
+
+(define-condition-type <twitter-timeout-error> <error> #f
+  )
 
 ;;
 ;; A convenience macro to construct query parameters, skipping

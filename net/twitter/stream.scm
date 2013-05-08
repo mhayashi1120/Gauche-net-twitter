@@ -1,23 +1,33 @@
 (define-module net.twitter.stream
+  (use gauche.parameter)
   (use net.oauth)
   (use net.twitter.core)
   (use rfc.http)
-  (use rfc.json)
   (use rfc.uri)
   (use srfi-13)
   (use text.parse)
+  (use gauche.threads)
+
   (export
-   user-stream
-   sample-stream
-   filter-stream
-   firehose-stream
-   site-stream
+   stream-timeout connection-timeout
+   user-stream sample-stream filter-stream
+
+   ;; experimental
+   firehose-stream site-stream
    ))
 (select-module net.twitter.stream)
 
 ;;;
 ;;; Stream API
 ;;;
+
+;; https://dev.twitter.com/docs/streaming-apis/connecting#Stalls
+(define stream-timeout
+  (make-parameter 90))
+
+;; Timeout seconds when opening stream connection (default: 5sec)
+(define connection-timeout
+  (make-parameter 5))
 
 ;; https://dev.twitter.com/docs/streaming-apis
 ;; https://dev.twitter.com/docs/streaming-apis/streams/public
@@ -71,6 +81,10 @@
                            with replies)
                :error-handler (or error-handler raise-error?)))
 
+;;;
+;;; Internal methods
+;;;
+
 (define (open-stream cred proc method url params
                      :key (error-handler #f))
 
@@ -82,21 +96,24 @@
        (oauth-auth-header "POST" url params cred)]))
 
   (define (stream-looper code headers total retrieve)
-    (check-stream-error code headers)
-    (let loop ()
-      (receive (port size) (retrieve)
-        (cond
-         [(negative? size)]
-         [else
-          (and-let* ([s (read-string size port)]
-                     [json (safe-parse-json s)])
-            (proc json))
-          (loop)]))))
+    (guard (e [else (thread-specific-set! (current-thread) e)])
+      (check-stream-error code headers)
+      (while #t
+        (receive (port size) (retrieve)
+          (set! last-arrived (sys-time))
+          (cond
+           [(negative? size)
+            (error "Connection is closed by remote")]
+           [else
+            (and-let* ([s (read-string size port)]
+                       [trimmed (string-trim-both s #[\x0d\x0a ])]
+                       [(not (string-null? trimmed))])
+              (proc trimmed))])))))
 
   (define (connect)
     (let1 auth (auth-header)
-      (receive (scheme host path)
-          (parse-uri url)
+      (receive (scheme host path) (parse-uri url)
+        (set! last-arrived #f)
         (ecase method
           ['get
            (http-get host (if (pair? params)
@@ -114,65 +131,86 @@
                       :receiver stream-looper
                       :Authorization auth)]))))
 
-  (define tcpip-waitsec #f)
-  (define too-often-waitsec #f)
-  (define http-waitsec #f)
+  (define adapt-error (construct-error-handler error-handler))
 
   (define (check-stream-error status headers)
     (cond
      [(equal? status "200")
-      (reset-wait-seconds)]
+      ;; reset error adapter
+      (set! adapt-error (construct-error-handler error-handler))]
      [else
       (error <twitter-api-error>
              :status status :headers headers
              (format "Failed to open stream with code ~a"
                      status))]))
 
-  (define (reset-wait-seconds)
-    (set! tcpip-waitsec 0)
-    (set! too-often-waitsec 60)
-    (set! http-waitsec 5))
+  ;; TODO, FIXME: partcont procedure can't execute in thread.
+  (define last-arrived #f)
 
-  ;;TODO connection-adapter?
-  (define (continue-connect)
-    (reset-wait-seconds)
+  (define (sticky-connect)
     (while #t
-      (guard (e
-              [(eq? error-handler #t)
-               (raise e)]
-              [(<twitter-api-error> e)
-               (when error-handler
-                 (error-handler e))
+      (guard (e [else (adapt-error e)])
+        (let1 th (make-thread connect)
+          (thread-start! th)
+          ;; just 5 seconds.
+          (let1 limit (+ (sys-time) (connection-timeout))
+            (unwind-protect
+             (while #t
+               (sys-nanosleep 100000000)
                (cond
-                [(equal? "420" (condition-ref e 'status))
-                 ;; Login too often
-                 (sys-sleep too-often-waitsec)
-                 (set! too-often-waitsec
-                       (* too-often-waitsec 2))]
-                [(#/^4/ (condition-ref e 'status))
-                 ;; eternal error
-                 (raise e)]
-                [else
-                 (sys-sleep http-waitsec)
-                 (set! http-waitsec
-                       (min (* http-waitsec 2) 320))])]
-              [else
-               (when error-handler
-                 (error-handler e))
-               (set! tcpip-waitsec (min (+ tcpip-waitsec 0.25) 16))
-               (sys-nanosleep (* tcpip-waitsec 1000000))])
-        (connect))))
+                [(not (eq? (thread-state th) 'runnable))
+                 (if-let1 e (thread-specific th)
+                   (raise e)
+                   (error <error> (format "Thread ~a unexpectedly"
+                                          (thread-state th))))]
+                [(not last-arrived)
+                 ;; wait until limit time
+                 (when (< limit (sys-time))
+                   (error <twitter-timeout-error>
+                          (format "Connect to stream timed-out. ~s" th)))]
+                [(< last-arrived (- (sys-time) (stream-timeout)))
+                 (error <twitter-timeout-error>
+                        "Stream packet arrival timed-out.")]))
+             (thread-terminate! th)))))))
 
-  (continue-connect))
+  (sticky-connect))
 
-(define (safe-parse-json string)
-  ;; heading white space cause rfc.json parse error.
-  (let1 trimmed (string-trim string)
-    (and (> (string-length trimmed) 0)
-         (parse-json-string trimmed))))
+;; https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
+;;TODO check implementation 
+(define (construct-error-handler handler)
+
+  (define tcpip-waitsec 0)
+  (define too-often-waitsec 60)
+  (define http-waitsec 5)
+
+  (cond
+   [(eq? handler #t)
+    (^e (raise e))]
+   [else
+    (^e
+     (when handler (handler e))
+     ;; reconnect if handler has no error
+     (cond 
+      [(<twitter-api-error> e)
+       (cond
+        [(equal? "420" (condition-ref e 'status))
+         ;; Login too often
+         (sys-sleep too-often-waitsec)
+         (set! too-often-waitsec
+               (* too-often-waitsec 2))]
+        [(#/^4/ (condition-ref e 'status))
+         ;; eternal error
+         (raise e)]
+        [else
+         (sys-sleep http-waitsec)
+         (set! http-waitsec
+               (min (* http-waitsec 2) 320))])]
+      [else
+       (set! tcpip-waitsec (min (+ tcpip-waitsec 0.25) 16))
+       (sys-nanosleep (* tcpip-waitsec 1000000))]))]))
 
 (define (parse-uri uri)
   (receive (scheme spec) (uri-scheme&specific uri)
-    (receive (host path . rest) (uri-decompose-hierarchical spec)
+    (receive (host path . _) (uri-decompose-hierarchical spec)
       (values scheme host path))))
 
