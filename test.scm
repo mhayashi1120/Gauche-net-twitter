@@ -26,6 +26,8 @@
 (use sxml.sxpath)
 (use util.list)
 
+(use gauche.test)
+
 (test-start "net.twitter")
 
 (test-module 'net.twitter.user)
