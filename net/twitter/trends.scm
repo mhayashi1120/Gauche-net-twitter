@@ -15,13 +15,13 @@
   (call/oauth->json cred 'get #`"/1.1/trends/available"
                     (api-params _keys)))
 
-;;TODO
+;;TODO test
 (define (closest/json cred :key (lat #f) (long #f)
                       :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/trends/closest"
                     (api-params _keys lat long)))
 
-;;TODO
+;;TODO test
 (define (place/json cred :key (exclude #f) (id #f)
                     :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/trends/place"

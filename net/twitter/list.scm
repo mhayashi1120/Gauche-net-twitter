@@ -31,7 +31,6 @@
 ;;; JSON api
 ;;;
 
-;;TODO rename?
 (define (list/json cred :key (id #f) (user-id #f) (screen-name #f)
                    (reverse #f)
                    :allow-other-keys _keys)

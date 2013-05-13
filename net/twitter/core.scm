@@ -144,7 +144,6 @@
         ['post-file
          (hack-mime-composing
           (apply http-post "api.twitter.com"
-                 ;; TODO (pair? params) works?
                  (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
                  body
                  :Authorization auth :secure (twitter-use-https)

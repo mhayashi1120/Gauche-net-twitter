@@ -83,34 +83,35 @@
    (api-params _keys name url location description
                include-entities skip-status)))
 
+;;TODO test
 (define (update-profile-banner/json
          cred :key (height #f) (width #f) (banner #f)
          (offset-top #f) (offset-left #f)
          :allow-other-keys _keys)
   (call/oauth->json
    cred 'post #`"/1.1/account/update_profile_banner"
-   ;;TODO test
    (api-params _keys height width banner offset-top offset-left)))
 
+;;TODO test
 (define (remove-profile-banner/json
          cred :key (name #f)
          (url #f) (location #f)
          (description #f)
          (include-entities #f) (skip-status #f)
          :allow-other-keys _keys)
-  ;;TODO test
   (call/oauth->json
    cred 'post #`"/1.1/account/remove_profile_banner"
    (api-params _keys name url location description
                include-entities skip-status)))
 
+;;TODO test
 (define (update-delivery-device/json
          cred :key (device #f) (include-entities #f)
          :allow-other-keys _keys)
-  ;;TODO test
   (call/oauth->json
    cred 'post #`"/1.1/account/update_delivery_device"
    (api-params _keys device include-entities)))
+
 ;;;
 ;;; Utilities
 ;;;
