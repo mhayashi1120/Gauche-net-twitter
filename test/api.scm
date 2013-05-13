@@ -17,7 +17,6 @@
 (use net.twitter.friendship)
 (use net.twitter.geo)
 (use net.twitter.help)
-(use net.twitter.legal)
 (use net.twitter.list)
 (use net.twitter.saved-search)
 (use net.twitter.search)
@@ -112,13 +111,7 @@
     (help-configuration/sxml *cred*))
 
   (test-and* "help languages"
-    (help-languages/sxml *cred*))
-
-  (test-and* "legal tos"
-    (legal-tos/sxml *cred*))
-
-  (test-and* "legal privacy"
-    (legal-privacy/sxml *cred*)))
+    (help-languages/sxml *cred*)))
 
 (define (normal-test)
   (test-and* "show user"

@@ -109,12 +109,6 @@
 (test-and* "help languages"
   (help-languages/sxml *cred*))
 
-(test-and* "legal tos"
-  (legal-tos/sxml *cred*))
-
-(test-and* "legal privacy"
-  (legal-privacy/sxml *cred*))
-
 (test-and* "show user"
   (user-show/sxml *cred* :id (assoc-ref *settings* 'user)))
 
