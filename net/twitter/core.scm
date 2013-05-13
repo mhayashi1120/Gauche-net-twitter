@@ -6,18 +6,20 @@
   (use rfc.http)
   (use rfc.json)
   (use rfc.mime)
-  (use sxml.ssax)
-  (use sxml.sxpath)
   (use util.list)
   (use util.match)
   (use text.tr)
+  (use sxml.ssax)
+  (use sxml.sxpath)
   (export
-   <twitter-cred> <twitter-api-error>
+   <twitter-cred> <twitter-api-error> <twitter-timeout-error>
    api-params
    build-url
    retrieve-stream check-search-error
-   call/oauth->sxml call/oauth
-   call/oauth-post->sxml call/oauth-upload->sxml
+   call/oauth->json call/oauth
+   call/oauth-post->json
+   stringify-param
+   twitter-use-https
    ))
 (select-module net.twitter.core)
 
@@ -42,6 +44,9 @@
   (body-sxml #f)
   (body-json #f))
 
+(define-condition-type <twitter-timeout-error> <error> #f
+  )
+
 ;;
 ;; A convenience macro to construct query parameters, skipping
 ;; if #f is given to the variable.
@@ -64,12 +69,11 @@
               (loop (cddr ks) (cons (list key val) res))]))])))))
 
 (define-macro (query-params . vars)
-  `(with-module net.twitter.core
-     (cond-list
-      ,@(map (^v
-              `(,v `(,',(->param-key v)
-                     ,(->param-value ,v))))
-             vars))))
+  `(cond-list
+    ,@(map (^v
+            `(,v `(,',(->param-key v)
+                   ,(->param-value ,v))))
+           vars)))
 
 (define (->param-key x)
   (string-tr (x->string x) "-" "_"))
@@ -94,38 +98,8 @@
   (call-with-input-string str
     (cut ssax:xml->sxml <> '())))
 
-;;TODO make obsolete
-(define (call/oauth->sxml cred method path params . opts)
-  (apply call/oauth cred method path params opts))
-
-(define (call/oauth cred method path params . opts)
-  (define (call)
-    (let1 auth (and cred
-                    (oauth-auth-header
-                     (if (eq? method 'get) "GET" "POST")
-                     (build-url "api.twitter.com" path) params cred))
-      (case method
-        [(get) (apply http-get "api.twitter.com"
-                      #`",|path|?,(oauth-compose-query params)"
-                      :Authorization auth :secure (twitter-use-https) opts)]
-        [(post) (apply http-post "api.twitter.com" path
-                       (oauth-compose-query params)
-                       :Authorization auth :secure (twitter-use-https) opts)])))
-
-  (define (retrieve status headers body)
-    (%api-adapter status headers body))
-
-  (call-with-values call retrieve))
-
-(define (call/oauth-post->sxml cred path files params . opts)
-  (apply
-   (call/oauth-file-sender "api.twitter.com")
-   cred path files params opts))
-
-(define (call/oauth-upload->sxml cred path files params . opts)
-  (apply
-   (call/oauth-file-sender "upload.twitter.com")
-   cred path files params opts))
+(define (call/oauth->json cred method path params . opts)
+  (apply call/oauth cred method #`",|path|.json" params opts))
 
 (define-macro (hack-mime-composing . expr)
   (let ([original (gensym)])
@@ -138,20 +112,53 @@
         (with-module rfc.mime
           (set! mime-compose-message ,original))))))
 
-(define (call/oauth-file-sender host)
-  (^ [cred path files params . opts]
-    (define (call)
-      (let1 auth (oauth-auth-header
-                  "POST" (build-url host path) params cred)
-        (hack-mime-composing
-         (apply http-post host
-                (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
-                files :Authorization auth :secure (twitter-use-https) opts))))
+(define (call/oauth cred method path params . opts)
+  (apply call/oauth-internal
+         cred method (->resource-path path) params #f opts))
 
-    (define (retrieve status headers body)
-      (%api-adapter status headers body))
+(define (->resource-path path)
+  (cond
+   [(#/\.xml$/ path) path]
+   [(#/\.json$/ path) path]
+   [else #`",|path|.json"]))
 
-    (call-with-values call retrieve)))
+(define (call/oauth-internal cred method path params body . opts)
+  (define (call)
+    (let1 auth (and cred
+                    (oauth-auth-header
+                     (if (eq? method 'get) "GET" "POST")
+                     (build-url "api.twitter.com" path) params cred))
+      (case method
+        ['get
+         (apply http-get "api.twitter.com"
+                #`",|path|?,(oauth-compose-query params)"
+                :Authorization auth :secure (twitter-use-https)
+                :content-type "application/x-www-form-urlencoded"
+                opts)]
+        ['post
+         (apply http-post "api.twitter.com" path
+                (oauth-compose-query params)
+                :Authorization auth :secure (twitter-use-https)
+                :content-type "application/x-www-form-urlencoded"
+                opts)]
+        ['post-file
+         (hack-mime-composing
+          (apply http-post "api.twitter.com"
+                 ;; TODO (pair? params) works?
+                 (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
+                 body
+                 :Authorization auth :secure (twitter-use-https)
+                 :content-type "multipart/form-data"
+                 opts))])))
+
+  (define (retrieve status headers body)
+    (%api-adapter status headers body))
+
+  (call-with-values call retrieve))
+
+(define (call/oauth-post->json cred path files params . opts)
+  (apply call/oauth-internal
+         cred 'post-file (->resource-path path) params files opts))
 
 (define (build-url host path)
   (string-append
@@ -231,11 +238,22 @@
       (loop (cdr lines) ret)))))
 
 (define (retrieve-stream getter f . args)
-  (let loop ([cursor "-1"]
-             [ids '()])
-    (let* ([r (apply f (append args (list :cursor cursor)))]
-           [next ((if-car-sxpath '(// next_cursor *text*)) r)]
-           [ids (cons (getter r) ids)])
-      (if (equal? next "0")
-        (concatenate (reverse ids))
-        (loop next ids)))))
+  ;; getter: from f results then return list.
+  (let loop ([cursor -1]
+             [accum '()])
+    (let* ([r (apply f (append args `(:cursor ,cursor)))]
+           [next (assoc-ref r "next_cursor")]
+           [res (cons (getter r) accum)])
+      (if (equal? next 0)
+        (concatenate (reverse res))
+        (loop next res)))))
+
+(define (stringify-param obj)
+  (cond
+   [(not obj) #f]
+   [(pair? obj)
+    ($ (cut string-join <> ",") $ map x->string obj)]
+   [(string? obj)
+    obj]
+   [else
+    (x->string obj)]))

@@ -1,23 +1,30 @@
 (define-module net.twitter.saved-search
   (use net.twitter.core)
   (export
-   saved-searches/sxml
-   saved-search-show/sxml
-   saved-search-create/sxml
-   saved-search-destroy/sxml
+   list/json
+   show/json
+   create/json
+   destroy/json
    ))
 (select-module net.twitter.saved-search)
 
-(define (saved-searches/sxml cred)
-  (call/oauth->sxml cred 'get #`"/1/saved_searches.xml" '()))
+;;;
+;;; JSON api
+;;;
 
-(define (saved-search-show/sxml cred id)
-  (call/oauth->sxml cred 'get #`"/1/saved_searches/show/,|id|.xml" '()))
+(define (list/json cred . _keys)
+  (call/oauth->json cred 'get #`"/1.1/saved_searches/list"
+                    (api-params _keys)))
 
-(define (saved-search-create/sxml cred query)
-  (call/oauth->sxml cred 'post #`"/1/saved_searches/create.xml"
-					(api-params '() query)))
+(define (show/json cred id . _keys)
+  (call/oauth->json cred 'get #`"/1.1/saved_searches/show/,|id|"
+                    (api-params _keys)))
 
-(define (saved-search-destroy/sxml cred id)
-  (call/oauth->sxml cred 'post #`"/1/saved_searches/destroy/,|id|.xml" '()))
+(define (create/json cred query . _keys)
+  (call/oauth->json cred 'post #`"/1.1/saved_searches/create"
+					(api-params _keys query)))
+
+(define (destroy/json cred id . _keys)
+  (call/oauth->json cred 'post #`"/1.1/saved_searches/destroy/,|id|"
+                    (api-params _keys)))
 

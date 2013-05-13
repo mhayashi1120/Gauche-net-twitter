@@ -1,44 +1,69 @@
 (define-module net.twitter.user
   (use net.twitter.core)
   (export
-   user-show/sxml
-   user-lookup/sxml
-   user-search/sxml
-   user-suggestions/sxml
-   user-suggestions/category/sxml))
+   show/json
+   lookup/json
+   search/json
+   suggestions/json
+   suggestions/category/json
+   suggestion/members/json
+   profile-banner/json
+   report-spam/json))
 (select-module net.twitter.user)
 
+;;;
+;;; JSON api
+;;;
+
 ;; cred can be #f.
-(define (user-show/sxml cred :key (id #f) (user-id #f) (screen-name #f)
+(define (show/json cred :key (id #f) (user-id #f) (screen-name #f)
+                        (include-entities #f)
                         :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/users/show.xml"
+  (call/oauth->json cred 'get #`"/1.1/users/show"
+                    (api-params _keys id user-id screen-name
+                                include-entities)))
+
+(define (lookup/json cred :key (user-ids '()) (screen-names '())
+                          (user-id #f) (screen-name #f)
+                          (include-entities #f)
+                          :allow-other-keys _keys)
+  (set! user-id (or user-id (stringify-param user-ids)))
+  (set! screen-name (or screen-name (stringify-param screen-names)))
+  (call/oauth->json cred 'post #`"/1.1/users/lookup"
+                    (api-params _keys user-id screen-name
+                                include-entities)))
+
+(define (search/json cred q :key (page #f) (count #f)
+                          (include-entities #f)
+                          :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/users/search"
+                    (api-params _keys q page count
+                                include-entities)))
+
+;; CRED can be #f
+(define (suggestions/json cred :key (lang #f)
+                               :allow-other-keys _keys)
+  (call/oauth->json cred 'get "/1.1/users/suggestions"
+                    (api-params _keys lang)))
+
+;; CRED can be #f
+(define (suggestions/category/json cred slug :key (lang #f)
+                                        :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|"
+                    (api-params _keys lang)))
+
+(define (suggestion/members/json cred slug . _keys)
+  (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|/members"
+                    (api-params _keys)))
+
+(define (profile-banner/json cred :key (id #f) (user-id #f)
+                                  (screen-name #f)
+                                  :allow-other-keys _keys)
+  ;;TODO post?
+  (call/oauth->json cred 'get #`"/1.1/users/profile_banner"
                     (api-params _keys id user-id screen-name)))
 
-(define (user-lookup/sxml cred :key (user-ids '()) (screen-names '())
-                          (include-entities #f) (skip-status #f)
+(define (report-spam/json cred :key (id #f) (user-id #f) (screen-name #f)
                           :allow-other-keys _keys)
-  (let ((user-id (and (pair? user-ids) (string-join (map x->string user-ids) ",")))
-        (screen-name (and (pair? screen-names) (string-join screen-names ","))))
-    (call/oauth->sxml cred 'post #`"/1/users/lookup.xml"
-                      (api-params _keys user-id screen-name
-                                    include-entities skip-status))))
-
-(define (user-search/sxml cred q :key (per-page #f) (page #f)
-                          (include-entities #f) (skip-status #f)
-                          :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/users/search.xml"
-                    (api-params _keys q per-page page
-                                  include-entities skip-status)))
-
-;; CRED can be #f
-(define (user-suggestions/sxml cred :key (lang #f)
-                               :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get "/1/users/suggestions.xml"
-                    (api-params _keys lang)))
-
-;; CRED can be #f
-(define (user-suggestions/category/sxml cred slug :key (lang #f)
-                                        :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/users/suggestions/,|slug|.xml"
-                    (api-params _keys lang)))
-
+  (call/oauth->json cred 'post #`"/1.1/users/report_spam"
+                    (api-params _keys id user-id screen-name)))

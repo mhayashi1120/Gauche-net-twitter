@@ -1,16 +1,29 @@
 (define-module net.twitter.trends
   (use net.twitter.core)
   (export
-   trends-available/sxml trends-location/sxml))
+   available/json
+   closest/json
+   place/json
+   ))
 (select-module net.twitter.trends)
 
-;; CRED can be #f
-(define (trends-available/sxml cred :key (lat #f) (long #f)
-                               :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/trends/available.xml"
+;;;
+;;; JSON api
+;;;
+
+(define (available/json cred . _keys)
+  (call/oauth->json cred 'get #`"/1.1/trends/available"
+                    (api-params _keys)))
+
+;;TODO
+(define (closest/json cred :key (lat #f) (long #f)
+                      :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/trends/closest"
                     (api-params _keys lat long)))
 
-;; CRED can be #f
-(define (trends-location/sxml cred woeid)
-  (call/oauth->sxml cred 'get #`"/1/trends/,|woeid|.xml" '()))
+;;TODO
+(define (place/json cred :key (exclude #f) (id #f)
+                    :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/trends/place"
+                    (api-params _keys exclude id)))
 

@@ -44,6 +44,10 @@ check : all
 	@rm -f test.log
 	$(GOSH) -I. -IGauche-net-oauth -I$(srcdir) $(srcdir)/test.scm > test.log
 
+check2 : all
+	@rm -f test2.log
+	$(GOSH) -I. -IGauche-net-oauth -I$(srcdir) $(srcdir)/test2.scm > test2.log
+
 install : all
 	$(INSTALL) -m 444 -T $(GAUCHE_PKGINCDIR) $(HEADERS)
 	$(INSTALL) -m 444 -T $(GAUCHE_PKGLIBDIR) $(SCMFILES) 

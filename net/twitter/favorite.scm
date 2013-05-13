@@ -2,25 +2,31 @@
   (use net.twitter.core)
 
   (export
-   favorites/sxml
-   favorite-create/sxml
-   favorite-destroy/sxml))
+   list/json
+   create/json
+   destroy/json))
+
 (select-module net.twitter.favorite)
 
-(define (favorites/sxml cred id :key (count #f) (since-id #f) (max-id #f)
-                        (page #f) (include-entities #f)
-                        :allow-other-keys _keys)
-  (call/oauth->sxml cred 'get #`"/1/favorites.xml"
+;;;
+;;; JSON api
+;;;
+
+(define (list/json cred id :key (count #f) (since-id #f) (max-id #f)
+                   (include-entities #f) (screen-name #f) (user-id #f)
+                   :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/favorites/list"
                     (api-params _keys
-                                id count since-id max-id page
-                                include-entities)))
+                                id count since-id max-id
+                                include-entities screen-name user-id)))
 
-(define (favorite-create/sxml cred id :key (include-entities #f)
-                              :allow-other-keys _keys)
-  (call/oauth->sxml cred 'post #`"/1/favorites/create/,|id|.xml"
-                    (api-params _keys include-entities)))
+(define (create/json cred id :key (include-entities #f)
+                     :allow-other-keys _keys)
+  (call/oauth->json cred 'post #`"/1.1/favorites/create"
+                    (api-params _keys id include-entities)))
 
-(define (favorite-destroy/sxml cred id :key (_dummy #f) :allow-other-keys _keys)
-  (call/oauth->sxml cred 'post #`"/1/favorites/destroy/,|id|.xml"
-                    (api-params _keys)))
+(define (destroy/json cred id :key (include-entities #f)
+                      :allow-other-keys _keys)
+  (call/oauth->json cred 'post #`"/1.1/favorites/destroy"
+                    (api-params _keys id include-entities)))
 
