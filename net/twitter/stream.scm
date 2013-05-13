@@ -33,7 +33,7 @@
 ;; https://dev.twitter.com/docs/streaming-apis/streams/public
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
-;; PROC accept one arg contains parsed json object
+;; PROC accept one string (JSON)
 (define (user-stream cred proc :key (replies #f) (delimited #f)
                      (stall-warnings #f) (with #f) (track #f)
                      (locations #f)
