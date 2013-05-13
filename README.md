@@ -12,7 +12,7 @@ Step by step:
 
    From source:
 
-     $ git clone git://github.com/shirok/Gauche-net-twitter.git
+     $ git clone git://github.com/mhayashi1120/Gauche-net-twitter.git
      $ cd Gauche-net-twitter
      $ ./DIST gen
      $ ./configure
@@ -78,6 +78,10 @@ Step by step:
     (twitter-update *cred* "Post from my application!")
    
 
+# Old API (1.0)
+
+At 2013.05.14, still works Twitter 1.0 API.
+If you want to use this old API, please try `1.0-API' tag.
 
 # Module API
 
