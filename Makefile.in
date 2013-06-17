@@ -42,7 +42,9 @@ all : $(TARGET)
 
 check : all
 	@rm -f test.log
-	$(GOSH) -I. -IGauche-net-oauth -I$(srcdir) $(srcdir)/test.scm > test.log
+	@for testfile in $(srcdir)/test/{module,snowflake}.scm; do \
+		$(GOSH) -ftest -I. -IGauche-net-oauth -I$(srcdir) $$testfile > test.log; \
+	done
 
 check2 : all
 	@rm -f test2.log
