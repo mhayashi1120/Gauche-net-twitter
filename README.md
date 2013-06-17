@@ -1044,6 +1044,13 @@ as argument. RAISE-ERROR? #t means raising error every time disconnect from serv
 Otherwise twitter/stream.scm follow twitter reconnecting instructions.
 https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
 
+## [Module] net.twitter.snowflake
+
+https://github.com/twitter/snowflake
+Convert utilities between Twitter status id and date/time.
+
+
+
 # Credits
 
 This module is based on the code brewed among several blogs.

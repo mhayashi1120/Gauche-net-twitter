@@ -1,8 +1,10 @@
 (define-module net.twitter.snowflake
+  (use srfi-19)
   (use srfi-60)
   (export
    snowflake-id? snowflake-split-id
-   snowflake-time time->pseudo-snowflake-id)
+   snowflake-date snowflake-time
+   date->pseudo-snowflake time->pseudo-snowflake)
   )
 (select-module net.twitter.snowflake)
 
@@ -23,6 +25,9 @@
    (logand (ash id -12) #x3ff)
    (logand      id      #xfff)))
 
+(define (snowflake-date id)
+  (time-utc->date (snowflake-time id)))
+
 (define (snowflake-time id)
   (receive (time . _) (snowflake-split-id id)
     (seconds->time (/ (+ time 1288834974657) 1000))))
@@ -30,14 +35,20 @@
 (define (snowflake-id? id)
   (and (number? id)
        (let1 n (integer-length id)
-         (<= 23 n 64))))
+         (<= 23 n 63))))
 
 ;; Generate the status id to search by date (using max-id or since-id)
-(define (time->pseudo-snowflake-id time :optional (fillbit? #f))
-  (let ([time (- (* (time->seconds time) 1000) 1288834974657)]
-        [machine-id (if fillbit? #x3ff 0)]
-        [seq-num (if fillbit? #xfff 0)])
+(define (time->pseudo-snowflake time)
+  (let ([tmsec (- ($ round->exact $ * 1000 $ time->seconds time) 1288834974657)]
+        [machine-id 0]
+        [seq-num 0])
+    (unless (and (positive? tmsec)
+                 (<= (integer-length tmsec) 41))
+      (error "Arg out of range" time))
     (logior
-     (ash time        22)
+     (ash tmsec       22)
      (ash machine-id  12)
      (ash seq-num      0))))
+
+(define (date->pseudo-snowflake date)
+  (time->pseudo-snowflake (date->time-utc date)))
