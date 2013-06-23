@@ -21,7 +21,7 @@
    twitter-mentions/json twitter-mentions
    twitter-retweets-of-me/json
 
-   twitter-search/json
+   twitter-search-tweets/json
 
    twitter-show/json
    twitter-update/json twitter-update
@@ -42,8 +42,6 @@
    twitter-friendship-update/json
 
    twitter-lists/json
-   ;;TODO
-   ;; twitter-lists/ids twitter-lists/slugs
    twitter-list-show/json
    twitter-list-statuses/json
 
@@ -74,7 +72,6 @@
 ;; Search API method
 ;;
 
-(define twitter-search/json search:search/json)
 (define twitter-search-tweets/json search:search-tweets/json)
 
 ;;
