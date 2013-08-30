@@ -36,7 +36,7 @@
 ;; PROC accept one string (JSON)
 (define (user-stream cred proc :key (replies #f) (delimited #f)
                      (stall-warnings #f) (with #f) (track #f)
-                     (locations #f)
+                     (locations #f) (stringify-friend-ids #f)
                      (raise-error? #f) (error-handler #f)
                      :allow-other-keys _keys)
   (set! track (stringify-param track))
@@ -74,6 +74,7 @@
 ;;TODO not yet checked
 (define (site-stream cred proc :key (follow #f) (delimited #f) (stall-warnings #f)
                      (with #f) (replies #f) (raise-error? #f) (error-handler #f)
+                     (stringify-friend-ids #f)
                      :allow-other-keys _keys)
   (set! follow (stringify-param follow))
   (open-stream cred proc 'get "https://sitestream.twitter.com/1.1/site.json"

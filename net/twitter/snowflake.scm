@@ -20,7 +20,6 @@
 (define (snowflake-split-id id)
   (unless (snowflake-id? id)
     (error "Not a valid snowflake id" id))
-  ;;TODO consider worker-id
   (values
    (logand (ash id -22) #x1ffffffffff)
    (logand (ash id -12) #x3ff)
