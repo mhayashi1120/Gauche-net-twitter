@@ -42,7 +42,7 @@
   (set! track (stringify-param track))
   (open-stream cred proc 'post "https://userstream.twitter.com/1.1/user.json"
                (api-params _keys replies delimited stall-warnings
-                           with track locations)
+                           with track locations stringify-friend-ids)
                :error-handler (or error-handler raise-error?)))
 
 (define (sample-stream cred proc :key (delimited #f) (stall-warnings #f)
@@ -79,7 +79,7 @@
   (set! follow (stringify-param follow))
   (open-stream cred proc 'get "https://sitestream.twitter.com/1.1/site.json"
                (api-params _keys follow delimited stall-warnings
-                           with replies)
+                           with stringify-friend-ids replies)
                :error-handler (or error-handler raise-error?)))
 
 ;;;
