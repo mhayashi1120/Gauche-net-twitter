@@ -33,7 +33,7 @@
                                 count stringify-ids)))
 
 (define (friends/list/json cred :key (include-user-entities #f) (skip-status #f)
-                           (cursor #f) (screen-name #f) (user-id #f)
+                           (cursor #f) (screen-name #f) (user-id #f) (count #f)
                            :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/friends/list"
                     (api-params _keys include-user-entities skip-status
@@ -48,7 +48,7 @@
                                 count stringify-ids)))
 
 (define (followers/list/json cred :key (include-user-entities #f) (skip-status #f)
-                             (cursor #f) (screen-name #f) (user-id #f)
+                             (cursor #f) (screen-name #f) (user-id #f) (count #f)
                              :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/followers/list"
                     (api-params _keys include-user-entities skip-status
