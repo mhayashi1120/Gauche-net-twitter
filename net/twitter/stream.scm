@@ -7,6 +7,7 @@
   (use srfi-13)
   (use text.parse)
   (use gauche.threads)
+  (use rfc.json)
 
   (export
    stream-timeout connection-timeout
@@ -99,17 +100,34 @@
   (define (stream-looper code headers total retrieve)
     (guard (e [else (thread-specific-set! (current-thread) e)])
       (check-stream-error code headers)
-      (while #t
+      (let loop ([buf (open-output-string)]
+                 ;;TODO if return body contain like
+                 ;;  <html><head>503<head> ...
+                 ;; to avoid wasting memory
+                 ;; FIXME how to handle it?
+                 [limit 10])
         (receive (port size) (retrieve)
           (set! last-arrived (sys-time))
           (cond
            [(negative? size)
             (error "Connection is closed by remote")]
            [else
-            (and-let* ([s (read-string size port)]
-                       [trimmed (string-trim-both s #[\x0d\x0a ])]
-                       [(not (string-null? trimmed))])
-              (proc trimmed))])))))
+            (copy-port port buf :unit 'byte :size size)
+            (cond
+             [(and-let* ([s (get-output-string buf)]
+                         [trimmed (string-trim-both s #[\x0d\x0a ])]
+                         [(not (string-null? trimmed))]
+                         [json-sexp (guard (e [else #f])
+                                      (parse-json-string trimmed))])
+                trimmed) =>
+                (^j
+                 (close-output-port buf)
+                 (proc j)
+                 (loop (open-output-string) 10))]
+             [(= limit 0)
+              (loop (open-output-string) 10)]
+             [else
+              (loop buf (- limit 1))])])))))
 
   (define (connect)
     (let1 auth (auth-header)
@@ -151,28 +169,27 @@
   (define (sticky-connect)
     (while #t
       (guard (e [else (adapt-error e)])
-        (let1 th (make-thread connect)
+        (let* ([con-limit (+ (sys-time) (connection-timeout))]
+               [th (make-thread connect)])
+          ;; thread which hold http stream connection
           (thread-start! th)
-          ;; just 5 seconds.
-          (let1 limit (+ (sys-time) (connection-timeout))
-            (unwind-protect
-             (while #t
-               (sys-nanosleep 100000000)
-               (cond
-                [(not (eq? (thread-state th) 'runnable))
-                 (if-let1 e (thread-specific th)
-                   (raise e)
-                   (error <error> (format "Thread ~a unexpectedly"
-                                          (thread-state th))))]
-                [(not last-arrived)
-                 ;; wait until limit time
-                 (when (< limit (sys-time))
-                   (error <twitter-timeout-error>
-                          (format "Connect to stream timed-out. ~s" th)))]
-                [(< last-arrived (- (sys-time) (stream-timeout)))
+          (unwind-protect
+           (while #t
+             (sys-nanosleep 100000000)
+             (cond
+              [(not (eq? (thread-state th) 'runnable))
+               (if-let1 e (thread-specific th)
+                 (raise e)
+                 (errorf "Thread ~a unexpectedly" (thread-state th)))]
+              [(not last-arrived)
+               ;; wait until connection limit time
+               (when (< con-limit (sys-time))
                  (error <twitter-timeout-error>
-                        "Stream packet arrival timed-out.")]))
-             (thread-terminate! th)))))))
+                        (format "Connect to stream timed-out. ~s" th)))]
+              [(< last-arrived (- (sys-time) (stream-timeout)))
+               (errorf <twitter-timeout-error>
+                       "Stream packet arrival timed-out. (at ~s)" last-arrived)]))
+           (thread-terminate! th))))))
 
   (sticky-connect))
 
