@@ -1,4 +1,5 @@
 (define-module net.twitter.saved-search
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    list/json

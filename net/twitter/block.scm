@@ -1,4 +1,5 @@
 (define-module net.twitter.block
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    ids/json

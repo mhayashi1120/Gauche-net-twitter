@@ -1,4 +1,5 @@
 (define-module net.twitter.geo
+  (extend net.twitter.base)
   (use net.twitter.core)
   (use srfi-1)
   (export

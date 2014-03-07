@@ -1,4 +1,5 @@
 (define-module net.twitter.search
+  (extend net.twitter.base)
   (use rfc.json)
   (use net.twitter.core)
   (use rfc.http)

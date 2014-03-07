@@ -1,4 +1,5 @@
 (define-module net.twitter.auth
+  (extend net.twitter.base)
   (use net.oauth)
   (use net.twitter.core)
   (use srfi-13)

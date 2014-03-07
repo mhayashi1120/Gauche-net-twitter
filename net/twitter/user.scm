@@ -1,4 +1,5 @@
 (define-module net.twitter.user
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    show/json

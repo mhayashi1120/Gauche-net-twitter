@@ -1,4 +1,5 @@
 (define-module net.twitter.help
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    configuration/json

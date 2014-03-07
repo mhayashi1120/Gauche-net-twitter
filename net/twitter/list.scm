@@ -1,4 +1,5 @@
 (define-module net.twitter.list
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    list/json

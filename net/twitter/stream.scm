@@ -1,4 +1,5 @@
 (define-module net.twitter.stream
+  (extend net.twitter.base)
   (use gauche.parameter)
   (use net.oauth)
   (use net.twitter.core)

@@ -1,4 +1,5 @@
 (define-module net.twitter.status
+  (extend net.twitter.base)
   (use srfi-1)
   (use net.twitter.core)
   (export

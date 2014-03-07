@@ -1,4 +1,5 @@
 (define-module net.twitter.timeline
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    mentions

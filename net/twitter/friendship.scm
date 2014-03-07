@@ -1,4 +1,5 @@
 (define-module net.twitter.friendship
+  (extend net.twitter.base)
   (use net.twitter.core)
   (export
    show/json
