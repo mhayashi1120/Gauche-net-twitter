@@ -35,7 +35,7 @@
 ;; https://dev.twitter.com/docs/streaming-apis/streams/public
 
 ;; TODO http://practical-scheme.net/chaton/gauche/a/2011/02/11
-;; PROC accept one string (JSON)
+;; PROC accept one string (JSON) and optionally accept next arg as JSON sexp.
 (define (user-stream cred proc :key (replies #f) (delimited #f)
                      (stall-warnings #f) (with #f) (track #f)
                      (locations #f) (stringify-friend-ids #f)
@@ -98,14 +98,22 @@
       ['post
        (oauth-auth-header "POST" url params cred)]))
 
+  (define json-handler
+    (cond
+     [(= (arity proc) 1)
+      (^ [string sexp] (proc string))]
+     [(= (arity proc) 2)
+      (^ [string sexp] (proc string sexp))]))
+
   (define (stream-looper code headers total retrieve)
     (guard (e [else (thread-specific-set! (current-thread) e)])
       (check-stream-error code headers)
       (let loop ([buf (open-output-string)]
-                 ;;TODO if return body contain like
+                 ;; If retrieved PORT contains
                  ;;  <html><head>503<head> ...
-                 ;; to avoid wasting memory
-                 ;; FIXME how to handle it?
+                 ;; This may cause exhausting memory.
+                 ;; Over 10 times continuing RETRIEVE to a BUF,
+                 ;; reset the BUF.
                  [limit 10])
         (receive (port size) (retrieve)
           (set! last-arrived (sys-time))
@@ -120,12 +128,13 @@
                          [(not (string-null? trimmed))]
                          [json-sexp (guard (e [else #f])
                                       (parse-json-string trimmed))])
-                trimmed) =>
+                (list trimmed json-sexp)) =>
                 (^j
                  (close-output-port buf)
-                 (proc j)
+                 (apply json-handler j)
                  (loop (open-output-string) 10))]
              [(= limit 0)
+              ;; reset BUF
               (loop (open-output-string) 10)]
              [else
               (loop buf (- limit 1))])])))))
@@ -195,7 +204,6 @@
   (sticky-connect))
 
 ;; https://dev.twitter.com/docs/streaming-apis/connecting#Reconnecting
-;;TODO check implementation
 (define (construct-error-handler handler)
 
   (define tcpip-waitsec 0)
