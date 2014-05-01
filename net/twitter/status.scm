@@ -12,6 +12,7 @@
    retweets/json
    oembed/json
    retweeters/ids/json
+   lookup/json
    ))
 (select-module net.twitter.status)
 
@@ -81,6 +82,12 @@
                              :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/retweeters/ids"
                     (api-params _keys id cursor stringify-ids)))
+
+(define (lookup/json cred id :key (include-entities #f)
+                     (trim-user #f) (map #f)
+                     :allow-other-keys _keys)
+  (call/oauth->json cred 'get #`"/1.1/statuses/lookup"
+                    (api-params _keys id include-entities trim-user map)))
 
 ;;;
 ;;; Utilities

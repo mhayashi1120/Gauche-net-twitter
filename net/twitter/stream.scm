@@ -101,7 +101,7 @@
   (define json-handler
     (cond
      [(= (arity proc) 1)
-      (^ [string sexp] (proc string))]
+      (^ [string _] (proc string))]
      [(= (arity proc) 2)
       (^ [string sexp] (proc string sexp))]))
 
