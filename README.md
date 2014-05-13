@@ -185,7 +185,7 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] update-profile-banner/json (https://api.twitter.com/1.1/account/update_profile_banner.json)
 
 	Uploads a profile banner on behalf of the authenticating user. For best
-	results, upload an <5MB image that is exactly 1252px by 626px. Images will
+	results, upload an <3MB image that is exactly 1500px by 500px. Images will
 	be resized for a number of display options. Users with an uploaded profile
 	banner will have a profile_banner_url node in their
 	https://dev.twitter.com/docs/platform-objects/users Users objects. More
@@ -359,14 +359,19 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] place/json (https://api.twitter.com/1.1/geo/place.json)
 
-	Creates a new place object at the given latitude and longitude. Before
-	creating a place you need to query
-	https://dev.twitter.com/docs/api/1.1/get/geo/similar_places GET
+	As of December 2nd, 2013, this endpoint is deprecated and retired and no
+	longer functions. Place creation was used infrequently by third party
+	applications and is generally no longer supported on Twitter. Requests
+	will return with status https://dev.twitter.com/docs/error-codes-responses
+	410 (Gone) with error code 251 . https://dev.twitter.com/discussions/22452
+	Follow the discussion about this retirement. Created a new place object at
+	the given latitude and longitude. Before creating a place you needed to
+	query https://dev.twitter.com/docs/api/1.1/get/geo/similar_places GET
 	geo/similar_places with the latitude, longitude and name of the place you
-	wish to create. The query will return an array of places which are similar
-	to the one you wish to create, and a token . If the place you wish to
-	create isn't in the returned array you can use the token with this method
-	to create a new one. Learn more about
+	wished to create. The query will return an array of places which are
+	similar to the one you wish to create, and a token . If the place you
+	wished to create wasn't in the returned array you could use the token with
+	this method to create a new one. Learn more about
 	https://dev.twitter.com/docs/finding-tweets-about-places Finding Tweets
 	about Places .
 
@@ -377,7 +382,7 @@ API specific data type, require `net.twitter.friendship' module:
 	https://dev.twitter.com/docs/platform-objects/places place .
 
 
-[Function] reverse-geocode/json (http://api.twitter.com/1.1/geo/reverse_geocode.json)
+[Function] reverse-geocode/json (https://api.twitter.com/1.1/geo/reverse_geocode.json)
 
 	Given a latitude and a longitude, searches for up to 20 places that can be
 	used as a place_id when updating a status. This request is an informative
@@ -387,12 +392,7 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] similar-places/json (https://api.twitter.com/1.1/geo/similar_places.json)
 
 	Locates https://dev.twitter.com/docs/platform-objects/places places near
-	the given coordinates which are similar in name. Conceptually you would
-	use this method to get a list of known places to choose from first. Then,
-	if the desired place doesn't exist, make a request to
-	https://dev.twitter.com/docs/api/1.1/post/geo/place POST geo/place to
-	create a new one. The token contained in the response is the token needed
-	to be able to create a new place.
+	the given coordinates which are similar in name.
 
 
 [Function] search/json (https://api.twitter.com/1.1/geo/search.json)
@@ -426,7 +426,7 @@ API specific data type, require `net.twitter.friendship' module:
 	Permission Model for more information.
 
 
-[Function] new/json (https://api.twitter.com/1.1/direct_messages/new.json)
+[Function] send/json (https://api.twitter.com/1.1/direct_messages/new.json)
 
 	Sends a new direct message to the specified user from the authenticating
 	user. Requires both the user and text parameters and must be a POST.
@@ -466,6 +466,37 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 
+## [Module] net.twitter.mute
+
+[Function] destroy/json (https://api.twitter.com/1.1/mutes/users/destroy.json)
+
+	Un-mutes the user specified in the ID parameter for the authenticating
+	user. Returns the unmuted user in the requested format when successful.
+	Returns a string describing the failure condition when unsuccessful.
+	Actions taken in this method are asynchronous and changes will be
+	eventually consistent.
+
+
+[Function] create/json (https://api.twitter.com/1.1/mutes/users/create.json)
+
+	Mutes the user specified in the ID parameter for the authenticating user.
+	Returns the muted user in the requested format when successful. Returns a
+	string describing the failure condition when unsuccessful. Actions taken
+	in this method are asynchronous and changes will be eventually consistent.
+
+
+[Function] ids/json (https://api.twitter.com/1.1/mutes/users/ids.json)
+
+	Returns an array of numeric user ids the authenticating user has muted.
+
+
+[Function] list/json (https://api.twitter.com/1.1/mutes/users/list.json)
+
+	Returns an array of https://dev.twitter.com/docs/platform-objects/users
+	user objects the authenticating user has muted.
+
+
+
 ## [Module] net.twitter.friendship
 
 [Function] friends-incoming/json (https://api.twitter.com/1.1/friendships/incoming.json)
@@ -474,12 +505,12 @@ API specific data type, require `net.twitter.friendship' module:
 	request to follow the authenticating user.
 
 
-[Function] friends-lookup/json (http://api.twitter.com/1.1/friendships/lookup.json)
+[Function] friends-lookup/json (https://api.twitter.com/1.1/friendships/lookup.json)
 
 	Returns the relationships of the authenticating user to the
 	comma-separated list of up to 100 screen_names or user_ids provided.
 	Values for connections can be: following , following_requested ,
-	followed_by , none .
+	followed_by , none , blocking .
 
 
 [Function] friends-no-retweets/ids/json (https://api.twitter.com/1.1/friendships/no_retweets/ids.json)
@@ -491,13 +522,13 @@ API specific data type, require `net.twitter.friendship' module:
 	account on behalf of the current user.
 
 
-[Function] friends-outgoing/json (http://api.twitter.com/1.1/friendships/outgoing.format)
+[Function] friends-outgoing/json (https://api.twitter.com/1.1/friendships/outgoing.format)
 
 	Returns a collection of numeric IDs for every protected user for whom the
 	authenticating user has a pending follow request.
 
 
-[Function] update/json (http://api.twitter.com/1.1/friendships/update.json)
+[Function] update/json (https://api.twitter.com/1.1/friendships/update.json)
 
 	Allows one to enable or disable retweets and device notifications from the
 	specified user.
@@ -523,7 +554,7 @@ API specific data type, require `net.twitter.friendship' module:
 	asynchronous and changes will be eventually consistent.
 
 
-[Function] show/json (http://api.twitter.com/1.1/friendships/show.json)
+[Function] show/json (https://api.twitter.com/1.1/friendships/show.json)
 
 	Returns detailed information about the relationship between two arbitrary
 	users.
@@ -603,23 +634,24 @@ API specific data type, require `net.twitter.friendship' module:
 	will be served instead. This method can be used instead of string
 	manipulation on the profile_banner_url returned in user objects as
 	described in https://dev.twitter.com/docs/user-profile-images-and-banners
-	User Profile Images and Banners .
+	User Profile Images and Banners . The profile banner data available at
+	each size variant's URL is in PNG format.
 
 
-[Function] suggestion/members/json (http://api.twitter.com/1.1/users/suggestions/:slug/members.json)
+[Function] suggestion/members/json (https://api.twitter.com/1.1/users/suggestions/:slug/members.json)
 
 	Access the users in a given category of the Twitter suggested user list
 	and return their most recent status if they are not a protected user.
 
 
-[Function] suggestions/category/json (http://api.twitter.com/1.1/users/suggestions/:slug.json)
+[Function] suggestions/category/json (https://api.twitter.com/1.1/users/suggestions/:slug.json)
 
 	Access the users in a given category of the Twitter suggested user list.
 	It is recommended that applications cache this data for no more than one
 	hour.
 
 
-[Function] suggestions/json (http://api.twitter.com/1.1/users/suggestions.format)
+[Function] suggestions/json (https://api.twitter.com/1.1/users/suggestions.format)
 
 	Access to Twitter's suggested user list. This returns the list of
 	suggested user categories. The category can be used in
@@ -648,7 +680,7 @@ API specific data type, require `net.twitter.friendship' module:
 	to retrieve a single user object.
 
 
-[Function] show/json (http://api.twitter.com/1.1/users/show.json)
+[Function] show/json (https://api.twitter.com/1.1/users/show.json)
 
 	Returns a https://dev.twitter.com/docs/platform-objects/users variety of
 	information about the user specified by the required user_id or
@@ -660,6 +692,28 @@ API specific data type, require `net.twitter.friendship' module:
 
 
 ## [Module] net.twitter.status
+
+[Function] lookup/json (https://api.twitter.com/1.1/statuses/lookup.json)
+
+	Returns fully-hydrated
+	https://dev.twitter.com/docs/platform-objects/tweets tweet objects for up
+	to 100 tweets per request, as specified by comma-separated values passed
+	to the id parameter. This method is especially useful to get the details
+	(hydrate) a collection of Tweet IDs.
+	https://dev.twitter.com/docs/api/1.1/get/statuses/show/%3Aid GET
+	statuses/show/:id is used to retrieve a single tweet object.
+
+
+[Function] retweeters/ids/json (https://api.twitter.com/1.1/statuses/retweeters/ids.json)
+
+	Returns a collection of up to 100 user IDs belonging to users who have
+	retweeted the tweet specified by the id parameter. This method offers
+	similar data to
+	https://dev.twitter.com/docs/api/1.1/get/statuses/retweets/%3Aid GET
+	statuses/retweets/:id and replaces API v1's
+	https://dev.twitter.com/docs/api/1/get/statuses/%3Aid/retweeted_by/ids GET
+	statuses/:id/retweeted_by/ids method.
+
 
 [Function] oembed/json (https://api.twitter.com/1.1/statuses/oembed.json)
 
@@ -676,7 +730,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] retweets/json (https://api.twitter.com/1.1/statuses/retweets/:id.json)
 
-	Returns up to 100 of the first retweets of a given tweet.
+	Returns a collection of the 100 most recent retweets of the tweet
+	specified by the id parameter.
 
 
 [Function] retweet/json (https://api.twitter.com/1.1/statuses/retweet/:id.json)
@@ -699,13 +754,14 @@ API specific data type, require `net.twitter.friendship' module:
 	upload. In other words, it creates a Tweet with a picture attached. Unlike
 	/docs/api/1.1/post/statuses/update POST statuses/update , this method
 	expects raw multipart data. Your POST request's Content-Type should be set
-	to multipart/form-data with the media[] parameter The Tweet text will be
-	rewritten to include the media URL(s), which will reduce the number of
-	characters allowed in the Tweet text. If the URL(s) cannot be appended
-	without text truncation, the tweet will be rejected and this method will
-	return an HTTP 403 error. Important : In API v1.1, you now use
-	api.twitter.com as the domain instead of upload.twitter.com. We strongly
-	recommend using SSL with this method.
+	to multipart/form-data with the media[] parameter . See
+	https://dev.twitter.com/docs/uploading-media Uploading Media for a guide
+	to using this method. The Tweet text will be rewritten to include the
+	media URL(s), which will reduce the number of characters allowed in the
+	Tweet text. If the URL(s) cannot be appended without text truncation, the
+	tweet will be rejected and this method will return an HTTP 403 error.
+	Important : In API v1.1, you now use api.twitter.com as the domain instead
+	of upload.twitter.com. Use of SSL is required with this method.
 
 
 [Function] update/json (https://api.twitter.com/1.1/statuses/update.json)
@@ -727,6 +783,8 @@ API specific data type, require `net.twitter.friendship' module:
 	Returns a single https://dev.twitter.com/docs/platform-objects/tweets
 	Tweet , specified by the id parameter. The Tweet's author will also be
 	embedded within the tweet. See
+	https://dev.twitter.com/docs/api/1.1/get/statuses/lookup GET
+	statuses/lookup for getting Tweets in bulk (up to 100 per call). See also
 	https://dev.twitter.com/docs/embedded-timelines Embeddable Timelines ,
 	https://dev.twitter.com/docs/embedded-tweets Embeddable Tweets , and
 	https://dev.twitter.com/docs/api/1.1/get/statuses/oembed GET
@@ -742,7 +800,7 @@ API specific data type, require `net.twitter.friendship' module:
 	Returns the top 10 trending topics for a specific WOEID , if trending
 	information is available for it. The response is an array of "trend"
 	objects that encode the name of the trending topic, the query parameter
-	that can be used to search for the topic on http://search.twitter.com/ me
+	that can be used to search for the topic on me http://search.twitter.com/
 	Twitter Search , and the Twitter Search URL. This information is cached
 	for 5 minutes. Requesting more frequently than that will not return any
 	more data, and will count against your rate limit usage.
@@ -754,7 +812,7 @@ API specific data type, require `net.twitter.friendship' module:
 	closest to a specified location. The response is an array of "locations"
 	that encode the location's WOEID and some other human-readable information
 	such as a canonical name and country the location belongs in. A WOEID is a
-	http://developer.yahoo.com/geo/geoplanet/ external Yahoo! Where On Earth
+	external http://developer.yahoo.com/geo/geoplanet/ Yahoo! Where On Earth
 	ID .
 
 
@@ -763,9 +821,8 @@ API specific data type, require `net.twitter.friendship' module:
 	Returns the locations that Twitter has trending topic information for. The
 	response is an array of "locations" that encode the location's WOEID and
 	some other human-readable information such as a canonical name and country
-	the location belongs in. A WOEID is a
-	http://developer.yahoo.com/geo/geoplanet/ external Yahoo! Where On Earth
-	ID .
+	the location belongs in. A WOEID is a external
+	http://developer.yahoo.com/geo/geoplanet/ Yahoo! Where On Earth ID .
 
 
 
@@ -828,7 +885,7 @@ API specific data type, require `net.twitter.friendship' module:
 
 	Adds multiple members to a list, by specifying a comma-separated list of
 	member ids or screen names. The authenticated user must own the list to be
-	able to add members to it. Note that lists can't have more than 500
+	able to add members to it. Note that lists can't have more than 5,000
 	members, and you are limited to adding up to 100 members to a list at a
 	time with this method. Please note that there can be issues with lists
 	that rapidly remove and add memberships. Take care when using these
@@ -839,7 +896,7 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] member-create/json (https://api.twitter.com/1.1/lists/members/create.json)
 
 	Add a member to a list. The authenticated user must own the list to be
-	able to add members to it. Note that lists can't have more than 500
+	able to add members to it. Note that lists cannot have more than 5,000
 	members.
 
 
@@ -892,7 +949,7 @@ API specific data type, require `net.twitter.friendship' module:
 	authenticated user owns the specified list.
 
 
-[Function] list/json (http://api.twitter.com/1.1/lists/list.json)
+[Function] list/json (https://api.twitter.com/1.1/lists/list.json)
 
 	Returns all lists the authenticating or specified user subscribes to,
 	including their own. The user is specified using the user_id or

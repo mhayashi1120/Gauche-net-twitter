@@ -19,6 +19,7 @@
 (use net.twitter.stream)
 (use net.twitter.user)
 (use net.twitter.favorite)
+(use net.twitter.mute)
 
 (define (main args)
   (test-start "Start module")
@@ -57,5 +58,6 @@
   (test-module 'net.twitter.auth)
   (test-module 'net.twitter.account)
   (test-module 'net.twitter.geo)
+  (test-module 'net.twitter.mute)
   (test-module 'net.favotter)
   (test-module 'net.twitter))
