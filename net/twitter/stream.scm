@@ -139,26 +139,32 @@
              [else
               (loop buf (- limit 1))])])))))
 
+  (define singleton-connection #f)
+
   (define (connect)
-    (let1 auth (auth-header)
-      (receive (scheme host path) (parse-uri url)
+    (receive (scheme host path) (parse-uri url)
+      (let ([auth (auth-header)]
+            [conn (make-http-connection host :persistent #f)])
+        (set! singleton-connection conn)
         (set! last-arrived #f)
-        (ecase method
-          ['get
-           (http-get host (if (pair? params)
-                            #`",|path|?,(oauth-compose-query params)"
-                            path)
-                     :secure (string=? "https" scheme)
-                     :receiver stream-looper
-                     :Authorization auth)]
-          ['post
-           (http-post host (if (pair? params)
+        (unwind-protect
+         (ecase method
+           ['get
+            (http-get conn (if (pair? params)
                              #`",|path|?,(oauth-compose-query params)"
                              path)
-                      ""
                       :secure (string=? "https" scheme)
                       :receiver stream-looper
-                      :Authorization auth)]))))
+                      :Authorization auth)]
+           ['post
+            (http-post conn (if (pair? params)
+                              #`",|path|?,(oauth-compose-query params)"
+                              path)
+                       ""
+                       :secure (string=? "https" scheme)
+                       :receiver stream-looper
+                       :Authorization auth)])
+         (reset-http-connection conn)))))
 
   (define adapt-error (construct-error-handler error-handler))
 
@@ -179,6 +185,9 @@
   (define (sticky-connect)
     (while #t
       (guard (e [else (adapt-error e)])
+        (when singleton-connection
+          (reset-http-connection singleton-connection)
+          (set! singleton-connection #f))
         (let* ([con-limit (+ (sys-time) (connection-timeout))]
                [th (make-thread connect)])
           ;; thread which hold http stream connection
