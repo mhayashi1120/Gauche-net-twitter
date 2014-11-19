@@ -118,7 +118,7 @@
         (receive (port size) (retrieve)
           (set! last-arrived (sys-time))
           (cond
-           [(negative? size)
+           [(<= size 0)
             (error "Connection is closed by remote")]
            [else
             (copy-port port buf :unit 'byte :size size)
