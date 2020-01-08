@@ -22,7 +22,7 @@
 
 (define (verify-credentials/json
          cred :key (include-entities #f)
-         (skip-status #f)
+         (skip-status #f) (include-email #f)
          :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/account/verify_credentials"
                     (api-params _keys include-entities skip-status)))
@@ -35,10 +35,12 @@
                               (sleep-time-enabled #f)
                               (start-sleep-time #f) (end-sleep-time #f)
                               (time-zone #f) (lang #f)
+                              (allow-contributor-request #f)
                               :allow-other-keys _keys)
   (call/oauth->json cred 'post "/1.1/account/settings"
                     (api-params _keys trend-location-woeid sleep-time-enabled
-                                start-sleep-time end-sleep-time time-zone lang)))
+                                start-sleep-time end-sleep-time time-zone lang
+                                allow-contributor-request)))
 
 (define (update-profile-image/json
          cred image :key
@@ -52,7 +54,7 @@
 
 (define (update-profile-background-image/json
          cred image :key (tile #f) (include-entities #f)
-         (skip-status #f) (use #f)
+         (skip-status #f) (media-id #f)
          :allow-other-keys _keys)
   (call/oauth-post->json
    cred #`"/1.1/account/update_profile_background_image"
@@ -78,6 +80,7 @@
          (url #f) (location #f)
          (description #f)
          (include-entities #f) (skip-status #f)
+         (profile-link-color #f)
          :allow-other-keys _keys)
   (call/oauth->json
    cred 'post #`"/1.1/account/update_profile"

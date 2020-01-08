@@ -3,7 +3,7 @@
   (use net.twitter.core)
   (use srfi-1)
   (export
-   search/json similar-places/json
+   search/json
    reverse-geocode/json id/json
    place/json))
 (select-module net.twitter.geo)
@@ -21,15 +21,6 @@
   (call/oauth #f 'get "/1.1/geo/search"
               (api-params _keys lat long query ip granularity accuracy
                           max-results contained-within
-                          attribute:street-address)))
-
-;;TODO test
-(define (similar-places/json lat long name :key
-                             (contained-within #f)
-                             (attribute:street-address #f)
-                             :allow-other-keys _keys)
-  (call/oauth #f 'get "/1.1/geo/similar_places"
-              (api-params _keys lat long name contained-within
                           attribute:street-address)))
 
 (define (reverse-geocode/json lat long :key (accuracy #f)

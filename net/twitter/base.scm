@@ -91,30 +91,33 @@
 
 (define (call/oauth-internal cred method path params body . opts)
   (define (call)
-    (let1 auth (and cred
-                    (oauth-auth-header
-                     (if (eq? method 'get) "GET" "POST")
-                     (build-url "api.twitter.com" path) params cred))
+    (let* ([server (if (eq? method 'upload-file)
+                     "upload.twitter.com"
+                     "api.twitter.com")]
+           [auth (and cred
+                      (oauth-auth-header
+                       (if (eq? method 'get) "GET" "POST")
+                       (build-url server path) params cred))])
       (case method
         ['get
-         (apply http-get "api.twitter.com"
+         (apply http-get server
                 #`",|path|?,(oauth-compose-query params)"
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
         ['post
-         (apply http-post "api.twitter.com" path
+         (apply http-post server path
                 (oauth-compose-query params)
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
-        ['post-file
+        [(post-file upload-file)
          (hack-mime-composing
-          (apply http-post "api.twitter.com"
+          (apply http-post server
                  (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
                  body
                  :Authorization auth :secure (twitter-use-https)
-                 :content-type "multipart/form-data"
+                 :content-type (if body "multipart/form-data" "application/octet-stream")
                  opts))])))
 
   (define (retrieve status headers body)
@@ -125,6 +128,10 @@
 (define (call/oauth-post->json cred path files params . opts)
   (apply call/oauth-internal
          cred 'post-file (->resource-path path) params files opts))
+
+(define (call/oauth-upload->json cred path files params . opts)
+  (apply call/oauth-internal
+         cred 'upload-file (->resource-path path) params files opts))
 
 (define (build-url host path)
   (string-append
@@ -140,13 +147,16 @@
                (error <twitter-api-error>
                       :status status :headers headers :body body
                       body))
-    (unless (equal? status "200")
-      (raise-api-error type status headers body))
+    (let1 code (string->number status)
+      (unless (and (<= 200 code) (< code 300))
+        (raise-api-error type status headers body)))
     (ecase type
       ['xml
        (values (parse-xml-string body) headers)]
       ['json
-       (values (parse-json-string body) headers)])))
+       (values (parse-json-string body) headers)]
+      ['html
+       (values body headers)])))
 
 (define (raise-api-error type status headers body)
   (ecase type

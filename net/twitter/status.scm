@@ -31,12 +31,13 @@
 (define (update/json cred status :key (in-reply-to-status-id #f)
                      (lat #f) (long #f) (place-id #f)
                      (display-coordinates #f)
-                     (trim-user #f)
+                     (trim-user #f) (possibly-sensitive #f)
                      :allow-other-keys _keys)
   (call/oauth->json cred 'post "/1.1/statuses/update"
                     (api-params _keys status in-reply-to-status-id
                                 lat long place-id
-                                display-coordinates trim-user)))
+                                display-coordinates
+                                trim-user possibly-sensitive)))
 
 (define (update-with-media/json
          cred status media
@@ -68,15 +69,18 @@
   (call/oauth->json cred 'get #`"/1.1/statuses/retweets/,|id|"
                     (api-params _keys count trim-user)))
 
+;; required ID or URL not both.
 (define (oembed/json cred id url
                      :key (maxwidth #f) (omit-script #f)
                      (hide-media #f) (hide-thread #f)
                      (align #f) (related #f) (lang #f)
+                     (widget-type #f) (hide-tweet #f)
                      :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/statuses/oembed"
                     (api-params _keys id url
                                 maxwidth hide-media hide-thread
-                                omit-script align related lang)))
+                                omit-script align related lang
+                                widget-type hide-tweet)))
 
 (define (retweeters/ids/json cred id :key (cursor #f) (stringify-ids #f)
                              :allow-other-keys _keys)

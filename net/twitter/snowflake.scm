@@ -39,7 +39,7 @@
 
 ;; Generate the status id to search by time (using max-id or since-id)
 (define (time->pseudo-snowflake time)
-  (let ([tmsec (- ($ round->exact $ * 1000 $ time->seconds time) 1288834974657)]
+  (let ([tmsec ($ (cut - <> 1288834974657) $ round->exact $ * 1000 $ time->seconds time)]
         [machine-id 0]
         [seq-num 0])
     (unless (and (positive? tmsec)

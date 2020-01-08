@@ -3,7 +3,7 @@
 ;;;
 
 (define-module net.twitter
-  (use net.twitter.core)
+  (use net.twitter.core :prefix core:)
   (use net.twitter.friendship :prefix friendship:)
   (use net.twitter.user :prefix user:)
   (use net.twitter.list :prefix list:)
@@ -51,8 +51,8 @@
    ))
 (select-module net.twitter)
 
-(define <twitter-cred> <twitter-cred>)
-(define <twitter-api-error> <twitter-api-error>)
+(define <twitter-cred> core:<twitter-cred>)
+(define <twitter-api-error> core:<twitter-api-error>)
 
 ;;;
 ;;; Public API

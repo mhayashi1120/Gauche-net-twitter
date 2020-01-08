@@ -85,10 +85,12 @@
 (define (members/json cred :key (list-id #f)
                       (slug #f) (owner-id #f) (owner-screen-name #f)
                       (cursor #f) (include-entities #f) (skip-status #f)
+                      (count #f)
                       :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/lists/members"
                     (api-params _keys list-id slug owner-id owner-screen-name
-                                cursor include-entities skip-status)))
+                                cursor include-entities skip-status
+                                count)))
 
 (define (member-show/json cred :key (list-id #f)
                           (slug #f) (owner-id #f) (owner-screen-name #f)
@@ -139,10 +141,12 @@
 (define (subscribers/json cred  :key (list-id #f)
                           (slug #f) (owner-id #f) (owner-screen-name #f)
                           (cursor #f) (include-entities #f) (skip-status #f)
+                          (count #f)
                           :allow-other-keys _keys)
   (call/oauth->json cred 'get "/1.1/lists/subscribers"
                     (api-params _keys list-id slug owner-id owner-screen-name
-                                cursor include-entities skip-status)))
+                                cursor include-entities skip-status
+                                count)))
 
 (define (subscriber-show/json cred  :key (list-id #f)
                               (screen-name #f) (user-id #f) (id #f)

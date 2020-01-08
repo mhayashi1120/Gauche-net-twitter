@@ -185,17 +185,13 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] update-profile-banner/json (https://api.twitter.com/1.1/account/update_profile_banner.json)
 
 	Uploads a profile banner on behalf of the authenticating user. For best
-	results, upload an <3MB image that is exactly 1500px by 500px. Images will
-	be resized for a number of display options. Users with an uploaded profile
-	banner will have a profile_banner_url node in their
-	https://dev.twitter.com/docs/platform-objects/users Users objects. More
-	information about sizing variations can be found in
-	https://dev.twitter.com/docs/user-profile-images-and-banners User Profile
-	Images and Banners and
-	https://dev.twitter.com/docs/api/1.1/get/users/profile_banner GET
-	users/profile_banner . Profile banner images are processed asynchronously.
-	The profile_banner_url and its variant sizes will not necessary be
-	available directly after upload.
+	results, upload an profile_banner_url node in their /overview/api/users
+	Users objects. More information about sizing variations can be found in
+	/overview/general/user-profile-images-and-banners User Profile Images and
+	Banners and /rest/reference/get/users/profile_banner GET users /
+	profile_banner . Profile banner images are processed asynchronously. The
+	profile_banner_url and its variant sizes will not necessary be available
+	directly after upload. 
 
 
 [Function] update-profile/json (https://api.twitter.com/1.1/account/update_profile.json)
@@ -227,8 +223,8 @@ API specific data type, require `net.twitter.friendship' module:
 	asynchronously processes the uploaded file before updating the user's
 	profile image URL. You can either update your local cache the next time
 	you request the user's information, or, at least 5 seconds after uploading
-	the image, ask for the updated URL using
-	https://dev.twitter.com/docs/api/1.1/get/users/show GET users/show .
+	the image, ask for the updated URL using /rest/reference/get/users/show
+	GET users / show .
 
 
 [Function] settings-update/json (https://api.twitter.com/1.1/account/settings.json)
@@ -260,9 +256,9 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] tos/json (https://api.twitter.com/1.1/help/tos.json)
 
-	Returns the http://twitter.com/tos Twitter Terms of Service in the
-	requested format. These are not the same as the
-	https://dev.twitter.com/terms/api-terms Developer Rules of the Road .
+	Returns the http://twitter.com/tos Twitter Terms of Service . Note: these
+	are not the same as the /overview/terms/rules-of-the-road Developer Rules
+	of the Road .
 
 
 [Function] rate-limit-status/json (https://api.twitter.com/1.1/application/rate_limit_status.json)
@@ -283,15 +279,16 @@ API specific data type, require `net.twitter.friendship' module:
 	explicitly provide a resources parameter with the specified resource
 	families you work with. When using app-only auth, this method's response
 	indicates the app-only auth rate limiting context. Read more about
-	https://dev.twitter.com/docs/rate-limiting/1.1 REST API Rate Limiting in
-	v1.1 and /docs/rate-limiting/1.1/limits review the limits .
+	/rest/public/rate-limiting API Rate Limiting and
+	/rest/public/rate-limiting review the limits .
 
 
 [Function] languages/json (https://api.twitter.com/1.1/help/languages.json)
 
-	Returns the list of languages supported by Twitter along with their ISO
-	639-1 code. The ISO 639-1 code is the two letter value to use if you
-	include lang with any of your requests.
+	Returns the list of languages supported by Twitter along with the language
+	code supported by Twitter. The language code may be formatted as ISO 639-1
+	alpha-2 ( en ), ISO 639-3 alpha-3 ( msa ), or ISO 639-1 alpha-2 combined
+	with an ISO 3166-1 alpha-2 localization ( zh-tw ).
 
 
 [Function] configuration/json (https://api.twitter.com/1.1/help/configuration.json)
@@ -336,22 +333,19 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] search-tweets/json (https://api.twitter.com/1.1/search/tweets.json)
 
-	Returns a collection of relevant
-	https://dev.twitter.com/docs/platform-objects/tweets Tweets matching a
+	Returns a collection of relevant /overview/api/tweets Tweets matching a
 	specified query. Please note that Twitter's search service and, by
 	extension, the Search API is not meant to be an exhaustive source of
 	Tweets. Not all Tweets will be indexed or made available via the search
 	interface. In API v1.1, the response format of the Search API has been
-	improved to return https://dev.twitter.com/docs/platform-objects/tweets
-	Tweet objects more similar to the objects you'll find across the REST API
-	and platform. You may need to tolerate some inconsistencies and variance
-	in perspectival values (fields that pertain to the perspective of the
-	authenticating user) and embedded user objects. To learn how to use
-	https://twitter.com/search Twitter Search effectively, consult our guide
-	to https://dev.twitter.com/docs/using-search Using the Twitter Search API
-	. See https://dev.twitter.com/docs/working-with-timelines Working with
-	Timelines to learn best practices for navigating results by since_id and
-	max_id .
+	improved to return /overview/api/tweets Tweet objects more similar to the
+	objects you'll find across the REST API and platform. However,
+	perspectival attributes (fields that pertain to the perspective of the
+	authenticating user) are not currently supported on this endpoint. To
+	learn how to use https://twitter.com/search Twitter Search effectively,
+	consult our guide to /rest/public/search Using the Twitter Search API .
+	See /rest/public/timelines Working with Timelines to learn best practices
+	for navigating results by since_id and max_id .
 
 
 
@@ -362,24 +356,21 @@ API specific data type, require `net.twitter.friendship' module:
 	As of December 2nd, 2013, this endpoint is deprecated and retired and no
 	longer functions. Place creation was used infrequently by third party
 	applications and is generally no longer supported on Twitter. Requests
-	will return with status https://dev.twitter.com/docs/error-codes-responses
-	410 (Gone) with error code 251 . https://dev.twitter.com/discussions/22452
-	Follow the discussion about this retirement. Created a new place object at
-	the given latitude and longitude. Before creating a place you needed to
-	query https://dev.twitter.com/docs/api/1.1/get/geo/similar_places GET
-	geo/similar_places with the latitude, longitude and name of the place you
-	wished to create. The query will return an array of places which are
-	similar to the one you wish to create, and a token . If the place you
-	wished to create wasn't in the returned array you could use the token with
-	this method to create a new one. Learn more about
-	https://dev.twitter.com/docs/finding-tweets-about-places Finding Tweets
-	about Places .
+	will return with status /overview/api/response-codes 410 (Gone) with error
+	code 251 . Created a new place object at the given latitude and longitude.
+	Before creating a place you needed to query
+	/rest/reference/get/geo/similar_places GET geo/similar_places with the
+	latitude, longitude and name of the place you wished to create. The query
+	will return an array of places which are similar to the one you wish to
+	create, and a token . If the place you wished to create wasn't in the
+	returned array you could use the token with this method to create a new
+	one. Learn more about /rest/public/finding-tweets-about-places Finding
+	Tweets about Places .
 
 
 [Function] id/json (https://api.twitter.com/1.1/geo/id/:place_id.json)
 
-	Returns all the information about a known
-	https://dev.twitter.com/docs/platform-objects/places place .
+	Returns all the information about a known /overview/api/places place .
 
 
 [Function] reverse-geocode/json (https://api.twitter.com/1.1/geo/reverse_geocode.json)
@@ -391,8 +382,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] similar-places/json (https://api.twitter.com/1.1/geo/similar_places.json)
 
-	Locates https://dev.twitter.com/docs/platform-objects/places places near
-	the given coordinates which are similar in name.
+	Locates /overview/api/places places near the given coordinates which are
+	similar in name.
 
 
 [Function] search/json (https://api.twitter.com/1.1/geo/search.json)
@@ -403,14 +394,16 @@ API specific data type, require `net.twitter.friendship' module:
 	when updating a status. Conceptually, a query can be made from the user's
 	location, retrieve a list of places, have the user validate the location
 	he or she is at, and then send the ID of this location with a call to
-	https://dev.twitter.com/docs/api/1.1/post/statuses/update POST
-	statuses/update . This is the recommended method to use find places that
-	can be attached to statuses/update. Unlike
-	https://dev.twitter.com/docs/api/1.1/get/geo/reverse_geocode GET
+	/rest/reference/post/statuses/update POST statuses/update . This is the
+	recommended method to use find places that can be attached to
+	statuses/update. Unlike /rest/reference/get/geo/reverse_geocode GET
 	geo/reverse_geocode which provides raw data access, this endpoint can
 	potentially re-order places with regards to the user who is authenticated.
 	This approach is also preferred for interactive place matching with the
-	user.
+	user. Some parameters in this method are only required based on the
+	existence of other parameters. For instance, "lat" is required if "long"
+	is provided, and vice-versa. Authentication is recommended, but not
+	required with this method.
 
 
 
@@ -420,10 +413,10 @@ API specific data type, require `net.twitter.friendship' module:
 
 	Destroys the direct message specified in the required ID parameter. The
 	authenticating user must be the recipient of the specified direct message.
-	Important : This method requires an access token with RWD (read, write &
-	direct message) permissions. Consult
-	https://dev.twitter.com/docs/application-permission-model The Application
-	Permission Model for more information.
+	Important : This method requires an access token with RWD (read, write
+	&amp; direct message) permissions. Consult
+	/oauth/overview/application-permission-model The Application Permission
+	Model for more information.
 
 
 [Function] send/json (https://api.twitter.com/1.1/direct_messages/new.json)
@@ -439,9 +432,9 @@ API specific data type, require `net.twitter.friendship' module:
 	user. Includes detailed information about the sender and recipient user.
 	You can request up to 200 direct messages per call, up to a maximum of 800
 	outgoing DMs. Important : This method requires an access token with RWD
-	(read, write & direct message) permissions. Consult
-	https://dev.twitter.com/docs/application-permission-model The Application
-	Permission Model for more information.
+	(read, write &amp; direct message) permissions. Consult
+	/oauth/overview/application-permission-model The Application Permission
+	Model for more information.
 
 
 [Function] list/json (https://api.twitter.com/1.1/direct_messages.json)
@@ -450,9 +443,9 @@ API specific data type, require `net.twitter.friendship' module:
 	user. Includes detailed information about the sender and recipient user.
 	You can request up to 200 direct messages per call, up to a maximum of 800
 	incoming DMs. Important : This method requires an access token with RWD
-	(read, write & direct message) permissions. Consult
-	https://dev.twitter.com/docs/application-permission-model The Application
-	Permission Model for more information.
+	(read, write &amp; direct message) permissions. Consult
+	/oauth/overview/application-permission-model The Application Permission
+	Model for more information.
 
 
 [Function] show/json (https://api.twitter.com/1.1/direct_messages/show.json)
@@ -460,8 +453,8 @@ API specific data type, require `net.twitter.friendship' module:
 	Returns a single direct message, specified by an id parameter. Like the
 	/1.1/direct_messages.format request, this method will include the user
 	objects of the sender and recipient. Important : This method requires an
-	access token with RWD (read, write & direct message) permissions. Consult
-	https://dev.twitter.com/docs/application-permission-model The Application
+	access token with RWD (read, write &amp; direct message) permissions.
+	Consult /oauth/overview/application-permission-model The Application
 	Permission Model for more information.
 
 
@@ -492,8 +485,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] list/json (https://api.twitter.com/1.1/mutes/users/list.json)
 
-	Returns an array of https://dev.twitter.com/docs/platform-objects/users
-	user objects the authenticating user has muted.
+	Returns an array of /overview/api/users user objects the authenticating
+	user has muted.
 
 
 
@@ -510,16 +503,16 @@ API specific data type, require `net.twitter.friendship' module:
 	Returns the relationships of the authenticating user to the
 	comma-separated list of up to 100 screen_names or user_ids provided.
 	Values for connections can be: following , following_requested ,
-	followed_by , none , blocking .
+	followed_by , none , blocking , muting .
 
 
 [Function] friends-no-retweets/ids/json (https://api.twitter.com/1.1/friendships/no_retweets/ids.json)
 
 	Returns a collection of user_ids that the currently authenticated user
 	does not want to receive retweets from. Use
-	https://dev.twitter.com/docs/api/1.1/post/friendships/update POST
-	friendships/update to set the "no retweets" status for a given user
-	account on behalf of the current user.
+	/rest/reference/post/friendships/update POST friendships / update to set
+	the "no retweets" status for a given user account on behalf of the current
+	user.
 
 
 [Function] friends-outgoing/json (https://api.twitter.com/1.1/friendships/outgoing.format)
@@ -564,56 +557,53 @@ API specific data type, require `net.twitter.friendship' module:
 
 	Returns a cursored collection of user objects for users following the
 	specified user. At this time, results are ordered with the most recent
-	following first &mdash; however, this ordering is subject to unannounced
-	change and eventual consistency issues. Results are given in groups of 20
-	users and multiple "pages" of results can be navigated through using the
-	next_cursor value in subsequent requests. See
-	https://dev.twitter.com/docs/misc/cursoring Using cursors to navigate
-	collections for more information.
+	following first — however, this ordering is subject to unannounced change
+	and eventual consistency issues. Results are given in groups of 20 users
+	and multiple "pages" of results can be navigated through using the
+	next_cursor value in subsequent requests. See /overview/api/cursoring
+	Using cursors to navigate collections for more information.
 
 
 [Function] followers/ids/json (https://api.twitter.com/1.1/followers/ids.json)
 
 	Returns a cursored collection of user IDs for every user following the
 	specified user. At this time, results are ordered with the most recent
-	following first &mdash; however, this ordering is subject to unannounced
-	change and eventual consistency issues. Results are given in groups of
-	5,000 user IDs and multiple "pages" of results can be navigated through
-	using the next_cursor value in subsequent requests. See
-	https://dev.twitter.com/docs/misc/cursoring Using cursors to navigate
-	collections for more information. This method is especially powerful when
-	used in conjunction with
-	https://dev.twitter.com/docs/api/1.1/get/users/lookup GET users/lookup , a
-	method that allows you to convert user IDs into full
-	https://dev.twitter.com/docs/platform-objects/users user objects in bulk.
+	following first — however, this ordering is subject to unannounced change
+	and eventual consistency issues. Results are given in groups of 5,000 user
+	IDs and multiple "pages" of results can be navigated through using the
+	next_cursor value in subsequent requests. See /overview/api/cursoring
+	Using cursors to navigate collections for more information. This method is
+	especially powerful when used in conjunction with
+	/rest/reference/get/users/lookup GET users / lookup , a method that allows
+	you to convert user IDs into full /overview/api/users user objects in
+	bulk.
 
 
 [Function] friends/list/json (https://api.twitter.com/1.1/friends/list.json)
 
 	Returns a cursored collection of user objects for every user the specified
 	user is following (otherwise known as their "friends"). At this time,
-	results are ordered with the most recent following first &mdash; however,
-	this ordering is subject to unannounced change and eventual consistency
-	issues. Results are given in groups of 20 users and multiple "pages" of
-	results can be navigated through using the next_cursor value in subsequent
-	requests. See https://dev.twitter.com/docs/misc/cursoring Using cursors to
-	navigate collections for more information.
+	results are ordered with the most recent following first — however, this
+	ordering is subject to unannounced change and eventual consistency issues.
+	Results are given in groups of 20 users and multiple "pages" of results
+	can be navigated through using the next_cursor value in subsequent
+	requests. See /overview/api/cursoring Using cursors to navigate
+	collections for more information.
 
 
 [Function] friends/ids/json (https://api.twitter.com/1.1/friends/ids.json)
 
 	Returns a cursored collection of user IDs for every user the specified
 	user is following (otherwise known as their "friends"). At this time,
-	results are ordered with the most recent following first &mdash; however,
-	this ordering is subject to unannounced change and eventual consistency
-	issues. Results are given in groups of 5,000 user IDs and multiple "pages"
-	of results can be navigated through using the next_cursor value in
-	subsequent requests. See https://dev.twitter.com/docs/misc/cursoring Using
-	cursors to navigate collections for more information. This method is
-	especially powerful when used in conjunction with
-	https://dev.twitter.com/docs/api/1.1/get/users/lookup GET users/lookup , a
-	method that allows you to convert user IDs into full
-	https://dev.twitter.com/discussions/7827 user objects in bulk.
+	results are ordered with the most recent following first — however, this
+	ordering is subject to unannounced change and eventual consistency issues.
+	Results are given in groups of 5,000 user IDs and multiple "pages" of
+	results can be navigated through using the next_cursor value in subsequent
+	requests. See /overview/api/cursoring Using cursors to navigate
+	collections for more information. This method is especially powerful when
+	used in conjunction with /rest/reference/get/users/lookup GET users /
+	lookup , a method that allows you to convert user IDs into full
+	/overview/api/users user objects in bulk.
 
 
 
@@ -622,9 +612,8 @@ API specific data type, require `net.twitter.friendship' module:
 [Function] report-spam/json (https://api.twitter.com/1.1/users/report_spam.json)
 
 	Report the specified user as a spam account to Twitter. Additionally
-	performs the equivalent of
-	https://dev.twitter.com/docs/api/1.1/post/blocks/create POST blocks/create
-	on behalf of the authenticated user.
+	performs the equivalent of /rest/reference/post/blocks/create POST blocks
+	/ create on behalf of the authenticated user.
 
 
 [Function] profile-banner/json (https://api.twitter.com/1.1/users/profile_banner.json)
@@ -633,9 +622,8 @@ API specific data type, require `net.twitter.friendship' module:
 	profile banner. If the user has not uploaded a profile banner, a HTTP 404
 	will be served instead. This method can be used instead of string
 	manipulation on the profile_banner_url returned in user objects as
-	described in https://dev.twitter.com/docs/user-profile-images-and-banners
-	User Profile Images and Banners . The profile banner data available at
-	each size variant's URL is in PNG format.
+	described in [node:10796 ]. The profile banner data available at each size
+	variant's URL is in PNG format.
 
 
 [Function] suggestion/members/json (https://api.twitter.com/1.1/users/suggestions/:slug/members.json)
@@ -651,12 +639,12 @@ API specific data type, require `net.twitter.friendship' module:
 	hour.
 
 
-[Function] suggestions/json (https://api.twitter.com/1.1/users/suggestions.format)
+[Function] suggestions/json (https://api.twitter.com/1.1/users/suggestions.json)
 
 	Access to Twitter's suggested user list. This returns the list of
 	suggested user categories. The category can be used in
-	https://dev.twitter.com/docs/api/1.1/get/users/suggestions/%3Aslug GET
-	users/suggestions/:slug to get the users in that category.
+	/rest/reference/get/users/suggestions/%3Aslug GET users / suggestions /
+	:slug to get the users in that category.
 
 
 [Function] search/json (https://api.twitter.com/1.1/users/search.json)
@@ -669,25 +657,26 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] lookup/json (https://api.twitter.com/1.1/users/lookup.json)
 
-	Returns fully-hydrated https://dev.twitter.com/docs/platform-objects/users
-	user objects for up to 100 users per request, as specified by
-	comma-separated values passed to the user_id and/or screen_name
-	parameters. This method is especially useful when used in conjunction with
-	collections of user IDs returned from
-	https://dev.twitter.com/docs/api/1.1/get/friends/ids GET friends/ids and
-	https://dev.twitter.com/docs/api/1.1/get/followers/ids GET followers/ids .
-	https://dev.twitter.com/docs/api/1.1/get/users/show GET users/show is used
-	to retrieve a single user object.
+	Returns fully-hydrated /overview/api/users user objects for up to 100
+	users per request, as specified by comma-separated values passed to the
+	user_id and/or screen_name parameters. This method is especially useful
+	when used in conjunction with collections of user IDs returned from
+	/rest/reference/get/friends/ids GET friends / ids and
+	/rest/reference/get/followers/ids GET followers / ids .
+	/rest/reference/get/users/show GET users / show is used to retrieve a
+	single user object. There are a few things to note when using this method.
 
 
 [Function] show/json (https://api.twitter.com/1.1/users/show.json)
 
-	Returns a https://dev.twitter.com/docs/platform-objects/users variety of
-	information about the user specified by the required user_id or
-	screen_name parameter. The author's most recent Tweet will be returned
-	inline when possible.
-	https://dev.twitter.com/docs/api/1.1/get/users/lookup GET users/lookup is
-	used to retrieve a bulk collection of user objects.
+	Returns a /overview/api/users variety of information about the user
+	specified by the required user_id or screen_name parameter. The author's
+	most recent Tweet will be returned inline when possible.
+	/rest/reference/get/users/lookup GET users / lookup is used to retrieve a
+	bulk collection of user objects. You must be following a protected user to
+	be able to see their most recent Tweet. If you don't follow a protected
+	user, the users Tweet will be removed. A Tweet will not always be returned
+	in the current_status field.
 
 
 
@@ -695,37 +684,40 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] lookup/json (https://api.twitter.com/1.1/statuses/lookup.json)
 
-	Returns fully-hydrated
-	https://dev.twitter.com/docs/platform-objects/tweets tweet objects for up
-	to 100 tweets per request, as specified by comma-separated values passed
-	to the id parameter. This method is especially useful to get the details
+	Returns fully-hydrated /overview/api/tweets tweet objects for up to 100
+	tweets per request, as specified by comma-separated values passed to the
+	id parameter. This method is especially useful to get the details
 	(hydrate) a collection of Tweet IDs.
-	https://dev.twitter.com/docs/api/1.1/get/statuses/show/%3Aid GET
-	statuses/show/:id is used to retrieve a single tweet object.
+	/rest/reference/get/statuses/show/%3Aid GET statuses / show / :id is used
+	to retrieve a single tweet object. There are a few things to note when
+	using this method.
 
 
 [Function] retweeters/ids/json (https://api.twitter.com/1.1/statuses/retweeters/ids.json)
 
 	Returns a collection of up to 100 user IDs belonging to users who have
 	retweeted the tweet specified by the id parameter. This method offers
-	similar data to
-	https://dev.twitter.com/docs/api/1.1/get/statuses/retweets/%3Aid GET
-	statuses/retweets/:id and replaces API v1's
-	https://dev.twitter.com/docs/api/1/get/statuses/%3Aid/retweeted_by/ids GET
-	statuses/:id/retweeted_by/ids method.
+	similar data to /rest/reference/get/statuses/retweets/%3Aid GET statuses /
+	retweets / :id .
 
 
-[Function] oembed/json (https://api.twitter.com/1.1/statuses/oembed.json)
+[Function] oembed/json (https://api.twitter.com/1.1/statuses/oembed.{format})
 
-	Returns information allowing the creation of an embedded representation of
-	a Tweet on third party sites. See the http://oembed.com/ oEmbed
-	specification for information about the response format. While this
-	endpoint allows a bit of customization for the final appearance of the
-	embedded Tweet, be aware that the appearance of the rendered Tweet may
-	change over time to be consistent with Twitter's
-	https://dev.twitter.com/terms/display-requirements Display Requirements .
-	Do not rely on any class or id parameters to stay constant in the returned
-	markup.
+	Returns a single Tweet, specified by either a Tweet web URL or the Tweet
+	ID, in an http://oembed.com/ oEmbed -compatible format. The returned HTML
+	snippet will be automatically recognized as an /web/embedded-tweets
+	Embedded Tweet when /web/javascript/loading Twitter's widget JavaScript is
+	included on the page . The oEmbed endpoint allows customization of the
+	final appearance of an Embedded Tweet by setting the corresponding
+	properties in HTML markup to be interpreted by Twitter's JavaScript
+	bundled with the HTML response by default. The format of the returned
+	markup may change over time as Twitter adds new features or adjusts its
+	Tweet representation. The Tweet fallback markup is meant to be cached on
+	your servers for up to the suggested cache lifetime specified in the
+	cache_age . The oEmbed endpoint supports unauthenticated requests at
+	api.twitter.com/1/statuses/oembed.{format} suitable for distributed
+	software and general discovery. Individual sites should request oEmbed
+	data using an application token.
 
 
 [Function] retweets/json (https://api.twitter.com/1.1/statuses/retweets/:id.json)
@@ -736,9 +728,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] retweet/json (https://api.twitter.com/1.1/statuses/retweet/:id.json)
 
-	Retweets a tweet. Returns the
-	https://dev.twitter.com/docs/platform-objects/tweets original tweet with
-	retweet details embedded.
+	Retweets a tweet. Returns the /overview/api/tweets original tweet with
+	retweet details embedded. Usage Notes :
 
 
 [Function] destroy/json (https://api.twitter.com/1.1/statuses/destroy/:id.json)
@@ -750,46 +741,75 @@ API specific data type, require `net.twitter.friendship' module:
 
 [Function] update-with-media/json (https://api.twitter.com/1.1/statuses/update_with_media.json)
 
+	This end point has been deprecated. Please refer to
+	https://dev.twitter.com/rest/public/uploading-media-multiple-photos
+	Uploading Media: Multiple Photos for uploading one or more media entities.
 	Updates the authenticating user's current status and attaches media for
 	upload. In other words, it creates a Tweet with a picture attached. Unlike
 	/docs/api/1.1/post/statuses/update POST statuses/update , this method
 	expects raw multipart data. Your POST request's Content-Type should be set
 	to multipart/form-data with the media[] parameter . See
-	https://dev.twitter.com/docs/uploading-media Uploading Media for a guide
-	to using this method. The Tweet text will be rewritten to include the
-	media URL(s), which will reduce the number of characters allowed in the
-	Tweet text. If the URL(s) cannot be appended without text truncation, the
-	tweet will be rejected and this method will return an HTTP 403 error.
-	Important : In API v1.1, you now use api.twitter.com as the domain instead
-	of upload.twitter.com. Use of SSL is required with this method.
+	/rest/public/uploading-media Uploading Media for a guide to using this
+	method. The Tweet text will be rewritten to include the media URL(s),
+	which will reduce the number of characters allowed in the Tweet text. If
+	the URL(s) cannot be appended without text truncation, the tweet will be
+	rejected and this method will return an HTTP 403 error. Important : In API
+	v1.1, you now use api.twitter.com as the domain instead of
+	upload.twitter.com. Use of SSL is required with this method. Important :
+	In API v1.1, you now use api.twitter.com as the domain instead of
+	upload.twitter.com. Users are limited to a specific daily media upload
+	limit.. Requests to this endpoint will return the following headers with
+	information regarding the user's current media upload limits: If the user
+	is over the daily media limit, this method will return an HTTP 403 error.
+	In addition to media upload limits, the user is still limited in the
+	number of statuses they can publish daily. If the user tries to exceed the
+	number of updates allowed, this method will also return an HTTP 403 error,
+	similar to /rest/reference/post/statuses/update POST statuses / update .
+	OAuth is handled differently for POST messages. See
+	/rest/public/uploading-media Uploading Media for more details on this.
+	note Note: The OAuth tool does not support multipart requests, so you will
+	not be able to use it to generate an example request to this endpoint. An
+	example request has been included to demonstrate the multipart request
+	format.
 
 
 [Function] update/json (https://api.twitter.com/1.1/statuses/update.json)
 
 	Updates the authenticating user's current status, also known as tweeting.
-	To upload an image to accompany the tweet, use
-	https://dev.twitter.com/docs/api/1.1/post/statuses/update_with_media POST
-	statuses/update_with_media . For each update attempt, the update text is
-	compared with the authenticating user's recent tweets. Any attempt that
-	would result in duplication will be blocked, resulting in a 403 error.
-	Therefore, a user cannot submit the same status twice in a row. While not
-	rate limited by the API a user is limited in the number of tweets they can
-	create at a time. If the number of updates posted by the user reaches the
-	current allowed limit this method will return an HTTP 403 error.
+	For each update attempt, the update text is compared with the
+	authenticating user's recent tweets. Any attempt that would result in
+	duplication will be blocked, resulting in a 403 error. Therefore, a user
+	cannot submit the same status twice in a row. While not rate limited by
+	the API a user is limited in the number of tweets they can create at a
+	time. If the number of updates posted by the user reaches the current
+	allowed limit this method will return an HTTP 403 error. About Geo
 
 
 [Function] show/json (https://api.twitter.com/1.1/statuses/show.json)
 
-	Returns a single https://dev.twitter.com/docs/platform-objects/tweets
-	Tweet , specified by the id parameter. The Tweet's author will also be
-	embedded within the tweet. See
-	https://dev.twitter.com/docs/api/1.1/get/statuses/lookup GET
-	statuses/lookup for getting Tweets in bulk (up to 100 per call). See also
-	https://dev.twitter.com/docs/embedded-timelines Embeddable Timelines ,
-	https://dev.twitter.com/docs/embedded-tweets Embeddable Tweets , and
-	https://dev.twitter.com/docs/api/1.1/get/statuses/oembed GET
-	statuses/oembed for tools to render Tweets according to
-	https://dev.twitter.com/terms/display-requirements Display Requirements .
+	Returns a single /overview/api/tweets Tweet , specified by the id
+	parameter. The Tweet's author will also be embedded within the tweet. See
+	/rest/reference/get/statuses/lookup GET statuses / lookup for getting
+	Tweets in bulk (up to 100 per call). See also /web/embedded-timelines
+	Embeddable Timelines , /web/embedded-tweets Embeddable Tweets , and
+	/rest/reference/get/statuses/oembed GET statuses/oembed for tools to
+	render Tweets according to /overview/terms/display-requirements Display
+	Requirements . About Geo If there is no geotag for a status, then there
+	will be an empty &lt;geo/&gt; or "geo" : {} . This can only be populated
+	if the user has used the Geotagging API to send a statuses/update. The
+	JSON response mostly uses conventions laid out in GeoJSON. Unfortunately,
+	the coordinates that Twitter renders are reversed from the GeoJSON
+	specification (GeoJSON specifies a longitude then a latitude, whereas we
+	are currently representing it as a latitude then a longitude). Our JSON
+	renders as: "geo": { "type":"Point", "coordinates":[37.78029, -122.39697]
+	} Contributors If there are no contributors for a Tweet, then there will
+	be an empty or "contributors" : {} . This field will only be populated if
+	the user has contributors enabled on his or her account — this is a beta
+	feature that is not yet generally available to all. This object contains
+	an array of user IDs for users who have contributed to this status (an
+	example of a status that has been contributed to is this one). In
+	practice, there is usually only one ID in this array. The JSON renders as
+	such "contributors":[8285392] .
 
 
 
@@ -841,7 +861,7 @@ API specific data type, require `net.twitter.friendship' module:
 	are returned.
 
 
-[Function] subscriber-destroy/json (https://api.twitter.com/1.1/lists/subscribers/destroy.json)
+[Function] subscriber-destroy/json (https://api.twitter.com/1.1/lists/subscribers/destroy.json )
 
 	Unsubscribes the authenticated user from the specified list.
 
@@ -851,7 +871,7 @@ API specific data type, require `net.twitter.friendship' module:
 	Subscribes the authenticated user to the specified list.
 
 
-[Function] subscriber-show/json (https://api.twitter.com/1.1/lists/subscribers/show.json)
+[Function] subscriber-show/json (https://api.twitter.com/1.1/lists/subscribers/show.json )
 
 	Check if the specified user is a subscriber of the specified list. Returns
 	the user if they are subscriber.
@@ -863,7 +883,7 @@ API specific data type, require `net.twitter.friendship' module:
 	will only be shown if the authenticated user owns the specified list.
 
 
-[Function] member-destroy-all/json (https://api.twitter.com/1.1/lists/members/destroy_all.json)
+[Function] member-destroy-all/json (https://api.twitter.com/1.1/lists/members/destroy_all.json )
 
 	Removes multiple members from a list, by specifying a comma-separated list
 	of member ids or screen names. The authenticated user must own the list to
@@ -881,7 +901,7 @@ API specific data type, require `net.twitter.friendship' module:
 	the list's owner to remove members from the list.
 
 
-[Function] members-create-all/json (https://api.twitter.com/1.1/lists/members/create_all.json)
+[Function] members-create-all/json (https://api.twitter.com/1.1/lists/members/create_all.json )
 
 	Adds multiple members to a list, by specifying a comma-separated list of
 	member ids or screen names. The authenticated user must own the list to be
@@ -900,7 +920,7 @@ API specific data type, require `net.twitter.friendship' module:
 	members.
 
 
-[Function] member-show/json (https://api.twitter.com/1.1/lists/members/show.json)
+[Function] member-show/json (https://api.twitter.com/1.1/lists/members/show.json )
 
 	Check if the specified user is a member of the specified list.
 
@@ -911,7 +931,7 @@ API specific data type, require `net.twitter.friendship' module:
 	be shown if the authenticated user owns the specified list.
 
 
-[Function] destroy/json (https://api.twitter.com/1.1/lists/destroy.json)
+[Function] destroy/json (https://api.twitter.com/1.1/lists/destroy.json )
 
 	Deletes the specified list. The authenticated user must own the list to be
 	able to destroy it.
@@ -933,8 +953,8 @@ API specific data type, require `net.twitter.friendship' module:
 
 	Returns a timeline of tweets authored by members of the specified list.
 	Retweets are included by default. Use the include_rts=false parameter to
-	omit retweets. https://dev.twitter.com/docs/embedded-timelines Embedded
-	Timelines is a great way to embed list timelines on your website.
+	omit retweets. /web/embedded-timelines Embedded Timelines is a great way
+	to embed list timelines on your website.
 
 
 [Function] ownerships/json (https://api.twitter.com/1.1/lists/ownerships.json)
@@ -962,10 +982,8 @@ API specific data type, require `net.twitter.friendship' module:
 	lists. The reverse method returns owned lists first, so with reverse=true
 	, 20 owned lists and 80 subscriptions would be returned. If your goal is
 	to obtain every list a user owns or subscribes to, use
-	https://dev.twitter.com/docs/api/1.1/get/lists/ownerships GET
-	lists/ownerships and/or
-	https://dev.twitter.com/docs/api/1.1/get/lists/subscriptions GET
-	lists/subscriptions instead.
+	/rest/reference/get/lists/ownerships GET lists / ownerships and/or
+	/rest/reference/get/lists/subscriptions GET lists / subscriptions instead.
 
 
 
@@ -984,26 +1002,27 @@ API specific data type, require `net.twitter.friendship' module:
 	Blocks the specified user from following the authenticating user. In
 	addition the blocked user will not show in the authenticating users
 	mentions or timeline (unless retweeted by another user). If a follow or
-	friend relationship exists it is destroyed.
+	friend relationship exists it is destroyed. The URL pattern / version
+	/block/create/:screen_name_or_user_id. format is still accepted but not
+	recommended. As a sequence of numbers is a valid screen name we recommend
+	using the screen_name or user_id parameter instead.
 
 
 [Function] ids/json (https://api.twitter.com/1.1/blocks/ids.json)
 
 	Returns an array of numeric user ids the authenticating user is blocking.
 	Important On October 15, 2012 this method will become cursored by default,
-	altering the default response format. See
-	https://dev.twitter.com/docs/misc/cursoring Using cursors to navigate
-	collections for more details on how cursoring works.
+	altering the default response format. See /overview/api/cursoring Using
+	cursors to navigate collections for more details on how cursoring works.
 
 
 [Function] list/json (https://api.twitter.com/1.1/blocks/list.json)
 
-	Returns a collection of
-	https://dev.twitter.com/docs/platform-objects/users user objects that the
+	Returns a collection of /overview/api/users user objects that the
 	authenticating user is blocking. Important On October 15, 2012 this method
 	will become cursored by default, altering the default response format. See
-	https://dev.twitter.com/docs/misc/cursoring Using cursors to navigate
-	collections for more details on how cursoring works.
+	/overview/api/cursoring Using cursors to navigate collections for more
+	details on how cursoring works.
 
 
 
@@ -1040,10 +1059,9 @@ API specific data type, require `net.twitter.friendship' module:
 
 	Returns the most recent tweets authored by the authenticating user that
 	have been retweeted by others. This timeline is a subset of the user's
-	https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline GET
-	statuses/user_timeline . See
-	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
-	for instructions on traversing timelines.
+	/rest/reference/get/statuses/user_timeline GET statuses / user_timeline .
+	See /rest/public/timelines Working with Timelines for instructions on
+	traversing timelines.
 
 
 [Function] mentions-timeline/json (https://api.twitter.com/1.1/statuses/mentions_timeline.json)
@@ -1052,42 +1070,38 @@ API specific data type, require `net.twitter.friendship' module:
 	@screen_name) for the authenticating user. The timeline returned is the
 	equivalent of the one seen when you view http://twitter.com/mentions your
 	mentions on twitter.com. This method can only return up to 800 tweets. See
-	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
-	for instructions on traversing timelines.
+	/rest/public/timelines Working with Timelines for instructions on
+	traversing timelines.
 
 
 [Function] user-timeline/json (https://api.twitter.com/1.1/statuses/user_timeline.json)
 
-	Returns a collection of the most recent
-	https://dev.twitter.com/docs/platform-objects/tweets Tweets posted by the
-	https://dev.twitter.com/docs/platform-objects/users user indicated by the
-	screen_name or user_id parameters. User timelines belonging to protected
-	users may only be requested when the authenticated user either "owns" the
-	timeline or is an approved follower of the owner. The timeline returned is
-	the equivalent of the one seen when you view a user's profile on
-	http://twitter.com twitter.com . This method can only return up to 3,200
-	of a user's most recent Tweets. Native retweets of other statuses by the
-	user is included in this total, regardless of whether include_rts is set
-	to false when requesting this resource. See
-	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
-	for instructions on traversing timelines. See
-	https://dev.twitter.com/docs/embedded-timelines Embeddable Timelines ,
-	https://dev.twitter.com/docs/embedded-tweets Embeddable Tweets , and
-	https://dev.twitter.com/docs/api/1.1/get/statuses/oembed GET
+	Returns a collection of the most recent /overview/api/tweets Tweets posted
+	by the /overview/api/users user indicated by the screen_name or user_id
+	parameters. User timelines belonging to protected users may only be
+	requested when the authenticated user either "owns" the timeline or is an
+	approved follower of the owner. The timeline returned is the equivalent of
+	the one seen when you view a user's profile on http://twitter.com
+	twitter.com . This method can only return up to 3,200 of a user's most
+	recent Tweets. Native retweets of other statuses by the user is included
+	in this total, regardless of whether include_rts is set to false when
+	requesting this resource. See /rest/public/timelines Working with
+	Timelines for instructions on traversing timelines. See
+	/web/embedded-timelines Embeddable Timelines , /web/embedded-tweets
+	Embeddable Tweets , and /rest/reference/get/statuses/oembed GET
 	statuses/oembed for tools to render Tweets according to
-	https://dev.twitter.com/terms/display-requirements Display Requirements .
+	/overview/terms/display-requirements Display Requirements .
 
 
 [Function] home-timeline/json (https://api.twitter.com/1.1/statuses/home_timeline.json)
 
-	Returns a collection of the most recent
-	https://dev.twitter.com/docs/platform-objects/tweets Tweets and retweets
-	posted by the authenticating user and the users they follow. The home
-	timeline is central to how most users interact with the Twitter service.
-	Up to 800 Tweets are obtainable on the home timeline. It is more volatile
-	for users that follow many users or follow users who tweet frequently. See
-	https://dev.twitter.com/docs/working-with-timelines Working with Timelines
-	for instructions on traversing timelines efficiently.
+	Returns a collection of the most recent /overview/api/tweets Tweets and
+	retweets posted by the authenticating user and the users they follow. The
+	home timeline is central to how most users interact with the Twitter
+	service. Up to 800 Tweets are obtainable on the home timeline. It is more
+	volatile for users that follow many users or follow users who tweet
+	frequently. See /rest/public/timelines Working with Timelines for
+	instructions on traversing timelines efficiently.
 
 ## [Module] net.twitter.stream
 

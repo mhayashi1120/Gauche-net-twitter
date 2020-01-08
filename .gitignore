@@ -2,3 +2,8 @@
 Makefile
 config.log
 config.status
+*.gpd
+configure
+VERSION
+test.log
+autom4te.cache

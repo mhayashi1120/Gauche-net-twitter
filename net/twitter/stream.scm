@@ -88,6 +88,18 @@
 ;;; Internal methods
 ;;;
 
+;; Add parse error to `parse-json-string' if STR is not terminated.
+(define (parse-json-string* str)
+  (call-with-input-string str
+    (^p
+     (begin0
+         (parse-json p)
+       (unless (eof-object? (read-byte p))
+         (error <json-parse-error>
+                :position (port-tell p)
+                :objects str
+                :message "String is not terminated"))))))
+
 (define (open-stream cred proc method url params
                      :key (error-handler #f))
 
@@ -105,48 +117,79 @@
      [(= (arity proc) 2)
       (^ [string sexp] (proc string sexp))]))
 
-  (define (stream-looper code headers total retrieve)
+  (define (receive-packet code headers total retrieve)
     (guard (e [else (thread-specific-set! (current-thread) e)])
       (check-stream-error code headers)
-      (let loop ([buf (open-output-string)]
+      (let loop ([pending (open-output-string)]
                  ;; If retrieved PORT contains
                  ;;  <html><head>503<head> ...
                  ;; This may cause exhausting memory.
                  ;; Over 10 times continuing RETRIEVE to a BUF,
                  ;; reset the BUF.
                  [limit 10])
-        (receive (port size) (retrieve)
+        (receive (buf bufsize) (retrieve)
           (set! last-arrived (sys-time))
           (cond
-           [(<= size 0)
-            (error "Connection is closed by remote")]
+           [(<= bufsize 0)
+            (errorf "Connection is closed by remote. BUFSIZE: ~a"
+                    bufsize)]
            [else
-            (copy-port port buf :unit 'byte :size size)
-            (cond
-             [(and-let* ([s (get-output-string buf)]
-                         [trimmed (string-trim-both s #[\x0d\x0a ])]
-                         [(not (string-null? trimmed))]
-                         [json-sexp (guard (e [else #f])
-                                      (parse-json-string trimmed))])
-                (list trimmed json-sexp)) =>
-                (^j
-                 (close-output-port buf)
-                 (apply json-handler j)
-                 (loop (open-output-string) 10))]
-             [(= limit 0)
-              ;; reset BUF
-              (loop (open-output-string) 10)]
-             [else
-              (loop buf (- limit 1))])])))))
+            ;; PENDING status may have following state:
+            ;; 1. JSO
+            ;; 2. JSON\r
+            ;; 3. JSON\rJSO
+            ;; 4. JSON\rJSON
+            ;; 5. JSON\rJSON\r ...
+            (copy-port buf pending :unit 'byte :size bufsize)
+            (let* ([text (get-output-string pending)]
+                   [body (string-trim text #[\x0d\x0a])])
+              (cond
+               ;; should have CR after body
+               [(or (string-null? body)
+                    (not (string-contains body "\r")))
+                (loop pending limit)]
+               [(and-let* ([trimmed (string-trim-right body #[\x0d\x0a])]
+                           [json-sexp (guard (e [error-handler
+                                                 (error-handler e)
+                                                 #f]
+                                                [else #f])
+                                        (parse-json-string* trimmed))]
+                           [(pair? json-sexp)])
+                  (list trimmed json-sexp)) =>
+                  (^j
+                   (close-output-port pending)
+                   (apply json-handler j)
+                   (loop (open-output-string) 10))]
+               [(= limit 0)
+                ;; reset BUF
+                (close-output-port pending)
+                (loop (open-output-string) 10)]
+               [else
+                (loop pending (- limit 1))]))])))))
 
-  (define singleton-connection #f)
+  (define *lock* (make-mutex))
+  (define connection #f)
+
+  ;; Epoch time to check connection is active or not.
+  (define last-arrived #f)
+
+  (define (ensure-connection host)
+    (with-locking-mutex *lock*
+      (^()
+        (set! connection (make-http-connection host :persistent #f))
+        connection)))
+
+  (define (ensure-unconnect)
+    (with-locking-mutex *lock*
+      (^()
+        (when connection
+          (reset-http-connection connection)
+          (set! connection #f)))))
 
   (define (connect)
     (receive (scheme host path) (parse-uri url)
       (let ([auth (auth-header)]
-            [conn (make-http-connection host :persistent #f)])
-        (set! singleton-connection conn)
-        (set! last-arrived #f)
+            [conn (ensure-connection host)])
         (unwind-protect
          (ecase method
            ['get
@@ -154,7 +197,7 @@
                              #`",|path|?,(oauth-compose-query params)"
                              path)
                       :secure (string=? "https" scheme)
-                      :receiver stream-looper
+                      :receiver receive-packet
                       :Authorization auth)]
            ['post
             (http-post conn (if (pair? params)
@@ -162,9 +205,9 @@
                               path)
                        ""
                        :secure (string=? "https" scheme)
-                       :receiver stream-looper
+                       :receiver receive-packet
                        :Authorization auth)])
-         (reset-http-connection conn)))))
+         (ensure-unconnect)))))
 
   (define adapt-error (construct-error-handler error-handler))
 
@@ -179,17 +222,13 @@
              (format "Failed to open stream with code ~a"
                      status))]))
 
-  ;; TODO, FIXME: partcont procedure can't execute in thread.
-  (define last-arrived #f)
-
   (define (sticky-connect)
     (while #t
       (guard (e [else (adapt-error e)])
-        (when singleton-connection
-          (reset-http-connection singleton-connection)
-          (set! singleton-connection #f))
+        (ensure-unconnect)
         (let* ([con-limit (+ (sys-time) (connection-timeout))]
                [th (make-thread connect)])
+          (set! last-arrived #f)
           ;; thread which hold http stream connection
           (thread-start! th)
           (unwind-protect
