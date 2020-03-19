@@ -7,7 +7,12 @@
   (export
    twitter-authenticate-client
    twitter-authenticate-request
-   twitter-authorize))
+   twitter-authorize
+
+   ;; Login with twitter (Web)
+   ;; https://developer.twitter.com/en/docs/basics/authentication/guides/log-in-with-twitter
+   twitter-authorize-url
+   ))
 (select-module net.twitter.auth)
 
 ;;
@@ -25,15 +30,21 @@
               [(string-null? pin) (loop)]
               [else pin])))))
 
+;; Signature:
+;; (consumer-key consumer-secret :optional (params '()))
 (define twitter-authenticate-request
   (oauth-temporary-credential
    (build-url "api.twitter.com" "/oauth/request_token")
    :class <twitter-cred>))
 
+;; Signature:
+;; (temp-cred :key (oauth-callback #f) :allow-other-keys params)
 (define twitter-authorize-url
   (oauth-authorize-constructor
    (build-url "api.twitter.com" "/oauth/authorize")))
 
+;; Signature:
+;; (temp-cred verifier :optional (params '()))
 (define twitter-authorize
   (oauth-credential
    (build-url "api.twitter.com" "/oauth/access_token")
