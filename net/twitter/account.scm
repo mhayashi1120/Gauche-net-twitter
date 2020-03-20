@@ -25,7 +25,8 @@
          (skip-status #f) (include-email #f)
          :allow-other-keys _keys)
   (call/oauth->json cred 'get #`"/1.1/account/verify_credentials"
-                    (api-params _keys include-entities skip-status)))
+                    (api-params _keys include-entities skip-status
+                                include-email)))
 
 (define (settings/json cred . _keys)
   (call/oauth->json cred 'get "/1.1/account/settings"
