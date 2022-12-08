@@ -105,9 +105,9 @@
 
   (define (auth-header)
     (ecase method
-      ['get
+      [(get)
        (oauth-auth-header "GET" url params cred)]
-      ['post
+      [(post)
        (oauth-auth-header "POST" url params cred)]))
 
   (define json-handler
@@ -192,14 +192,14 @@
             [conn (ensure-connection host)])
         (unwind-protect
          (ecase method
-           ['get
+           [(get)
             (http-get conn (if (pair? params)
                              #`",|path|?,(oauth-compose-query params)"
                              path)
                       :secure (string=? "https" scheme)
                       :receiver receive-packet
                       :Authorization auth)]
-           ['post
+           [(post)
             (http-post conn (if (pair? params)
                               #`",|path|?,(oauth-compose-query params)"
                               path)

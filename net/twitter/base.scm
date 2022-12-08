@@ -99,13 +99,13 @@
                        (if (eq? method 'get) "GET" "POST")
                        (build-url server path) params cred))])
       (case method
-        ['get
+        [(get)
          (apply http-get server
                 #`",|path|?,(oauth-compose-query params)"
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
-        ['post
+        [(post)
          (apply http-post server path
                 (oauth-compose-query params)
                 :Authorization auth :secure (twitter-use-https)
@@ -151,23 +151,23 @@
       (unless (and (<= 200 code) (< code 300))
         (raise-api-error type status headers body)))
     (ecase type
-      ['xml
+      [(xml)
        (values (parse-xml-string body) headers)]
-      ['json
+      [(json)
        (values (parse-json-string body) headers)]
-      ['html
+      [(html)
        (values body headers)])))
 
 (define (raise-api-error type status headers body)
   (ecase type
-    ['xml
+    [(xml)
      (let* ([body-sxml (guard (e [else '()]) (parse-xml-string body))]
             [msg (or ((if-car-sxpath '(// error *text*)) body-sxml) body)])
        (error <twitter-api-error>
               :status status :headers headers :body body
               :body-sxml body-sxml
               msg))]
-    ['json
+    [(json)
      (let* ([body-json (guard (e [else '()]) (parse-json-string body))]
             [aref assoc-ref]
             [vref vector-ref]
@@ -180,7 +180,7 @@
               :status status :headers headers :body body
               :body-json body-json
               msg))]
-    ['html
+    [(html)
      (error <twitter-api-error>
             :status status :headers headers :body body
             (parse-html-message body))]))
