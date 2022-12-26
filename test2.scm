@@ -32,7 +32,7 @@
 (test-start "net.twitter")
 
 (define *settings*
-  (with-input-from-file ".test-settings.scm"
+  (with-input-from-file ".secret/test-settings.scm"
     read))
 
 (define *cred*

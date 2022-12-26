@@ -51,7 +51,7 @@
 
 (define (initialize-api-test)
   (let* ([topdir (build-path (sys-dirname *program-name*) "..")]
-         [setting-path (build-path topdir ".test-settings.scm")])
+         [setting-path (build-path topdir ".secret/test-settings.scm")])
     (set! *settings*
           (with-input-from-file setting-path read)))
 
