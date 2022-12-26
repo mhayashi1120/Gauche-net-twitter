@@ -8,13 +8,12 @@ Step by step:
 
    From tarball:
 
-     $ gauche-package install [-S root] Gauche-net-twitter-1.0.tgz
+     $ gauche-package install [-S root] Gauche-net-twitter-*VERSION*.tgz
 
    From source:
 
      $ git clone git://github.com/mhayashi1120/Gauche-net-twitter.git
      $ cd Gauche-net-twitter
-     $ ./DIST gen
      $ ./configure
      $ make
      $ make -s check
