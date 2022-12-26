@@ -23,7 +23,7 @@
 
 (define (rate-limit-status/json cred :key (resources #f)
                                 :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/application/rate_limit_status"
+  (call/oauth->json cred 'get #"/1.1/application/rate_limit_status"
                     (api-params _keys resources)))
 
 (define (tos/json cred . _keys)

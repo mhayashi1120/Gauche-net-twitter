@@ -194,14 +194,14 @@
          (ecase method
            [(get)
             (http-get conn (if (pair? params)
-                             #`",|path|?,(oauth-compose-query params)"
+                             #"~|path|?~(oauth-compose-query params)"
                              path)
                       :secure (string=? "https" scheme)
                       :receiver receive-packet
                       :Authorization auth)]
            [(post)
             (http-post conn (if (pair? params)
-                              #`",|path|?,(oauth-compose-query params)"
+                              #"~|path|?~(oauth-compose-query params)"
                               path)
                        ""
                        :secure (string=? "https" scheme)

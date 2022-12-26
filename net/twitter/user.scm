@@ -20,7 +20,7 @@
 (define (show/json cred :key (id #f) (user-id #f) (screen-name #f)
                         (include-entities #f)
                         :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/users/show"
+  (call/oauth->json cred 'get #"/1.1/users/show"
                     (api-params _keys id user-id screen-name
                                 include-entities)))
 
@@ -30,7 +30,7 @@
                           :allow-other-keys _keys)
   (set! user-id (or user-id (stringify-param user-ids)))
   (set! screen-name (or screen-name (stringify-param screen-names)))
-  (call/oauth->json cred 'post #`"/1.1/users/lookup"
+  (call/oauth->json cred 'post #"/1.1/users/lookup"
                     (api-params _keys user-id screen-name
                                 include-entities)))
 
@@ -50,20 +50,20 @@
 ;; CRED can be #f
 (define (suggestions/category/json cred slug :key (lang #f)
                                         :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|"
+  (call/oauth->json cred 'get #"/1.1/users/suggestions/~|slug|"
                     (api-params _keys lang)))
 
 (define (suggestion/members/json cred slug . _keys)
-  (call/oauth->json cred 'get #`"/1.1/users/suggestions/,|slug|/members"
+  (call/oauth->json cred 'get #"/1.1/users/suggestions/~|slug|/members"
                     (api-params _keys)))
 
 (define (profile-banner/json cred :key (id #f) (user-id #f)
                                   (screen-name #f)
                                   :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/users/profile_banner"
+  (call/oauth->json cred 'get #"/1.1/users/profile_banner"
                     (api-params _keys id user-id screen-name)))
 
 (define (report-spam/json cred :key (id #f) (user-id #f) (screen-name #f)
                           :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/users/report_spam"
+  (call/oauth->json cred 'post #"/1.1/users/report_spam"
                     (api-params _keys id user-id screen-name)))

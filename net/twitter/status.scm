@@ -24,7 +24,7 @@
 (define (show/json cred id :key (include-entities #f) (trim-user #f)
                    (include-my-retweet #f)
                    :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/show"
+  (call/oauth->json cred 'get #"/1.1/statuses/show"
 					(api-params _keys id include-entities trim-user
                                 include-my-retweet)))
 
@@ -55,18 +55,18 @@
 
 (define (destroy/json cred id :key (trim-user #f)
                       :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/statuses/destroy/,|id|"
+  (call/oauth->json cred 'post #"/1.1/statuses/destroy/~|id|"
                     (api-params _keys trim-user)))
 
 (define (retweet/json cred id :key (trim-user #f)
                       :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/statuses/retweet/,|id|"
+  (call/oauth->json cred 'post #"/1.1/statuses/retweet/~|id|"
                     (api-params _keys trim-user)))
 
 (define (retweets/json cred id :key (count #f)
                        (trim-user #f)
                        :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweets/,|id|"
+  (call/oauth->json cred 'get #"/1.1/statuses/retweets/~|id|"
                     (api-params _keys count trim-user)))
 
 ;; required ID or URL not both.
@@ -76,7 +76,7 @@
                      (align #f) (related #f) (lang #f)
                      (widget-type #f) (hide-tweet #f)
                      :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/oembed"
+  (call/oauth->json cred 'get #"/1.1/statuses/oembed"
                     (api-params _keys id url
                                 maxwidth hide-media hide-thread
                                 omit-script align related lang
@@ -92,13 +92,13 @@
 
 (define (retweeters/ids/json cred id :key (cursor #f) (stringify-ids #f)
                              :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweeters/ids"
+  (call/oauth->json cred 'get #"/1.1/statuses/retweeters/ids"
                     (api-params _keys id cursor stringify-ids)))
 
 (define (lookup/json cred id :key (include-entities #f)
                      (trim-user #f) (map #f)
                      :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/lookup"
+  (call/oauth->json cred 'get #"/1.1/statuses/lookup"
                     (api-params _keys id include-entities trim-user map)))
 
 ;;;

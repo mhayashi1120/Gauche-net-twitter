@@ -62,7 +62,7 @@
     (cut ssax:xml->sxml <> '())))
 
 (define (call/oauth->json cred method path params . opts)
-  (apply call/oauth cred method #`",|path|.json" params opts))
+  (apply call/oauth cred method #"~|path|.json" params opts))
 
 (define (call/oauth cred method path params . opts)
   (apply call/oauth-internal
@@ -72,7 +72,7 @@
   (cond
    [(#/\.xml$/ path) path]
    [(#/\.json$/ path) path]
-   [else #`",|path|.json"]))
+   [else #"~|path|.json"]))
 
 (define (call/oauth-internal cred method path params body . opts)
   (define (call)
@@ -88,7 +88,7 @@
       (ecase method
         [(get)
          (apply http-get server
-                #`",|path|?,(oauth-compose-query params)"
+                #"~|path|?~(oauth-compose-query params)"
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
@@ -100,13 +100,13 @@
                 opts)]
         [(uploading-status)
          (apply http-get server
-                #`",|path|?,(oauth-compose-query params)"
+                #"~|path|?~(oauth-compose-query params)"
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
         [(post-file upload-file)
          (apply http-post server
-                (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
+                (if (pair? params) #"~|path|?~(oauth-compose-query params)" path)
                 body
                 :Authorization auth :secure (twitter-use-https)
                 :content-type (if body "multipart/form-data" "application/x-www-form-urlencoded")

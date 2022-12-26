@@ -31,7 +31,7 @@
                           lat long accuracy granularity max-results)))
 
 (define (id/json place-id . _keys)
-  (call/oauth #f 'get #`"/1.1/geo/id/,|place-id|"
+  (call/oauth #f 'get #"/1.1/geo/id/~|place-id|"
               (api-params _keys)))
 
 ;;TODO test

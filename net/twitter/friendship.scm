@@ -61,26 +61,26 @@
 (define (show/json cred :key (source-id #f) (source-screen-name #f)
                    (target-id #f) (target-screen-name #f)
                    :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/friendships/show"
+  (call/oauth->json cred 'get #"/1.1/friendships/show"
                     (api-params _keys source-id source-screen-name
                                 target-id target-screen-name)))
 
 (define (create/json cred :key (id #f) (user-id #f) (screen-name #f)
                      (follow #f)
                      :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/friendships/create"
+  (call/oauth->json cred 'post #"/1.1/friendships/create"
                     (api-params _keys id user-id screen-name
                                 follow)))
 
 (define (destroy/json cred :key (id #f) (user-id #f) (screen-name #f)
                       :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/friendships/destroy"
+  (call/oauth->json cred 'post #"/1.1/friendships/destroy"
                     (api-params _keys id user-id screen-name)))
 
 (define (update/json cred :key (device #f)
                      (retweets #f) (screen-name #f) (user-id #f)
                      :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/friendships/update"
+  (call/oauth->json cred 'post #"/1.1/friendships/update"
                     (api-params _keys screen-name device retweets user-id)))
 
 (define (friends-outgoing/json cred :key (cursor #f) (stringify-ids #f)

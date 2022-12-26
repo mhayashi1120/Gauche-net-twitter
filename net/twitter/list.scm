@@ -174,14 +174,14 @@
 (define (memberships/json cred :key (user-id #f) (screen-name #f)
                           (count #f) (cursor #f) (filter-to-owned-lists #f)
                           :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/lists/memberships"
+  (call/oauth->json cred 'get #"/1.1/lists/memberships"
                     (api-params _keys user-id screen-name
                                 filter-to-owned-lists cursor)))
 
 (define (subscriptions/json cred :key (user-id #f) (screen-name #f)
                             (cursor #f) (count #f)
                             :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/lists/subscriptions"
+  (call/oauth->json cred 'get #"/1.1/lists/subscriptions"
                     (api-params _keys user-id screen-name cursor count)))
 
 ;;;

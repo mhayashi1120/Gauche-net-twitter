@@ -15,13 +15,13 @@
 ;;;
 
 (define (show/json cred id . _keys)
-  (call/oauth->json cred 'get #`"/1.1/direct_messages/show"
+  (call/oauth->json cred 'get #"/1.1/direct_messages/show"
                     (api-params _keys id)))
 
 (define (list/json cred :key (count #f) (max-id #f) (since-id #f)
                    (skip-status #f) (include-entities #f)
                    :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/direct_messages"
+  (call/oauth->json cred 'get #"/1.1/direct_messages"
                     (api-params _keys count max-id since-id
                                 include-entities skip-status)))
 
@@ -30,7 +30,7 @@
                    (max-id #f) (since-id #f)
                    (include-entities #f)
                    :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/direct_messages/sent"
+  (call/oauth->json cred 'get #"/1.1/direct_messages/sent"
                     (api-params _keys count page max-id since-id
                                 include-entities)))
 
@@ -41,12 +41,12 @@
 
 (define (send/json cred text :key (screen-name #f) (user-id #f)
                   :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/direct_messages/new"
+  (call/oauth->json cred 'post #"/1.1/direct_messages/new"
                     (api-params _keys text user-id screen-name)))
 
 (define (destroy/json cred id :key (include-entities #f)
                       :allow-other-keys _keys)
-  (call/oauth->json cred 'post #`"/1.1/direct_messages/destroy"
+  (call/oauth->json cred 'post #"/1.1/direct_messages/destroy"
                     (api-params _keys id include-entities)))
 
 

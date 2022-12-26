@@ -50,7 +50,7 @@
                              (trim-user #f) (include-entities #f)
                              (include-user-entities #f)
                              :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/statuses/retweets_of_me"
+  (call/oauth->json cred 'get #"/1.1/statuses/retweets_of_me"
                     (api-params _keys count max-id since-id trim-user
                                 include-entities include-user-entities)))
 

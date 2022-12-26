@@ -24,7 +24,7 @@
          cred :key (include-entities #f)
          (skip-status #f) (include-email #f)
          :allow-other-keys _keys)
-  (call/oauth->json cred 'get #`"/1.1/account/verify_credentials"
+  (call/oauth->json cred 'get #"/1.1/account/verify_credentials"
                     (api-params _keys include-entities skip-status include-email)))
 
 (define (settings/json cred . _keys)
@@ -48,7 +48,7 @@
          (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth-post->json
-   cred #`"/1.1/account/update_profile_image"
+   cred #"/1.1/account/update_profile_image"
    `((image :file ,image))
    (api-params _keys include-entities skip-status)))
 
@@ -57,7 +57,7 @@
          (skip-status #f) (media-id #f)
          :allow-other-keys _keys)
   (call/oauth-post->json
-   cred #`"/1.1/account/update_profile_background_image"
+   cred #"/1.1/account/update_profile_background_image"
    `((image :file ,image))
    (api-params _keys tile include-entities skip-status use)))
 
@@ -69,7 +69,7 @@
          (include-entities #f) (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth->json
-   cred 'post #`"/1.1/account/update_profile_colors"
+   cred 'post #"/1.1/account/update_profile_colors"
    (api-params _keys profile-background-color profile-text-color
                profile-link-color
                profile-sidebar-fill-color
@@ -83,7 +83,7 @@
          (profile-link-color #f)
          :allow-other-keys _keys)
   (call/oauth->json
-   cred 'post #`"/1.1/account/update_profile"
+   cred 'post #"/1.1/account/update_profile"
    (api-params _keys name url location description
                include-entities skip-status)))
 
@@ -93,7 +93,7 @@
          (offset-top #f) (offset-left #f)
          :allow-other-keys _keys)
   (call/oauth->json
-   cred 'post #`"/1.1/account/update_profile_banner"
+   cred 'post #"/1.1/account/update_profile_banner"
    (api-params _keys height width banner offset-top offset-left)))
 
 ;;TODO test
@@ -104,7 +104,7 @@
          (include-entities #f) (skip-status #f)
          :allow-other-keys _keys)
   (call/oauth->json
-   cred 'post #`"/1.1/account/remove_profile_banner"
+   cred 'post #"/1.1/account/remove_profile_banner"
    (api-params _keys name url location description
                include-entities skip-status)))
 
@@ -113,7 +113,7 @@
          cred :key (device #f) (include-entities #f)
          :allow-other-keys _keys)
   (call/oauth->json
-   cred 'post #`"/1.1/account/update_delivery_device"
+   cred 'post #"/1.1/account/update_delivery_device"
    (api-params _keys device include-entities)))
 
 ;;;
