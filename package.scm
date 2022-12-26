@@ -17,6 +17,7 @@
   ;;               ("Gauche-gl" "0.6"))     ; and Gauche-gl 0.6
   :require (
             ("Gauche-net-oauth" (>= "0.5.0"))
+            ("Gauche" (>= "0.9.12"))
             )
 
   ;; List of providing modules
@@ -43,8 +44,8 @@
   :licenses ("BSD")
 
   ;; Homepage URL, if any.
-  ; :homepage "http://example.com/Gauche-net-twitter/"
+  :homepage "https://github.com/mhayashi1120/Gauche-net-twitter/"
 
   ;; Repository URL, e.g. github
-  ; :repository "http://example.com/Gauche-net-twitter.git"
+  :repository "git@github.com:mhayashi1120/Gauche-net-twitter.git"
   )
