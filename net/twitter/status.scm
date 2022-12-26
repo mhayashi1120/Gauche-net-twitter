@@ -10,7 +10,7 @@
    destroy/json
    retweet/json
    retweets/json
-   oembed/json
+   oembed/json oembed
    retweeters/ids/json
    lookup/json
    ))
@@ -81,6 +81,14 @@
                                 maxwidth hide-media hide-thread
                                 omit-script align related lang
                                 widget-type hide-tweet)))
+
+;; 2020-06-05 Newly created api. publish.twitter.com endpoint
+;; See https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/get-statuses-oembed
+(define (oembed url . _keys)
+  (call-publish-api
+   "https://publish.twitter.com/oembed"
+   'get '()
+   (api-params _keys url)))
 
 (define (retweeters/ids/json cred id :key (cursor #f) (stringify-ids #f)
                              :allow-other-keys _keys)
