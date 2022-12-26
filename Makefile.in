@@ -32,7 +32,7 @@ SRC_PREFIX = $(srcdir)/src
 TARGET    = $(ARCHFILES)
 
 TEST_LOG = test.log
-TEST2_LOG = test2.log
+TEST2_LOG = test2.log # TODO This is obsoleted log file
 GENERATED = $(TEST_LOG) $(TEST2_LOG)
 CONFIG_GENERATED = Makefile config.cache config.log config.status \
 		   configure.lineno autom4te*.cache $(PACKAGE).gpd
@@ -52,9 +52,7 @@ check : all
 	@set -e; for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
 	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir) $(srcdir)/test.scm > $(TEST_LOG)
 
-check2 : all
-	@rm -f $(TEST2_LOG)
-	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir)/Gauche-net-oauth $(srcdir)/test2.scm > $(TEST2_LOG)
+hand-check : check _init-hand-check _hand-check
 
 install : all uninstall-obsoleted
 	@set -e; for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
@@ -81,3 +79,12 @@ distclean : clean
 maintainer-clean : clean
 	rm -rf $(CONFIG_GENERATED)  VERSION
 
+##
+## Internal target
+##
+
+_init-hand-check :
+	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir)/Gauche-net-oauth $(srcdir)/test+init.scm
+
+_hand-check :
+	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir)/Gauche-net-oauth $(srcdir)/test+.scm >> $(TEST_LOG)
