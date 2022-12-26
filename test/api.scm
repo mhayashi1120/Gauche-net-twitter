@@ -67,7 +67,7 @@
           ;;    (receive (scheme user-info host port path query fragment)
           ;;        (uri-parse url)
           ;;      (receive (code headers body)
-          ;;          (http-get host #`",|path|?,|query|"
+          ;;          (http-get host #"~|path|?~|query|"
           ;;                    :secure #t
           ;;                    ;;TODO not supported yet
           ;;                    :auth-user (assoc-ref *settings* 'user)

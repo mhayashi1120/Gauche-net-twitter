@@ -44,12 +44,12 @@
 
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-user user :key (mode #f) (threshold #f) (page #f))
-  (call/web #`"/user/,|user|"
+  (call/web #"/user/~|user|"
 			(make-query-params mode threshold page)))
 
 ;; mode is `new' or 'best' or `hot'
 (define (favotter-public :key (mode #f) (threshold #f) (page #f))
-  (call/web #`"/home.php"
+  (call/web #"/home.php"
 			(make-query-params mode threshold page)))
 
 ;; delayed access. See `Delayed evaluation' section in info.
@@ -106,7 +106,7 @@
 
   (define (call)
 	(apply http-get "favotter.net"
-		   #`",|path|?,(compose-query params)"
+		   #"~|path|?~(compose-query params)"
 		   '()))
 
   (define (retrieve status headers body)
