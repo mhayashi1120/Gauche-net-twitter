@@ -269,7 +269,7 @@
 
       (list-subscriber-destroy/sxml *cred2* :list-id id)
 
-      (list-member-destroy/sxml *cred* :list-id id 
+      (list-member-destroy/sxml *cred* :list-id id
                                 :screen-name (assoc-ref *settings* 'user2))
 
       ;; cleanup list
@@ -311,7 +311,3 @@
 
   (test-and* "update profile background image"
     (account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t)))
-
-
-
-

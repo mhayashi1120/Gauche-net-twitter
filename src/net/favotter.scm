@@ -218,4 +218,3 @@
 			  (loop (read-line) start? '() favs)))))
 		 (else
 		  (loop (read-line) start? (if start? (cons l fav) '()) favs)))))))
-

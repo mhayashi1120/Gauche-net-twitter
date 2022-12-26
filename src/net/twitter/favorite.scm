@@ -30,4 +30,3 @@
                       :allow-other-keys _keys)
   (call/oauth->json cred 'post #"/1.1/favorites/destroy"
                     (api-params _keys id include-entities)))
-

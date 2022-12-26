@@ -55,4 +55,3 @@
   (and-let* ((temp (twitter-authenticate-request key secret))
              (verifier (default-authenticate-callback temp)))
     (twitter-authorize temp verifier)))
-

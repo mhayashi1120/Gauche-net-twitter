@@ -288,4 +288,3 @@
   (receive (scheme spec) (uri-scheme&specific uri)
     (receive (host path . _) (uri-decompose-hierarchical spec)
       (values scheme host path))))
-

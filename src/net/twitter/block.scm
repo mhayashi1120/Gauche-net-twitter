@@ -58,4 +58,3 @@
    (assoc-ref
     (values-ref (apply ids/json cred args) 0)
     "ids")))
-

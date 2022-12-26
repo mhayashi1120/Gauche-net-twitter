@@ -110,4 +110,3 @@
   (assoc-ref
    (values-ref (apply update/json cred message opts) 0)
    "id"))
-

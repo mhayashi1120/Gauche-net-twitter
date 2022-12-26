@@ -27,4 +27,3 @@
                     :allow-other-keys _keys)
   (call/oauth->json cred 'get #"/1.1/trends/place"
                     (api-params _keys exclude id)))
-

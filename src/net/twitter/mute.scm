@@ -31,4 +31,3 @@
                       :allow-other-keys _keys)
   (call/oauth->json cred 'post #"/1.1/mutes/users/destroy"
                     (api-params _keys user-id screen-name)))
-

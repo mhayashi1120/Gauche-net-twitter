@@ -23,7 +23,7 @@ INSTALL        = "@GAUCHE_INSTALL@" -C
 ARCHFILES =
 SCMFILES  = $(shell find . -type f -name "*.scm")
 # Files that located under the directory
-OBSOLETED_FILES = 
+OBSOLETED_FILES =
 
 TARGET    =  $(ARCHFILES)
 CLEANFILES =
@@ -70,4 +70,3 @@ distclean : clean
 maintainer-clean : clean $(SUBDIRS)
 	@for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
 	rm -rf $(CONFIG_GENERATED)
-

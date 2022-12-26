@@ -28,4 +28,3 @@
 (define (destroy/json cred id . _keys)
   (call/oauth->json cred 'post #"/1.1/saved_searches/destroy/~|id|"
                     (api-params _keys)))
-

@@ -124,5 +124,3 @@
          cred :id id :user-id user-id
          :screen-name screen-name
          _keys))
-
-

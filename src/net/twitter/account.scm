@@ -126,4 +126,3 @@
              #f])
     (verify-credentials/json cred)
     #t))
-

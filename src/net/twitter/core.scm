@@ -30,4 +30,3 @@
 
 (define-condition-type <twitter-timeout-error> <error> #f
   )
-

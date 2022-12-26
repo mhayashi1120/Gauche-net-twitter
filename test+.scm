@@ -263,7 +263,7 @@
 
     (list-subscriber-destroy/sxml *cred2* :list-id id)
 
-    (list-member-destroy/sxml *cred* :list-id id 
+    (list-member-destroy/sxml *cred* :list-id id
                               :screen-name (assoc-ref *settings* 'user2))
 
     ;; cleanup list

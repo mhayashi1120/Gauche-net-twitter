@@ -38,4 +38,3 @@
   (print " (access-token        . \""(ref cred'access-token)"\")")
   (print " (access-token-secret . \""(ref cred'access-token-secret)"\")")
   (print ")"))
-

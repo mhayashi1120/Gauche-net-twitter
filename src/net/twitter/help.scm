@@ -33,4 +33,3 @@
 (define (privacy/json cred . _keys)
   (call/oauth->json cred 'get "/1.1/help/privacy"
                     (api-params _keys)))
-

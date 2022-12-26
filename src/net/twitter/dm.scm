@@ -48,5 +48,3 @@
                       :allow-other-keys _keys)
   (call/oauth->json cred 'post #"/1.1/direct_messages/destroy"
                     (api-params _keys id include-entities)))
-
-
