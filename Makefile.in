@@ -43,7 +43,7 @@ GAUCHE_PKGARCHDIR = "$(DESTDIR)@GAUCHE_PKGARCHDIR@"
 
 net_twitter_SRCS =
 
-SUBDIRS := src bin
+SUBDIRS := src
 
 all : $(TARGET)
 
