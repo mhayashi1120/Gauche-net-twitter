@@ -43,7 +43,13 @@
            vars)))
 
 (define (->param-key x)
-  (string-tr (x->string x) "-" "_"))
+  (define (->string x)
+    (match x
+      [(? keyword? k)
+       (keyword->string k)]
+      [else
+       (x->string x)]))
+  (string-tr (->string x) "-" "_"))
 
 (define (->param-value x)
   (cond
@@ -51,33 +57,12 @@
    [(eq? x #t) "t"]
    [else (x->string x)]))
 
-(with-module rfc.mime
-  (define (twitter-mime-compose parts
-                                :optional (port (current-output-port))
-                                :key (boundary (mime-make-boundary)))
-    (for-each (cut display <> port) `("--" ,boundary "\r\n"))
-    (dolist [p parts]
-      (mime-generate-one-part (canonical-part p) port)
-      (for-each (cut display <> port) `("\r\n--" ,boundary "--\r\n")))
-    boundary))
-
 (define (parse-xml-string str)
   (call-with-input-string str
     (cut ssax:xml->sxml <> '())))
 
 (define (call/oauth->json cred method path params . opts)
   (apply call/oauth cred method #`",|path|.json" params opts))
-
-(define-macro (hack-mime-composing . expr)
-  (let ([original (gensym)])
-    `(let ([,original #f])
-       (with-module rfc.mime
-         (set! ,original mime-compose-message)
-         (set! mime-compose-message twitter-mime-compose))
-       (unwind-protect
-        (begin ,@expr)
-        (with-module rfc.mime
-          (set! mime-compose-message ,original))))))
 
 (define (call/oauth cred method path params . opts)
   (apply call/oauth-internal
@@ -91,14 +76,16 @@
 
 (define (call/oauth-internal cred method path params body . opts)
   (define (call)
-    (let* ([server (if (eq? method 'upload-file)
-                     "upload.twitter.com"
-                     "api.twitter.com")]
+    (let* ([server (cond
+                    [(memq method '(upload-file uploading-status))
+                     "upload.twitter.com"]
+                    [else
+                     "api.twitter.com"])]
            [auth (and cred
                       (oauth-auth-header
-                       (if (eq? method 'get) "GET" "POST")
+                       (if (memq method '(get uploading-status)) "GET" "POST")
                        (build-url server path) params cred))])
-      (case method
+      (ecase method
         [(get)
          (apply http-get server
                 #`",|path|?,(oauth-compose-query params)"
@@ -111,14 +98,19 @@
                 :Authorization auth :secure (twitter-use-https)
                 :content-type "application/x-www-form-urlencoded"
                 opts)]
+        [(uploading-status)
+         (apply http-get server
+                #`",|path|?,(oauth-compose-query params)"
+                :Authorization auth :secure (twitter-use-https)
+                :content-type "application/x-www-form-urlencoded"
+                opts)]
         [(post-file upload-file)
-         (hack-mime-composing
-          (apply http-post server
-                 (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
-                 body
-                 :Authorization auth :secure (twitter-use-https)
-                 :content-type (if body "multipart/form-data" "application/octet-stream")
-                 opts))])))
+         (apply http-post server
+                (if (pair? params) #`",|path|?,(oauth-compose-query params)" path)
+                body
+                :Authorization auth :secure (twitter-use-https)
+                :content-type (if body "multipart/form-data" "application/x-www-form-urlencoded")
+                opts)])))
 
   (define (retrieve status headers body)
     (%api-adapter status headers body))
@@ -143,20 +135,45 @@
                (match (mime-parse-content-type ct)
                  [(_ "xml" . _) 'xml]
                  [(_ "json" . _) 'json]
-                 [(_ "html" . _) 'html])
+                 [(_ "html" . _) 'html]
+                 [else 'text])
                (error <twitter-api-error>
                       :status status :headers headers :body body
                       body))
     (let1 code (string->number status)
       (unless (and (<= 200 code) (< code 300))
         (raise-api-error type status headers body)))
-    (ecase type
+    (case type
       [(xml)
        (values (parse-xml-string body) headers)]
       [(json)
        (values (parse-json-string body) headers)]
       [(html)
-       (values body headers)])))
+       (values body headers)]
+      [else
+       (raise-api-error type status headers body)])))
+
+(autoload rfc.uri uri-parse)
+
+(define (call-publish-api resource-url method http-opts params)
+  (define (call)
+    (receive (scheme user server port path query fragment)
+        (uri-parse resource-url)
+      (ecase method
+        [(get)
+         (apply http-get server
+                (http-compose-query path params 'utf-8)
+                :secure (string=? scheme "https")
+                http-opts)]
+        [(post)
+         (apply http-post server path
+                (oauth-compose-query params)
+                :secure (string=? scheme "https")
+                http-opts)])))
+
+  (define retrieve %api-adapter)
+
+  (call-with-values call retrieve))
 
 (define (raise-api-error type status headers body)
   (ecase type
@@ -183,7 +200,11 @@
     [(html)
      (error <twitter-api-error>
             :status status :headers headers :body body
-            (parse-html-message body))]))
+            (parse-html-message body))]
+    [(text)
+     (error <twitter-api-error>
+            :status status :headers headers :body body
+            body)]))
 
 (define (check-search-error status headers body)
   (unless (equal? status "200")
@@ -195,7 +216,8 @@
              (raise-api-error 'json status headers body)]
             [(_ "html" . _)
              (raise-api-error 'html status headers body)]
-            [_ #f]))
+            [else
+             (raise-api-error 'text status headers body)]))
         (error <twitter-api-error>
                :status status :headers headers :body body
                body))))
