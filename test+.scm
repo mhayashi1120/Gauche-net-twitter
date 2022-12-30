@@ -218,21 +218,21 @@
       (ss:show/json *cred* id))
 
     (test!! "list saved searches"
-      (ss:show/json *cred*))
+      (ss:list/json *cred*))
 
     (test!! "destroying saved search"
       (ss:destroy/json *cred* id)))
 
   (test!! "destroying friendships"
-    (friendship-destroy/json *cred* (assoc-ref *settings* 'user2))
-    (friendship-destroy/json *cred2* (assoc-ref *settings* 'user)))
+    (friendship-destroy/json *cred* :id (assoc-ref *settings* 'user2))
+    (friendship-destroy/json *cred2* :id (assoc-ref *settings* 'user)))
 
   (test!! "deleting status"
     (status-destroy/json *cred* status-id))
 
   (test!! "block"
     (block-create/json *cred* :id (assoc-ref *settings* 'user2))
-    (block-exists? *cred* :id (assoc-ref *settings* 'user2))
+    (block-exists? *cred* (assoc-ref *settings* 'user2))
     (member user-id2 (blocks/ids *cred*))
     (block-destroy/json *cred* :id (assoc-ref *settings* 'user2)))
   )
