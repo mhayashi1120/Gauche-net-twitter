@@ -5,28 +5,27 @@
 (use file.util)
 (use net.favotter)
 (use net.twitter)
-(use net.twitter.account)
+(use net.twitter.account :prefix account-)
 (use net.twitter.auth)
-(use net.twitter.block)
+(use net.twitter.block :prefix block-)
 (use net.twitter.core)
-(use net.twitter.direct-message)
-(use net.twitter.friendship)
+(use net.twitter.dm :prefix dm:)
+(use net.twitter.friendship :prefix friendship-)
 (use net.twitter.geo)
-(use net.twitter.help)
-(use net.twitter.list)
-(use net.twitter.saved-search)
-(use net.twitter.search)
-(use net.twitter.timeline)
-(use net.twitter.status)
-(use net.twitter.user)
-(use net.twitter.favorite)
+(use net.twitter.help :prefix help-)
+(use net.twitter.list :prefix ll-) ;; avoid dup of list procedure using `ll-`
+(use net.twitter.saved-search :prefix ss:)
+(use net.twitter.search :prefix search:)
+(use net.twitter.timeline :prefix tl:)
+(use net.twitter.status :prefix status-)
+(use net.twitter.user :prefix user-)
+(use net.twitter.favorite :prefix fav:)
 (use rfc.http)
 (use rfc.uri)
 (use srfi-1)
 (use srfi-13)
 (use srfi-19)
 (use srfi-27)
-(use sxml.sxpath)
 (use util.list)
 
 (test-start "net.twitter")
@@ -77,7 +76,7 @@
       :access-token-secret  (from-token 'access-token-secret))))
 
 ;; check only non error have occur.
-(define-macro (test-and* name . expr)
+(define-macro (test!! name . expr)
   `(test* ,name
           #t
           (and ,@expr #t)))
@@ -95,29 +94,26 @@
 (define (wait-a-while)
   (sys-sleep 10))
 
-(test-executable "net/twitauth.scm")
+(test-script "net/twitauth.scm")
 
 ;; exercise
 
 
-(test-and* "help test"
-  (help-test/sxml *cred*))
+(test!! "help configuration"
+  (help-configuration/json *cred*))
 
-(test-and* "help configuration"
-  (help-configuration/sxml *cred*))
+(test!! "help languages"
+  (help-languages/json *cred*))
 
-(test-and* "help languages"
-  (help-languages/sxml *cred*))
-
-(test-and* "show user"
-  (user-show/sxml *cred* :id (assoc-ref *settings* 'user)))
+(test!! "show user"
+  (user-show/json *cred* :id (assoc-ref *settings* 'user)))
 
 (let ((msg (string-append "マルチバイト文字と日付 " (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
       (user-id #f)
       (user-id2 #f)
       (status-id #f))
 
-  (test-and* "update status"
+  (test!! "update status"
     (set! status-id (status-update *cred* msg)))
 
   ;;TODO why?
@@ -125,164 +121,168 @@
 
   (test* "show status"
          msg
-         ((if-car-sxpath '(status text *text*)) (status-show/sxml *cred* status-id)))
+         (let1 json (status-show/json *cred* status-id)
+           (assoc-ref json "text")))
 
-  (test-and* "fetching user info"
-    (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user))
-      (set! user-id ((if-car-sxpath '(user id *text*)) sxml))
+  (test!! "fetching user info"
+    (let1 json (user-show/json *cred* :id (assoc-ref *settings* 'user))
+      (set! user-id (assoc-ref json "id"))
       user-id)
 
-    (let1 sxml (user-show/sxml *cred* :id (assoc-ref *settings* 'user2))
-      (set! user-id2 ((if-car-sxpath '(user id *text*)) sxml))
+    (let1 json (user-show/json *cred* :id (assoc-ref *settings* 'user2))
+      (set! user-id2 (assoc-ref json "id"))
       user-id2))
 
-  (test-and* "fetching timeline by id"
-    (user-timeline/sxml #f :id (assoc-ref *settings* 'user)))
+  (test!! "fetching timeline by id"
+    (tl:user-timeline/json #f :id (assoc-ref *settings* 'user)))
 
-  (test-and* "fetching timeline by user-id"
-    (user-timeline/sxml #f :user-id user-id))
+  (test!! "fetching timeline by user-id"
+    (tl:user-timeline/json #f :user-id user-id))
 
-  (test-and* "fetching home timeline"
-    (home-timeline/sxml *cred*))
+  (test!! "fetching home timeline"
+    (tl:home-timeline/json *cred*))
 
-  (test-and* "fetching mentions"
-    (mentions/sxml *cred*))
+  (test!! "fetching mentions"
+    (tl:mentions-timeline/json *cred*))
 
-  (test-and* "searching"
-    (search/sxml (assoc-ref *settings* 'user)))
+  (test!! "searching"
+    (search:search-tweets/json *cred* (assoc-ref *settings* 'user)))
 
-  (test-and* "creating friendships"
-    (friendship-create/sxml *cred* (assoc-ref *settings* 'user2))
-    (friendship-create/sxml *cred2* (assoc-ref *settings* 'user)))
+  (test!! "creating friendships"
+    (friendship-create/json *cred* (assoc-ref *settings* 'user2))
+    (friendship-create/json *cred2* (assoc-ref *settings* 'user)))
 
   (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
         (dm-id #f))
 
-    (test-and* "sending direct message"
+    (test!! "sending direct message"
       (set! dm-id
-            ((if-car-sxpath '(// id *text*))
-             (direct-message-new/sxml *cred* (assoc-ref *settings* 'user2) msg))))
+            (let1 json (dm:send/json *cred* (assoc-ref *settings* 'user2) msg)
+              (assoc-ref json "id"))))
 
     ;;TODO why?
     (wait-a-while)
 
     (test* "sent direct message"
            msg
-           ((if-car-sxpath '(// text *text*)) (direct-messages-sent/sxml *cred*)))
+           (let1 json (dm:sent/json *cred*)
+             ;; TODO
+             json))
 
     (test* "received direct message"
            msg
-           ((if-car-sxpath '(// text *text*)) (direct-messages/sxml *cred2*)))
+           ;; TODO
+           (dm:list/json *cred2*))
 
-    (test-and* "destroying direct message"
-      (direct-message-destroy/sxml *cred* dm-id)))
+    (test!! "destroying direct message"
+      ;; TOO
+      (dm:destroy/json *cred* dm-id)))
 
-  (test-and* "retweeting status"
-    (sattus-retweet/sxml *cred2* status-id))
+  (test!! "retweeting status"
+    (status-retweet/json *cred2* status-id))
 
-  (test-and* "retweets of status"
-    (tweet:retweets/sxml *cred* status-id)
-    (tweet:retweeted-by/sxml *cred* status-id)
-    (tweet:retweeted-by-ids/sxml *cred* status-id))
+  (test!! "retweets of status"
+    (status-retweets/json *cred* status-id)
+    (status-retweeted-by/json *cred* status-id)
+    (status-retweeted-by-ids/json *cred* status-id))
 
-  (test-and* "retweets of me"
-    (retweets-of-me/sxml *cred*))
+  (test!! "retweets of me"
+    (tl:retweets-of-me/json *cred*))
 
-  (test-and* "retweeted by him"
-    (retweeted-by-me/sxml *cred2*))
+  (test!! "retweeted by him"
+    (tl:retweeted-by-me/json *cred2*))
 
-  (test-and* "favorite status"
-    (favorite-create/sxml *cred2* status-id))
+  (test!! "favorite status"
+    (fav:create/json *cred2* status-id))
 
-  (test-and* "favorites"
-    (favorites/sxml *cred* user-id2))
+  (test!! "favorites"
+    (fav:list/json *cred* user-id2))
 
-  (test-and* "unfavorite status"
-    (favorite-destroy/sxml *cred2* status-id))
+  (test!! "unfavorite status"
+    (fav:destroy/json *cred2* status-id))
 
-  (test-and* "friend ids"
-    (friends/ids/sxml *cred*))
+  (test!! "friend ids"
+    (friendship-friends/ids *cred*))
 
-  (test-and* "follower ids"
-    (followers/ids/sxml *cred*))
+  (test!! "follower ids"
+    (friendship-followers/ids *cred*))
 
   (let ((id #f))
-    (test-and* "create saved search"
+    (test!! "create saved search"
       ;; use date to avoid creation fail (cause of previous test error)
       (let* ([text (format "\"~a\" exclude:retweets" (date->string (current-date)))]
-             [sxml (saved-search-create/sxml *cred* text)])
-        (set! id ((if-car-sxpath '(// id *text*)) sxml))))
+             [json (ss:create/json *cred* text)])
+        (set! id (assoc-ref json "id"))))
 
-    (test-and* "showing saved search"
-      (saved-search-show/sxml *cred* id))
+    (test!! "showing saved search"
+      (ss:show/json *cred* id))
 
-    (test-and* "list saved searches"
-      (saved-searches/sxml *cred*))
+    (test!! "list saved searches"
+      (ss:show/json *cred*))
 
-    (test-and* "destroying saved search"
-      (saved-search-destroy/sxml *cred* id)))
+    (test!! "destroying saved search"
+      (ss:destroy/json *cred* id)))
 
-  (test-and* "destroying friendships"
-    (friendship-destroy/sxml *cred* (assoc-ref *settings* 'user2))
-    (friendship-destroy/sxml *cred2* (assoc-ref *settings* 'user)))
+  (test!! "destroying friendships"
+    (friendship-destroy/json *cred* (assoc-ref *settings* 'user2))
+    (friendship-destroy/json *cred2* (assoc-ref *settings* 'user)))
 
-  (test-and* "deleting status"
-    (tweet:destroy/sxml *cred* status-id))
+  (test!! "deleting status"
+    (status-destroy/json *cred* status-id))
 
-  (test-and* "block"
-    (block-create/sxml *cred* :id (assoc-ref *settings* 'user2))
+  (test!! "block"
+    (block-create/json *cred* :id (assoc-ref *settings* 'user2))
     (block-exists? *cred* :id (assoc-ref *settings* 'user2))
     (member user-id2 (blocks/ids *cred*))
-    (block-destroy/sxml *cred* :id (assoc-ref *settings* 'user2)))
+    (block-destroy/json *cred* :id (assoc-ref *settings* 'user2)))
   )
 
-(let* ([sxml (list-create/sxml *cred* "hoge")]
-       [id ((if-car-sxpath '(// id *text*)) sxml)])
+(let* ([json (ll-create/json *cred* "hoge")]
+       [id (assoc-ref json "id")])
 
-  (test-and* "a set of list api methods"
-    (list-show/sxml *cred* :list-id id)
-    (list-statuses/sxml *cred* :list-id id)
-    (list-update/sxml *cred* :list-id id :name "FOO")
+  (test!! "a set of list api methods"
+    (ll-show/json *cred* :list-id id)
+    (ll-statuses/json *cred* :list-id id)
+    (ll-update/json *cred* :list-id id :name "FOO")
     ;; check successfully created
-    (equal? ((if-car-sxpath '(// list name *text*))
-             (list-show/sxml *cred* :list-id id)) "FOO")
-    (list-member-create/sxml *cred* :list-id id
-                             :screen-name (assoc-ref *settings* 'user2))
+    (equal? (assoc-ref (ll-show/json *cred* :list-id id) "id") "FOO")
+    (ll-member-create/json *cred* :list-id id
+                           :screen-name (assoc-ref *settings* 'user2))
     ;; list member was successfully created"
-    (list-member-show/sxml *cred* :list-id id
-                               :screen-name (assoc-ref *settings* 'user2))
+    (ll-member-show/json *cred* :list-id id
+                         :screen-name (assoc-ref *settings* 'user2))
 
     ;; subscribe a created list.
-    (list-subscriber-create/sxml *cred2* :list-id id)
+    (ll-subscriber-create/json *cred2* :list-id id)
 
     ;; check the existence of subscriber was created.
-    (list-subscribers/sxml *cred* :list-id id)
+    (ll-subscribers/json *cred* :list-id id)
 
-    (member id (list-memberships/ids *cred2* :list-id id))
-    (member id (list-subscriptions/ids *cred2* :list-id id))
+    (member id (ll-memberships/ids *cred2* :list-id id))
+    (member id (ll-subscriptions/ids *cred2* :list-id id))
 
-    (list-subscriber-destroy/sxml *cred2* :list-id id)
+    (ll-subscriber-destroy/json *cred2* :list-id id)
 
-    (list-member-destroy/sxml *cred* :list-id id
-                              :screen-name (assoc-ref *settings* 'user2))
+    (ll-member-destroy/json *cred* :list-id id
+                            :screen-name (assoc-ref *settings* 'user2))
 
     ;; cleanup list
-    (list-destroy/sxml *cred* :list-id id)))
+    (ll-destroy/json *cred* :list-id id)))
 
 ;; TODO geo api
 ;; TODO streaming api
 
-(test-and* "rate limit user1"
-  (account-rate-limit-status/sxml *cred*))
+(test!! "rate limit user1"
+  (help-rate-limit-status/json *cred*))
 
-(test-and* "account credentials"
+(test!! "account credentials"
   (account-verify-credentials? *cred*))
 
 (define (random-color)
   (string-pad (number->string (random-integer #x1000000) 16) 6 #\0))
 
-(test-and* "update profile color"
-  (account-update-profile-colors/sxml
+(test!! "update profile color"
+  (account-update-profile-colors/json
    *cred*
    :profile-background-color (random-color)
    :profile-text-color (random-color)
@@ -299,10 +299,10 @@
 (define (random-big-picture)
   (random-picture (filter (^x (#/^[^-]+\.png$/ x)) (sys-readdir "./testdata"))))
 
-(test-and* "update profile image"
-  (account-update-profile-image/sxml *cred* (random-mini-picture)))
+(test!! "update profile image"
+  (account-update-profile-image/json *cred* (random-mini-picture)))
 
-(test-and* "update profile background image"
-  (account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
+(test!! "update profile background image"
+  (account-update-profile-background-image/json *cred* (random-big-picture) :tile #t))
 
 (test-end :exit-on-failure #t)
