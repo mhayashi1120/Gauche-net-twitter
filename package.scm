@@ -4,7 +4,7 @@
 
 (define-gauche-package "Gauche-net-twitter"
   ;;
-  :version "1.7.0"
+  :version "1.7.1"
 
   ;; Description of the package.  The first line is used as a short
   ;; summary.
@@ -16,7 +16,7 @@
   ;;     :require (("Gauche" (>= "0.9.5"))  ; requires Gauche 0.9.5 or later
   ;;               ("Gauche-gl" "0.6"))     ; and Gauche-gl 0.6
   :require (
-            ("Gauche-net-oauth" (>= "0.5.0"))
+            ("Gauche-net-oauth" (>= "0.6.5"))
             ("Gauche" (>= "0.9.12"))
             )
 
