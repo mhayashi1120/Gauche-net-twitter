@@ -149,15 +149,15 @@
     (search:search-tweets/json *cred* (assoc-ref *settings* 'user)))
 
   (test!! "creating friendships"
-    (friendship-create/json *cred* (assoc-ref *settings* 'user2))
-    (friendship-create/json *cred2* (assoc-ref *settings* 'user)))
+    (friendship-create/json *cred* :id (assoc-ref *settings* 'user2))
+    (friendship-create/json *cred2* :id (assoc-ref *settings* 'user)))
 
   (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
         (dm-id #f))
 
     (test!! "sending direct message"
       (set! dm-id
-            (let1 json (dm:send/json *cred* (assoc-ref *settings* 'user2) msg)
+            (let1 json (dm:send/json *cred* msg :id (assoc-ref *settings* 'user2))
               (assoc-ref json "id"))))
 
     ;;TODO why?
@@ -183,14 +183,18 @@
 
   (test!! "retweets of status"
     (status-retweets/json *cred* status-id)
-    (status-retweeted-by/json *cred* status-id)
-    (status-retweeted-by-ids/json *cred* status-id))
+
+    ;; TODO should search current api
+    ;; (status-retweeted-by/json *cred* status-id)
+    ;; (status-retweeted-by-ids/json *cred* status-id)
+    )
 
   (test!! "retweets of me"
     (tl:retweets-of-me/json *cred*))
 
-  (test!! "retweeted by him"
-    (tl:retweeted-by-me/json *cred2*))
+  ;; TODO Should search current api
+  ;; (test!! "retweeted by him"
+  ;;   (tl:retweeted-by-me/json *cred2*))
 
   (test!! "favorite status"
     (fav:create/json *cred2* status-id))
