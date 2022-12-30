@@ -1,9 +1,7 @@
 Makefile
 config.log
-config.status
 *.gpd
 VERSION
 test.log
-autom4te.cache
 .secret/*
 !.secret/.gitempty
