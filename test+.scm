@@ -305,4 +305,4 @@
 (test-and* "update profile background image"
   (account-update-profile-background-image/sxml *cred* (random-big-picture) :tile #t))
 
-(test-end)
+(test-end :exit-on-failure #t)
