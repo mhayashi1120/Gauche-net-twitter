@@ -12,10 +12,10 @@
 
 (test* "Sub module"
        #t
-       (do-process `(gosh "./test/module.scm")))
+       (do-process `(gosh "./__tests__/module.scm")))
 
 (test* "Snowflake module"
        #t
-       (do-process `(gosh "./test/snowflake.scm")))
+       (do-process `(gosh "./__tests__/snowflake.scm")))
 
 (test-end :exit-on-failure #t)
