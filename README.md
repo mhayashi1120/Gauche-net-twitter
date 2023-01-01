@@ -1,5 +1,7 @@
 # Gauche-net-twitter (forked version)
 
+Warn: This package a bit outdated. Some of main interfaces are alive but **some of are outdated** .
+
 This module provides an interface to Twitter API using OAuth authentication.
 
 Step by step:
