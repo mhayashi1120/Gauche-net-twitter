@@ -2,17 +2,20 @@
 ;;; Test net_twitter
 ;;;
 
+(use gauche.process)
 (use gauche.test)
 
-(test-start "net_twitter")
+(test-start "net.twitter")
+
 (use net.twitter)
 (test-module 'net.twitter)
 
-;; The following is a dummy test code.
-;; Replace it for your tests.
-;; (test* "test-net_twitter" "net_twitter is working"
-;;        (test-net_twitter))
+(test* "Sub module"
+       #t
+       (do-process `(gosh "./test/module.scm")))
 
-;; If you don't want `gosh' to exit with nonzero status even if
-;; the test fails, pass #f to :exit-on-failure.
+(test* "Snowflake module"
+       #t
+       (do-process `(gosh "./test/snowflake.scm")))
+
 (test-end :exit-on-failure #t)

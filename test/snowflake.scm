@@ -5,7 +5,7 @@
 (define (main args)
   (test-start "Start snowflake")
   (module-test)
-  (test-end))
+  (test-end :exit-on-failure #t))
 
 (define (module-test)
   (test-module 'net.twitter.snowflake)

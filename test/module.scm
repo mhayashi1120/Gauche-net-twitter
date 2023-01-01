@@ -22,24 +22,13 @@
 (use net.twitter.mute)
 
 (define (main args)
-  (test-start "Start module")
+  (test-start "Start test all module")
   (module-test)
   (executable-test)
-  (test-end))
-
-
-(define (test-executable file)
-  ;;FIXME only output the result...
-  (unwind-protect
-   (run-process
-    `(gosh -b
-           -l ,file
-           -u "gauche.test"
-           -e "(begin (test-module 'user) (exit 0))")
-    :wait #t)))
+  (test-end :exit-on-failure #t))
 
 (define (executable-test)
-  (test-executable "net/twitauth.scm"))
+  (test-script "net/twitauth.scm"))
 
 (define (module-test)
   (test-module 'net.twitter.user)

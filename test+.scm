@@ -81,16 +81,6 @@
           #t
           (and ,@expr #t)))
 
-(define (test-executable file)
-  ;;FIXME only output the result...
-  (unwind-protect
-   (run-process
-    `(gosh -b
-           -l ,file
-           -u "gauche.test"
-           -e "(begin (test-module 'user) (exit 0))")
-    :wait #t)))
-
 (define (wait-a-while)
   (sys-sleep 10))
 
