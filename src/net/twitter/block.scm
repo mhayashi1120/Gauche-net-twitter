@@ -53,8 +53,9 @@
 (define (exists? cred user-id)
   (boolean (memq user-id (ids cred))))
 
+;; Just get first set of `ids`
 (define (ids cred . args)
-  (vector->list
-   (assoc-ref
-    (values-ref (apply ids/json cred args) 0)
-    "ids")))
+  ($ vector->list
+     $ (cut assoc-ref <> "ids")
+     $ (cut values-ref <> 0)
+     $ apply ids/json cred args))

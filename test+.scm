@@ -30,6 +30,8 @@
 
 (test-start "net.twitter")
 
+(debug-print-width #f)
+
 (define *settings*
   (with-input-from-file ".secret/test-settings.scm"
     read))
@@ -84,13 +86,12 @@
 (define (wait-a-while)
   (sys-sleep 10))
 
-(test-script "net/twitauth.scm")
-
 ;; exercise
 
 
-(test!! "help configuration"
-  (help-configuration/json *cred*))
+;; Maybe obsoleted (2023-01-02)
+;; (test!! "help configuration"
+;;   (help-configuration/json *cred*))
 
 (test!! "help languages"
   (help-languages/json *cred*))
@@ -124,10 +125,10 @@
       user-id2))
 
   (test!! "fetching timeline by id"
-    (tl:user-timeline/json #f :id (assoc-ref *settings* 'user)))
+    (tl:user-timeline/json *cred* :id (assoc-ref *settings* 'user)))
 
   (test!! "fetching timeline by user-id"
-    (tl:user-timeline/json #f :user-id user-id))
+    (tl:user-timeline/json *cred* :user-id user-id))
 
   (test!! "fetching home timeline"
     (tl:home-timeline/json *cred*))
@@ -142,31 +143,33 @@
     (friendship-create/json *cred* :id (assoc-ref *settings* 'user2))
     (friendship-create/json *cred2* :id (assoc-ref *settings* 'user)))
 
-  (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
-        (dm-id #f))
+  ;; direct messages obsoleted (2023-01-02)
+  ;; https://developer.twitter.com/en/docs/twitter-api/v1/direct-messages/sending-and-receiving/api-reference/delete-message-event
+  ;; (let ((msg (string-append "a direct message" (date->string (current-date) "~Y-~m-~d ~H:~M:~S")))
+  ;;       (dm-id #f))
 
-    (test!! "sending direct message"
-      (set! dm-id
-            (let1 json (dm:send/json *cred* msg :id (assoc-ref *settings* 'user2))
-              (assoc-ref json "id"))))
+  ;;   (test!! "sending direct message"
+  ;;     (set! dm-id
+  ;;           (let1 json (dm:send/json *cred* msg :id (assoc-ref *settings* 'user2))
+  ;;             (assoc-ref json "id"))))
 
-    ;;TODO why?
-    (wait-a-while)
+  ;;   ;;TODO why?
+  ;;   (wait-a-while)
 
-    (test* "sent direct message"
-           msg
-           (let1 json (dm:sent/json *cred*)
-             ;; TODO
-             json))
+  ;;   (test* "sent direct message"
+  ;;          msg
+  ;;          (let1 json (dm:sent/json *cred*)
+  ;;            ;; TODO
+  ;;            json))
 
-    (test* "received direct message"
-           msg
-           ;; TODO
-           (dm:list/json *cred2*))
+  ;;   (test* "received direct message"
+  ;;          msg
+  ;;          ;; TODO
+  ;;          (dm:list/json *cred2*))
 
-    (test!! "destroying direct message"
-      ;; TOO
-      (dm:destroy/json *cred* dm-id)))
+  ;;   (test!! "destroying direct message"
+  ;;     ;; TOO
+  ;;     (dm:destroy/json *cred* dm-id)))
 
   (test!! "retweeting status"
     (status-retweet/json *cred2* status-id))
@@ -224,22 +227,34 @@
   (test!! "deleting status"
     (status-destroy/json *cred* status-id))
 
-  (test!! "block"
-    (block-create/json *cred* :id (assoc-ref *settings* 'user2))
-    (block-exists? *cred* (assoc-ref *settings* 'user2))
-    (member user-id2 (blocks/ids *cred*))
-    (block-destroy/json *cred* :id (assoc-ref *settings* 'user2)))
+  (test!! "block create"
+    (block-create/json *cred* :id (assoc-ref *settings* 'user2)))
+  (test!! "block exists?"
+    (let1 user/json (user-show/json *cred* :id (assoc-ref *settings* 'user2))
+      (block-exists? *cred* (assoc-ref user/json "id"))))
+  (test!! "blocked member"
+    (member user-id2 (block-ids *cred*)))
+  (test!! "blocked destroy"
+     (block-destroy/json *cred* :id (assoc-ref *settings* 'user2)))
   )
 
 (let* ([json (ll-create/json *cred* "hoge")]
        [id (assoc-ref json "id")])
 
+  (test!! "show list"
+     (ll-show/json *cred* :list-id id))
+
+  (test!! "show list timeline"
+      (ll-statuses/json *cred* :list-id id))
+
+  (test!! "list update"
+    (ll-update/json *cred* :list-id id :name "FOO"))
+
+  (test!! "list update is succeeded"
+    (equal? (assoc-ref (ll-show/json *cred* :list-id id) "name") "FOO"))
+
   (test!! "a set of list api methods"
-    (ll-show/json *cred* :list-id id)
-    (ll-statuses/json *cred* :list-id id)
-    (ll-update/json *cred* :list-id id :name "FOO")
     ;; check successfully created
-    (equal? (assoc-ref (ll-show/json *cred* :list-id id) "id") "FOO")
     (ll-member-create/json *cred* :list-id id
                            :screen-name (assoc-ref *settings* 'user2))
     ;; list member was successfully created"
@@ -275,14 +290,14 @@
 (define (random-color)
   (string-pad (number->string (random-integer #x1000000) 16) 6 #\0))
 
-(test!! "update profile color"
-  (account-update-profile-colors/json
-   *cred*
-   :profile-background-color (random-color)
-   :profile-text-color (random-color)
-   :profile-link-color (random-color)
-   :profile-sidebar-fill-color (random-color)
-   :profile-sidebar-border-color (random-color)))
+;; (test!! "update profile color"
+;;   (account-update-profile-colors/json
+;;    *cred*
+;;    :profile-background-color (random-color)
+;;    :profile-text-color (random-color)
+;;    :profile-link-color (random-color)
+;;    :profile-sidebar-fill-color (random-color)
+;;    :profile-sidebar-border-color (random-color)))
 
 (define (random-picture lis)
   (build-path "./testdata" (list-ref lis (random-integer (length lis)))))
@@ -296,7 +311,7 @@
 (test!! "update profile image"
   (account-update-profile-image/json *cred* (random-mini-picture)))
 
-(test!! "update profile background image"
-  (account-update-profile-background-image/json *cred* (random-big-picture) :tile #t))
+;; (test!! "update profile background image"
+;;   (account-update-profile-background-image/json *cred* (random-big-picture) :tile #t))
 
 (test-end :exit-on-failure #t)

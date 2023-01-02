@@ -25,6 +25,8 @@
    subscriptions/json
 
    create
+
+   subscriptions/ids memberships/ids
    ))
 (select-module net.twitter.list)
 
@@ -189,6 +191,21 @@
 ;;;
 
 (define (create cred name . opts)
-  (assoc-ref
-   (values-ref (apply create/json cred name opts) 0)
-   "id"))
+  ($ (cut assoc-ref <> "id")
+     $ (cut values-ref <> 0)
+     $ apply create/json cred name opts))
+
+(define (%list->ids json)
+  ($ map (cut assoc-ref <> "id")
+     $ vector->list
+     $ assoc-ref json "lists"))
+
+;; Just get `ids` first cursor of set
+(define (memberships/ids cred . opts)
+  ($ %list->ids
+     $ apply memberships/json cred opts))
+
+;; Just get `ids` first cursor of set
+(define (subscriptions/ids cred . opts)
+  ($ %list->ids
+     $ apply subscriptions/json cred opts))
