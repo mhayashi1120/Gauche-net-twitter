@@ -18,10 +18,10 @@
          (begin (snowflake-date #x7fffffffffffffff) #t))
 
   (test* "Not enough bit"
-         (test-error <error>)
+         (test-error)
          (snowflake-date #x3fffff))
 
   (test* "Overflow"
-         (test-error <error>)
+         (test-error)
          (snowflake-date #x8000000000000000))
   )
