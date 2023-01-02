@@ -52,7 +52,7 @@ check : all
 	@set -e; for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
 	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir) $(srcdir)/test.scm > $(TEST_LOG)
 
-hand-check : check _init-hand-check _hand-check
+check-prod : check _init-check-prod _check-prod
 
 install : all uninstall-obsoleted
 	@set -e; for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
@@ -83,8 +83,8 @@ maintainer-clean : clean
 ## Internal target
 ##
 
-_init-hand-check :
+_init-check-prod :
 	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir)/Gauche-net-oauth $(srcdir)/test+init.scm
 
-_hand-check :
+_check-prod :
 	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir)/Gauche-net-oauth $(srcdir)/test+.scm >> $(TEST_LOG)
