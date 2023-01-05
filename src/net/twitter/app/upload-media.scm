@@ -10,7 +10,9 @@
   (print "   OPTIONS : [-j | --json | --print-json] | [-t | --text | --print-text] \\")
   (print "             [-s | --silent]")
   (print "   Currently this command just check UPLOAD-FILE extension as media-type detection.")
-  (print "   Supported type are (`image/jpeg`, `image/png`)")
+  (print "   Supported types and extensions are:")
+  (print "      - image/jpeg : as \"jpeg\" or \"jpg\" extension.")
+  (print "      - image/png : as \"png\" extension.")
   (print "   --silent : Do not show progress message.")
   ;; TODO describe about json field.
   (print "   --print-json : Print upload result as json.")
