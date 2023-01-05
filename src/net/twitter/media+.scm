@@ -39,9 +39,12 @@
         (with-module rfc.http
           (set! http-multipart-sender ,original))))))
 
-;; ##
+;; ## Upload FILE as MEDIA-TYPE
+;; Return multiple values media-id and unix seconds as <integer> (epoch, `sys-time`).
 ;; - :callback-progress : <procedure> accept 3 arguments.
-;;   SEQUENCE:<integer> -> SIZE:<integer> -> {<json> | #f} -> <void>
+;;   SEQUENCE:<integer> -> SIZE:<integer> -> PROGRESS/JSON {<json> | #f} -> <void>
+;;   SEQUENCE start from 0, First and Last PROGRESS/JSON must be a <json> object.
+;; -> [MEDIA-ID:<integer> ABOUT-EXPIRES-AT:<integer>]
 (define (upload-media
          cred file media-type
          :key
@@ -89,16 +92,17 @@
                  segment*
                  append/json))]
         [else
-         (let1 finalize/json
-             (upload/json
-              cred
-              :command "FINALIZE"
-              :media-id media-id)
+         (let* ([finalize/json
+                 (upload/json
+                  cred
+                  :command "FINALIZE"
+                  :media-id media-id)]
+                [expires (assoc-ref finalize/json "expires_after_secs")]
+                [about-expires-at (+ (sys-time) expires)])
            ;; https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload-finalize
-           (callback-progress (+ segment 1) done finalize/json))]))
-     (close-port iport))
-
-    media-id))
+           (callback-progress (+ segment 1) done finalize/json)
+           (values media-id about-expires-at ))]))
+     (close-port iport))))
 
 ;; ## TODO This procedure obsoleted
 ;; - :callback-progress : Procedure that accept 3 args <json> or #f, uploaded-size, segment
@@ -114,4 +118,3 @@
                         (when maybe-json
                           (callback-progress maybe-json size sequence)))
    :chunk-size chunk-size))
-

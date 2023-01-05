@@ -1,3 +1,4 @@
+(use srfi-19)
 (use util.match)
 (use gauche.parseopt)
 (use rfc.json)
@@ -43,16 +44,24 @@
    [else
     (error "Not a supported extension file." file)]))
 
+(define (%pretty-epoch sec)
+  ($ (cut date->string <> "~Y-~m-~d ~H:~M:~S")
+     $ time-utc->date
+     $ seconds->time sec))
+
+
 ;; ##
-;; -> ((ARGUMENT:<string> MEDIA-ID:<string>) ...)
+;; -> ((ARGUMENT:<string> MEDIA-ID:<string> ABOUT-EXPIRES:<integer>) ...)
 (define (%do-upload! cred files)
   (map
    (^ [file]
-     (let* ([media-type (%detect-type file)]
-            [media-id (upload-media cred file media-type :callback-progress %progress)])
-       (when (eq? print-mode 'text)
-         (%popup "~s upload as ~a\n" file media-id))
-       (list file media-id)))
+     (let ([media-type (%detect-type file)])
+       (receive (media-id about-expires)
+           (upload-media cred file media-type :callback-progress %progress)
+         (when (eq? print-mode 'text)
+           (%popup "~s upload as ~a (Expires about: ~a)\n"
+                   file media-id (%pretty-epoch about-expires)))
+       (list file media-id about-expires))))
    files))
 
 (autoload rfc.json construct-json)
@@ -70,10 +79,12 @@
        [#t (cons 'data (list->vector
                         (map
                          (match-lambda
-                          [(argument media-id)
+                          [(argument media-id about-expires)
                            (list
                             (cons 'input argument)
-                            (cons 'mediaId media-id))])
+                            (cons 'mediaId media-id)
+                            (cons 'aboutExpiresAt about-expires)
+                            )])
                          result)))]))]))
 
 (define print-mode 'text)
