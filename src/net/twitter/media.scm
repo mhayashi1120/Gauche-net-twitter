@@ -5,6 +5,10 @@
    )
 (select-module net.twitter.media)
 
+;; # TODO
+;; WARN: This module still not working
+;; consider to use with `net.twitter.media+` module.
+
 ;; TODO FIXME Seems not working yet
 (define (status/json cred media-id)
   (call/oauth->json
