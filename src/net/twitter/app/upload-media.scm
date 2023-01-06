@@ -102,6 +102,7 @@
           => (^[] (set! print-mode 'text))]
        [_ "s|silent"
           => (^[] (set! silent? #f))]
+       [_ "h|help" => (^[] (usage))]
        . restargs)
     (match restargs
       [(credential-file . (? pair? files))
