@@ -12,8 +12,6 @@
 ;; Sample implementation Upload media. See:
 ;; https://developer.twitter.com/en/docs/media/upload-media/uploading-media/media-best-practices
 
-(autoload rfc.base64 base64-encode-string)
-
 (define-in-module rfc.http (media-multipart-sender params)
   (^[hdrs encoding header-sink]
     (receive (body boundary) (http-compose-form-data params #f encoding)
@@ -43,7 +41,9 @@
 ;; Return multiple values media-id and unix seconds as <integer> (epoch, `sys-time`).
 ;; - :callback-progress : <procedure> accept 3 arguments.
 ;;   SEQUENCE:<integer> -> SIZE:<integer> -> PROGRESS/JSON {<json> | #f} -> <void>
-;;   SEQUENCE start from 0, First and Last PROGRESS/JSON must be a <json> object.
+;;    - SEQUENCE : <integer> start from 0.
+;;    - SIZE : <integer> uploaded bytes.
+;;    - PROGRESS/JSON : <json> | #f First and Last must be a <json> object. Otherwise #f
 ;; -> [MEDIA-ID:<integer> ABOUT-EXPIRES-AT:<integer>]
 (define (upload-media
          cred file media-type

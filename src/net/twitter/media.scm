@@ -16,6 +16,9 @@
    #"/1.1/media/upload"
    (api-params `(:command "STATUS") media-id)))
 
+;; ##
+;; - :media : <string> binary data
+;; - :media-data : <string> base64 encoded data.
 (define (upload/json cred :key (media #f) (media-data #f)
                      :allow-other-keys _keys)
   (let1 mime-part
