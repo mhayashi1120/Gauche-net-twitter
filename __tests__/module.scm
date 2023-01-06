@@ -32,7 +32,8 @@
   (test-end :exit-on-failure #t))
 
 (define (executable-test)
-  (test-script "net/twitauth.scm"))
+  (test-script "net/twitauth.scm")
+  (test-script "net/twitter/app/upload-media.scm"))
 
 (define (module-test)
   (test-module 'net.favotter)
