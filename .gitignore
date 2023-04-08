@@ -1,7 +1,8 @@
+/config.log
+/Gauche-net-twitter.gpd
+/VERSION
+/test.log
+/.secret/*
+!/.secret/.gitempty
+
 Makefile
-config.log
-*.gpd
-VERSION
-test.log
-.secret/*
-!.secret/.gitempty
