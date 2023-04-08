@@ -50,7 +50,7 @@ all : $(TARGET)
 check : all
 	@rm -f $(TEST_LOG)
 	@set -e; for d in $(SUBDIRS) ; do $(MAKE) -C $${d} $@ ; done
-	$(GOSH) -I$(SRC_PREFIX) -I$(srcdir) $(srcdir)/test.scm > $(TEST_LOG)
+	$(GOSH) -I$(SRC_PREFIX) -I./packages/.modules/Gauche-net-oauth/ $(srcdir)/test.scm > $(TEST_LOG)
 
 check-prod : check _check-prod
 

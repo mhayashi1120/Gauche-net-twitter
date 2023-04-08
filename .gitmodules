@@ -1,3 +1,3 @@
-[submodule "Gauche-net-oauth"]
-	path = Gauche-net-oauth
-	url = git@github.com:mhayashi1120/Gauche-net-oauth.git
+[submodule "packages/.modules/Gauche-net-oauth"]
+	path = packages/.modules/Gauche-net-oauth
+	url = https://github.com/mhayashi1120/Gauche-net-oauth.git
