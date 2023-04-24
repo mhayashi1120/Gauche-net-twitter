@@ -4,7 +4,7 @@
 
 (define-gauche-package "Gauche-net-twitter"
   ;;
-  :version "1.8.7"
+  :version "1.8.8"
 
   ;; Description of the package.  The first line is used as a short
   ;; summary.
