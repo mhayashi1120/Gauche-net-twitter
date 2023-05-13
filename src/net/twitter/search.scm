@@ -17,6 +17,8 @@
   (regexp-replace-all* str #/%[\da-fA-F][\da-fA-F]/
                        (lambda (m) (string-upcase (m 0)))))
 
+;; ##
+;; -> <json>
 (define (search-tweets/json cred q :key (geocode #f) (lang #f) (locale #f)
                             (result-type #f) (count #f) (until #f)
                             (since-id #f) (max-id #f)
@@ -27,7 +29,7 @@
                                 result-type count until
                                 since-id  max-id include-entities)))
 
-;; Same arguments as [=search-tweets/json]() except cursor
+;; ## Same arguments as [=search-tweets/json]()
 ;; -> <generator>
 (define (search-tweets/json$ . args)
   (apply stream-generator$
