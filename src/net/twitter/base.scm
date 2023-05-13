@@ -235,10 +235,13 @@
      (else
       (loop (cdr lines) ret)))))
 
-;; See [=retrieve-stream]() arguments
-;; - MAPPER* : <json> -> [CURSOR:<string> <list>]
+;; ## Generic version twitter stream
+;; - SLICER : <json> -> [CURSOR-ARGS:<list> (<json> ...)]
+;; - F : @{ARGS} -> <json>
+;;    Procedure get result from API with `:cursor` keyword argument.
+;; - ARGS : <list> basic arguments pass to `F`
 ;; -> <generator>
-(define (stream-generator$ mapper f . args)
+(define (stream-generator$ slicer f . args)
   (define cursor #f)
   (define buffer #f)
 
@@ -248,10 +251,10 @@
                    (null? buffer)))
       (let* ([args* (cond-list
                      [#t @ args]
-                     [cursor @ (list :cursor cursor)])]
-             [r (apply f args*)])
-        (set! cursor (assoc-ref r "next_cursor"))
-        (set! buffer (mapper r))
+                     ;; seems overwrite ARGS option by this trailing value
+                     [cursor @ cursor])]
+             [j (apply f args*)])
+        (set!-values (cursor buffer) (slicer j))
         (assume-type buffer <list>)))
 
     (cond
@@ -260,14 +263,24 @@
      [else
       (eof-object)])))
 
-;; - F : @{ARGS} -> <json>
-;;    Procedure get result from API with `:cursor` keyword argument.
-;; - MAPPER : <json> -> <list> from `F` results then return list.
-;; - ARGS : <list> basic arguments pass to `F`
+;; ## twitter stream (Using `next_cursor` API)
+;; See [=stream-generator$]() about other arguments.
+;; - MAPPER : <json> -> <list> JSON from `F` results then return list
+;;     of streaming item.
+;; -> <generator>
+(define (cursor-generator$ mapper f . args)
+  (define (slice j)
+    (values
+     (list :cursor (assoc-ref j "next_cursor"))
+     (mapper j)))
+
+  (apply stream-generator$ slice f args))
+
+;; See [=cursor-generator$]() arguments
 ;; -> <lseq>
 (define (retrieve-stream mapper f . args)
   ($ generator->lseq
-     $ apply stream-generator$ mapper f args))
+     $ apply cursor-generator$ mapper f args))
 
 ;; -> <string>
 (define (stringify-param obj)
