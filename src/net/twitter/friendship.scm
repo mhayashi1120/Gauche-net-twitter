@@ -55,9 +55,6 @@
                     (api-params _keys include-user-entities skip-status
                                 cursor screen-name user-id)))
 
-(define (retrieve-ids/json f . args)
-  (apply retrieve-stream (^x (vector->list (assoc-ref x "ids"))) f args))
-
 (define (show/json cred :key (source-id #f) (source-screen-name #f)
                    (target-id #f) (target-screen-name #f)
                    :allow-other-keys _keys)
@@ -107,20 +104,23 @@
 ;;; Utilities
 ;;;
 
-;; Returns list of user ids
+(define (%stream-ids/json f . args)
+  (apply retrieve-stream (^x (vector->list (assoc-ref x "ids"))) f args))
+
+;; -> (ID:<integer> ...)
 (define (friends/ids cred :key (id #f) (user-id #f)
                      (screen-name #f)
                      :allow-other-keys _keys)
-  (apply retrieve-ids/json friends/ids/json
+  (apply %stream-ids/json friends/ids/json
          cred :id id :user-id user-id
          :screen-name screen-name
          _keys))
 
-;; Returns ids of *all* followers; paging is handled automatically.
+;; -> (ID:<integer> ...)
 (define (followers/ids cred :key (id #f) (user-id #f)
                        (screen-name #f)
                        :allow-other-keys _keys)
-  (apply retrieve-ids/json followers/ids/json
+  (apply %stream-ids/json followers/ids/json
          cred :id id :user-id user-id
          :screen-name screen-name
          _keys))

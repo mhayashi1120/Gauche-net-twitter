@@ -235,22 +235,47 @@
      (else
       (loop (cdr lines) ret)))))
 
-(define (retrieve-stream getter f . args)
-  ;; getter: from f results then return list.
-  (let loop ([cursor -1]
-             [accum '()])
-    (let* ([r (apply f (append args `(:cursor ,cursor)))]
-           [next (assoc-ref r "next_cursor")]
-           [res (cons (getter r) accum)])
-      (if (equal? next 0)
-        (concatenate (reverse res))
-        (loop next res)))))
+;; See [=retrieve-stream]() arguments
+;; - MAPPER* : <json> -> [CURSOR:<string> <list>]
+;; -> <generator>
+(define (stream-generator$ mapper f . args)
+  (define cursor #f)
+  (define buffer #f)
 
+  (^[]
+    (when (or (not buffer)
+              (and cursor
+                   (null? buffer)))
+      (let* ([args* (cond-list
+                     [#t @ args]
+                     [cursor @ (list :cursor cursor)])]
+             [r (apply f args*)])
+        (set! cursor (assoc-ref r "next_cursor"))
+        (set! buffer (mapper r))
+        (assume-type buffer <list>)))
+
+    (cond
+     [(pair? buffer)
+      (pop! buffer)]
+     [else
+      (eof-object)])))
+
+;; - F : @{ARGS} -> <json>
+;;    Procedure get result from API with `:cursor` keyword argument.
+;; - MAPPER : <json> -> <list> from `F` results then return list.
+;; - ARGS : <list> basic arguments pass to `F`
+;; -> <lseq>
+(define (retrieve-stream mapper f . args)
+  ($ generator->lseq
+     $ apply stream-generator$ mapper f args))
+
+;; -> <string>
 (define (stringify-param obj)
   (cond
    [(not obj) #f]
    [(pair? obj)
-    ($ (cut string-join <> ",") $ map x->string obj)]
+    ($ (cut string-join <> ",")
+       $ map x->string obj)]
    [(string? obj)
     obj]
    [else
