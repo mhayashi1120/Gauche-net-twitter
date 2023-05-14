@@ -6,8 +6,7 @@
   (use sxml.ssax)
   (use text.unicode)
   (export
-   search-tweets/json
-   search-tweets/json$))
+   search-tweets/json))
 (select-module net.twitter.search)
 
 (define (compose-query params)
@@ -28,17 +27,3 @@
                     (api-params _keys q geocode lang locale
                                 result-type count until
                                 since-id  max-id include-entities)))
-
-;; ## Same arguments as [=search-tweets/json]()
-;; -> <generator>
-(define (search-tweets/json$ . args)
-  (apply stream-generator$
-         (^j
-          (let1 statuses (vector->list (assoc-ref j "statuses"))
-            (values
-             (and-let* ([(pair? statuses)]
-                        [min-entry (last statuses)]
-                        [id (assoc-ref min-entry "id")])
-               (list :max-id (- id 1)))
-             statuses)))
-         search-tweets/json args))
