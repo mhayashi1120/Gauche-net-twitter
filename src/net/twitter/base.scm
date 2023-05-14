@@ -235,10 +235,11 @@
      (else
       (loop (cdr lines) ret)))))
 
-;; ## Generic version twitter stream
+;; ## Generic version twitter timeline (like `stream`)
 ;; - SLICER : <json> -> [CURSOR-ARGS:<list> (<json> ...)]
+;;       CURSOR-ARGS are appended to `ARGS`
 ;; - F : @{ARGS} -> <json>
-;;    Procedure get result from API with `:cursor` keyword argument.
+;;    Procedure get result from Twitter API with ARGS and CURSOR-ARGS.
 ;; - ARGS : <list> basic arguments pass to `F`
 ;; -> <generator>
 (define (stream-generator$ slicer f . args)
@@ -263,8 +264,10 @@
      [else
       (eof-object)])))
 
-;; ## twitter stream (Using `next_cursor` API)
+;; ## Twitter cursor which sing `next_cursor`
 ;; See [=stream-generator$]() about other arguments.
+;; - F : @{ARGS} -> <json>
+;;     Unlike [=stream-generator$]() must accept `:cursor` keyword argument.
 ;; - MAPPER : <json> -> <list> JSON from `F` results then return list
 ;;     of streaming item.
 ;; -> <generator>
