@@ -9,9 +9,9 @@
 ;; - Using sub modules (in net.twitter.cursor.*) for each API group
 
 ;; ## Generic version twitter timeline (like `stream`)
-;; - SLICER : <json> -> [CURSOR-ARGS:<list> (<json> ...)]
+;; - SLICER : <json> -> <rfc822-headers> -> [CURSOR-ARGS:<list> (<json> ...)]
 ;;       CURSOR-ARGS are appended to `ARGS`
-;; - F : @{ARGS} -> <json>
+;; - F : @{ARGS} -> [<json> <rfc822-headers>]
 ;;    Procedure get result from Twitter API with ARGS and CURSOR-ARGS.
 ;; - ARGS : <list> basic arguments pass to `F`
 ;; -> <generator>
@@ -23,14 +23,14 @@
     (when (or (not buffer)
               (and cursor
                    (null? buffer)))
-      (let* ([args* (cond-list
-                     [#t @ args]
-                     ;; seems overwrite ARGS option by this trailing value
-                     [cursor @ cursor])]
-             ;; TODO consider use http-header
-             [j (apply f args*)])
-        (set!-values (cursor buffer) (slicer j))
-        (assume-type buffer <list>)))
+      (let1 args* (cond-list
+                   [#t @ args]
+                   ;; seems overwrite ARGS option by this trailing value
+                   [cursor @ cursor])
+        (receive (json headers) (apply f args*)
+          (set!-values (cursor buffer) (slicer json headers))
+
+          (assume-type buffer <list>))))
 
     (cond
      [(pair? buffer)
@@ -40,13 +40,13 @@
 
 ;; ## Twitter cursor which sing `next_cursor`
 ;; See [=stream-generator$]() about other arguments.
-;; - F : @{ARGS} -> <json>
+;; - F : @{ARGS} -> [<json> <rfc822-headers>]
 ;;     Unlike [=stream-generator$]() must accept `:cursor` keyword argument.
 ;; - MAPPER : <json> -> <list> JSON from `F` results then return list
 ;;     of streaming item.
 ;; -> <generator>
 (define (cursor-generator$ mapper f . args)
-  (define (slice j)
+  (define (slice j _)
     (values
      (list :cursor (assoc-ref j "next_cursor"))
      (mapper j)))

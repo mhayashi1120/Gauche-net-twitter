@@ -8,12 +8,12 @@
 ;; -> <generator>
 (define (search-tweets/json$ . args)
   (apply stream-generator$
-         (^j
-          (let1 statuses (vector->list (assoc-ref j "statuses"))
-            (values
-             (and-let* ([(pair? statuses)]
-                        [min-entry (last statuses)]
-                        [id (assoc-ref min-entry "id")])
-               (list :max-id (- id 1)))
-             statuses)))
+         (^ [j hdrs]
+           (let1 statuses (vector->list (assoc-ref j "statuses"))
+             (values
+              (and-let* ([(pair? statuses)]
+                         [min-entry (last statuses)]
+                         [id (assoc-ref min-entry "id")])
+                (list :max-id (- id 1)))
+              statuses)))
          search-tweets/json args))
