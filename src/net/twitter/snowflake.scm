@@ -25,19 +25,26 @@
    (logand (ash id -12) #x3ff)
    (logand      id      #xfff)))
 
+;; ##
+;; -> <date>
 (define (snowflake-date id)
   ($ time-utc->date $ snowflake-time id))
 
+;; ##
+;; -> <time-utc>
 (define (snowflake-time id)
   (receive (time . _) (snowflake-split-id id)
     (seconds->time (/ (+ time 1288834974657) 1000))))
 
+;; ##
 (define (snowflake-id? id)
   (and (number? id)
        (let1 n (integer-length id)
          (<= 23 n 63))))
 
+;; ##
 ;; Generate the status id to search by time (using max-id or since-id)
+;; <time> -> <integer>
 (define (time->pseudo-snowflake time)
   (let ([tmsec ($ (cut - <> 1288834974657) $ round->exact $ * 1000 $ time->seconds time)]
         [machine-id 0]
@@ -50,5 +57,7 @@
      (ash machine-id  12)
      (ash seq-num      0))))
 
+;; ##
+;; <date> -> <integer>
 (define (date->pseudo-snowflake date)
   ($ time->pseudo-snowflake $ date->time-utc date))

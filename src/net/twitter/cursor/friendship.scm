@@ -9,12 +9,10 @@
    followers/ids))
 (select-module net.twitter.cursor.friendship)
 
-;; TODO start code from here
-
 (define (%stream-ids/json f . args)
   (apply retrieve-stream (^x (vector->list (assoc-ref x "ids"))) f args))
 
-;; ##
+;; ## Utility procedure get <lseq>
 ;; -> (ID:<integer> ...)
 (define (friends/ids cred :key (id #f) (user-id #f)
                      (screen-name #f)
@@ -24,7 +22,7 @@
          :screen-name screen-name
          _keys))
 
-;; ##
+;; ## Utility procedure
 ;; -> (ID:<integer> ...)
 (define (followers/ids cred :key (id #f) (user-id #f)
                        (screen-name #f)
