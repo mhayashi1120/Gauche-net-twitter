@@ -1,6 +1,7 @@
 (define-module net.twitter.cursor
   (export
    retrieve-stream
+   timeline-generator$
    stream-generator$))
 (select-module net.twitter.cursor)
 
@@ -37,6 +38,23 @@
       (pop! buffer)]
      [else
       (eof-object)])))
+
+;; ## General timeline generator
+;; - F : @{ARGS} -> [TIMELINE:<json> <rfc822-headers>]
+;; -> <generator>
+(define (timeline-generator$ f . args)
+  (apply stream-generator$
+         (^ [j hdrs]
+           (assume-type j <vector>)
+
+           (let1 statuses (vector->list j)
+             (values
+              (and-let* ([(pair? statuses)]
+                         [min-entry (last statuses)]
+                         [id (assoc-ref min-entry "id")])
+                (list :max-id (- id 1)))
+              statuses)))
+         f args))
 
 ;; ## Twitter cursor which sing `next_cursor`
 ;; See [=stream-generator$]() about other arguments.
