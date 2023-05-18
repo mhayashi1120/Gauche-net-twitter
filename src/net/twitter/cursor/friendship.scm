@@ -22,7 +22,7 @@
          :screen-name screen-name
          _keys))
 
-;; ## Utility procedure
+;; ## Utility procedure get <lseq>
 ;; -> (ID:<integer> ...)
 (define (followers/ids cred :key (id #f) (user-id #f)
                        (screen-name #f)
