@@ -21,7 +21,7 @@
   (define buffer #f)
 
   (assume-type slicer (<^> <top> <top> -> (<?> <list>) <list>))
-  (assume-type f <procedure>)
+  (assume-type f (<^> '* -> <top> <top>))
 
   (^[]
     (when (or (not buffer)
@@ -61,7 +61,7 @@
 ;; - F : @{ARGS:(<top> ...)} -> [TIMELINE:#(<json> ...) <rfc822-headers>]
 ;; -> <generator>
 (define (timeline-generator$ f . args)
-  (assume-type f <procedure>)
+  (assume-type f (<^> '* -> <vector> <top>))
 
   (apply stream-generator$
          (^ [j hdrs]
@@ -90,7 +90,7 @@
      (list :cursor (assoc-ref j "next_cursor"))
      (mapper j)))
 
-  (assume-type f <procedure>)
+  (assume-type f (<^> '* -> <top> <top>))
   (assume-type mapper (<^> <top> -> <list>))
 
   (apply stream-generator$ slice f args))
