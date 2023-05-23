@@ -109,6 +109,6 @@
        (let* ([cred (read-credential credential-file)]
               [result (%do-upload! cred files)])
          (%print-result result))]
-      [else
+      [_
        (usage)]))
   0)

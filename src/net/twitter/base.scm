@@ -47,7 +47,7 @@
     (match x
       [(? keyword? k)
        (keyword->string k)]
-      [else
+      [_
        (x->string x)]))
   (string-tr (->string x) "-" "_"))
 
@@ -136,7 +136,7 @@
                  [(_ "xml" . _) 'xml]
                  [(_ "json" . _) 'json]
                  [(_ "html" . _) 'html]
-                 [else 'text])
+                 [_ 'text])
                (error <twitter-api-error>
                       :status status :headers headers :body body
                       body))
@@ -216,7 +216,7 @@
              (raise-api-error 'json status headers body)]
             [(_ "html" . _)
              (raise-api-error 'html status headers body)]
-            [else
+            [_
              (raise-api-error 'text status headers body)]))
         (error <twitter-api-error>
                :status status :headers headers :body body
